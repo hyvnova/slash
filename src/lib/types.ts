@@ -4,10 +4,5 @@ export type UserData = {
     token: string;
     avatar: string;
     verified: boolean;
-}
-
-// Public data
-export type ProfileData = {
-    username: string;
-    avatar: string;
+    friends: string[];
 }

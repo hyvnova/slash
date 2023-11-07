@@ -48,6 +48,7 @@ export async function add_user(data: Partial<UserData>) {
 
         data.token = randomUUID();
         data.verified = false;
+        data.friends = [];
 
         // Assign a default avatar 
         data.avatar ||= `/default_avatars/${Math.floor(Math.random() * 4) + 1}.jpg`;
@@ -85,8 +86,7 @@ export async function find_matching(query: string, fields: (keyof UserData)[]): 
         const collection = db.collection<UserData>("users");
         const user_data = await collection.find<Partial<UserData>>({
             $or: [
-                { username: { $regex: query, $options: "i" } },
-                { email: { $regex: query, $options: "i" } }
+                { username: { $regex: query, $options: "i" } }
             ]
         }, { projection }).toArray();
         return user_data ?? [];

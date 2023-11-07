@@ -1,9 +1,9 @@
-import type { PageServerLoad } from "./$types"
-import { get_by } from '$lib/server/db'
-import { redirect } from "@sveltejs/kit"
+import { redirect } from "@sveltejs/kit";
+import type { LayoutServerLoad } from "./$types";
+import { get_by } from "$lib/server/db";
 
 
-export const load: PageServerLoad = async ({ cookies }) => {
+export const load: LayoutServerLoad = async ({ cookies }) => {
     // Get the token from the cookies
     const token = cookies.get("token")
 

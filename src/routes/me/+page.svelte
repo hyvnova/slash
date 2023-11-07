@@ -1,34 +1,44 @@
-<script lang="ts">
-	import type { PageServerData } from './$types';
+<script>
 
-	export let data: PageServerData;
+	import Contacts from '$lib/components/Contacts.svelte';
 
-	function handleSession(action: string) {
-		fetch('/api/session', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				action: action
-			})
-		}).then(() => {
-			window.location.href = '/';
-		});
-	}
+	let contacts = [
+		{
+			username: 'johndoe',
+			avatar: '/default_avatars/1.jpg',
+			status: 'online'
+		},
+		{
+			username: 'max',
+			avatar: '/default_avatars/2.jpg',
+			status: 'offline'
+		},
+		{
+			username: 'longassusername',
+			avatar: '/default_avatars/3.jpg',
+			status: 'online'
+		},
+		{
+			username: 'short',
+			avatar: '/default_avatars/4.jpg',
+			status: 'offline'
+		},
+		{
+			username: 'typical_username',
+			avatar: '/default_avatars/1.jpg',
+			status: 'online'
+		}
+	];
+
 </script>
 
-<section class="container flex flex-row justify-center items-center">
-	<button
-		class="mt-4 p-2 bg-red-500 rounded-md text-white"
-		on:click={() => {
-			handleSession('logout');
-		}}>Logout</button
-	>
-	<button
-		class="mt-4 p-2 bg-red-500 rounded-md text-white"
-		on:click={() => {
-			handleSession('delete');
-		}}>Delete</button
-	>
-</section>
+<main class="w-screen">
+	<!-- Contacts
+    A horizontal carousel of contacts
+    Each contact is a minimalist card with a name, avatar, and status
+-->
+
+	<nav class="container flex justify-center items-center">
+        <Contacts contacts={contacts} />
+	</nav>
+</main>
