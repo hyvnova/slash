@@ -1,50 +1,15 @@
-import type { UserData } from '$lib/types';
-import { randomUUID } from 'crypto';
-import { MongoClient, ServerApiVersion, type Db } from 'mongodb';
-import "dotenv/config";
+import { randomUUID } from "crypto";
+import { with_db } from "./db";
+import type { UserType } from "$lib/types";
 
-// Database URI and name
-const DB_URI = process.env.DB_URI;
-const DB_NAME = import.meta.env.DEV ? "dev" : "prod";
-
-if (!DB_URI) {
-    throw new Error("Database URI is not set");
-}
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
-const client = new MongoClient(DB_URI, {
-    serverApi: {
-        version: ServerApiVersion.v1,
-        strict: true,
-        deprecationErrors: true,
-    },
-    maxPoolSize: 100,
-});
-
-// Connect the client to the server (optional starting in v4.7)
-client.connect();
-
-/**
- * Execute a function with the database
- * @param fn - The function to execute with the database
- * @returns The result of the function
- */
-export async function with_db<T>(fn: (db: Db) => Promise<T>): Promise<T> {
-    const db = client.db(DB_NAME);
-    try {
-        return await fn(db);
-    } finally {
-        // Do nothing
-    }
-}
 
 /**
  * Add a user to the database
  * @param data - The user data to add
  */
-export async function add_user(data: Partial<UserData>) {
+export async function add_user(data: Partial<UserType>) {
     return await with_db(async db => {
-        const collection = db.collection<UserData>("users");
+        const collection = db.collection<UserType>("users");
 
         data.token = randomUUID();
         data.verified = false;
@@ -53,7 +18,7 @@ export async function add_user(data: Partial<UserData>) {
         // Assign a default avatar 
         data.avatar ||= `/default_avatars/${Math.floor(Math.random() * 4) + 1}.jpg`;
 
-        await collection.insertOne(data as UserData);
+        await collection.insertOne(data as UserType);
 
         return data.token;
     });
@@ -64,9 +29,9 @@ export async function add_user(data: Partial<UserData>) {
  * @param fields - The fields to search for
  * @returns The user data if found, otherwise null
  */
-export async function find_by(fields: Partial<UserData>): Promise<UserData | null> {
+export async function find_by(fields: Partial<UserType>): Promise<UserType | null> {
     return await with_db(async db => {
-        const collection = db.collection<UserData>("users");
+        const collection = db.collection<UserType>("users");
         const user_data = await collection.findOne(fields);
         return user_data ?? null;
     });
@@ -78,13 +43,13 @@ export async function find_by(fields: Partial<UserData>): Promise<UserData | nul
  * @param fields - The fields to return
  * @returns An array of user data matching the query and fields
  */
-export async function find_matching(query: string, fields: (keyof UserData)[]): Promise<Partial<UserData>[]> {
+export async function find_matching(query: string, fields: (keyof UserType)[]): Promise<Partial<UserType>[]> {
     const projection: any = {};
     fields.forEach(field => projection[field] = 1);
 
     return await with_db(async db => {
-        const collection = db.collection<UserData>("users");
-        const user_data = await collection.find<Partial<UserData>>({
+        const collection = db.collection<UserType>("users");
+        const user_data = await collection.find<Partial<UserType>>({
             $or: [
                 { username: { $regex: query, $options: "i" } }
             ]
@@ -98,16 +63,16 @@ export async function find_matching(query: string, fields: (keyof UserData)[]): 
  * @param identifier - The token to search for
  * @returns The user data if found, otherwise null
  */
-export async function get_by(identifier: string): Promise<UserData> {
+export async function get_by(identifier: string): Promise<UserType> {
     return await with_db(async db => {
         const collection = db.collection("users");
-        const user_data = await collection.findOne<UserData>({
+        const user_data = await collection.findOne<UserType>({
             $or: [
                 { token: identifier },
                 { username: identifier }
             ]
         });
-        return user_data as UserData;
+        return user_data as UserType;
     });
 }
 
@@ -117,13 +82,13 @@ export async function get_by(identifier: string): Promise<UserData> {
  * @param field - The field to return
  * @returns The value of the specified field if found, otherwise null
  */
-export async function get_from<T = string>(identifier: string, field: keyof UserData): Promise<T | null> {
+export async function get_from<T = string>(identifier: string, field: keyof UserType): Promise<T | null> {
     const projection: any = {};
     projection[field] = 1;
 
     return await with_db(async db => {
         const collection = db.collection("users");
-        const user_data = await collection.findOne<UserData>({
+        const user_data = await collection.findOne<UserType>({
             $or: [
                 { username: identifier },
                 { token: identifier }
@@ -139,7 +104,7 @@ export async function get_from<T = string>(identifier: string, field: keyof User
  * @param identifier - The token, username, of the user to update
  * @param data - The updated user data
  */
-export async function update_user(identifier: string, data: Partial<UserData>) {
+export async function update_user(identifier: string, data: Partial<UserType>) {
     return await with_db(async db => {
 
         const collection = db.collection("users");
@@ -176,3 +141,5 @@ export async function delete_user(identifier: string) {
 
     });
 }
+
+

@@ -1,7 +1,14 @@
 import { find_matching, get_by } from "$lib/server/db";
 import { json, type RequestHandler } from "@sveltejs/kit";
 
-
+/**
+ * Gets items that are similar to the target
+ * @param {string} target The target string
+ * @param {string[]} items The items to compare
+ */
+function similars(target: string, items: string[]) {
+    return items.filter(item => item.includes(target));
+}
 
 type ExpectedParams = {
     query: string, // Search query (username, email)
@@ -36,11 +43,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     // Search for users
     // filter results, only allow similar usernames if are user friends
     let results = (await find_matching(query, ["username", "avatar"])).filter(result => {
+        // Skip if the result is the user itself
         if (result.username === user.username) return false;
-        // @ts-ignore
-        if (user.friends.includes(result.username)) return true;
-        // @ts-ignore
-        return result.username == query;
+
+        // If query match or if user friends 
+        return result.username == query || similars(query, user.friends).includes(result.username as string);
     });
 
     return json({

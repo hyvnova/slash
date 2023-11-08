@@ -2,7 +2,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { get_by, get_from, add_user,  } from "$lib/server/db";
 import { redirect } from "@sveltejs/kit";
 import bcrypt from 'bcrypt';
-import type { UserData } from "$lib/types";
+import type { UserType } from "$lib/types";
 import "dotenv/config";
 
 
@@ -93,7 +93,7 @@ export const actions = {
 
         // Otherwise it's a login form
         } else {
-            const user = await get_by(username) as UserData;
+            const user = await get_by(username) as UserType;
 
             // If password is incorrect, then it's an error
             if (!bcrypt.compareSync(password, user.password)) {
