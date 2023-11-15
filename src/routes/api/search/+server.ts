@@ -34,7 +34,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
     // Search for users
     // Filter results, only allow similar usernames if they are user friends
-    let results = (
+    let results = await Promise.all((
         await find_matching<{ 
             username: string, 
             avatar: string, 
@@ -75,7 +75,7 @@ export const POST: RequestHandler = async ({ request }) => {
             avatar: result.avatar,
             friendship
         };
-    });
+    }));
 
     return json(results);
 };

@@ -14,26 +14,21 @@ export const GET: RequestHandler = async ({ url, params }) => {
     const username = params.username;
 
     if (!username || !await exists(username)) {
-        console.log(`User ${username} doesn't exist`);
         return new Response(null, { status: 404 });
     }
 
     let avatar_url = await get_from<string>(username, "avatar");
 
     if (!avatar_url) {
-        console.log(`User ${username} doesn't have an avatar`, avatar_url);
         return new Response(null, { status: 404 });
     }
 
     const avatar_type = avatar_url?.split(".").pop();
 
-    console.log(`User ${username} has an avatar`, avatar_url);
-
     // if avatar is relative, prepend the base url
     if (avatar_url.startsWith("/")) {
         avatar_url = `${url.origin}${avatar_url}`
     }
-    console.log(`Fetching avatar for ${username} from ${avatar_url}`);
 
     const response = await fetch(avatar_url);
     const arrayBuffer = await response.arrayBuffer();

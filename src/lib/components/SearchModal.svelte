@@ -38,7 +38,6 @@
 		make_search();
 	});
 </script>
-
 {#if $modal_open}
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div class="fixed inset-0 z-10 overflow-auto bg-black bg-opacity-40">
