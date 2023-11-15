@@ -16,7 +16,7 @@ export async function exists(identifier: string): Promise<boolean> {
                 { token: identifier },
                 { username: identifier },
             ]
-        });
+        }, { projection: { _id: 1 }} ) ;
         return user_data !== null;
     });
 }
@@ -45,18 +45,6 @@ export async function add_user(data: Partial<UserType>) {
     });
 }
 
-/**
- * Find a user by any field
- * @param fields - The fields to search for
- * @returns The user data if found, otherwise null
- */
-export async function find_by(fields: Partial<UserType>): Promise<UserType | null> {
-    return await with_db(async db => {
-        const collection = db.collection<UserType>("users");
-        const user_data = await collection.findOne(fields);
-        return user_data ?? null;
-    });
-}
 
 /**
  * Find users matching a query and return specific fields
@@ -106,6 +94,10 @@ export async function get_by(identifier: string): Promise<UserType | null> {
  * @returns The value of the specified field if found, otherwise null
  */
 export async function get_from<T = string>(identifier: string, field: keyof UserType): Promise<T | null> {
+    let projection = {};
+    // @ts-ignore
+    projection[field] = 1;
+
     return await with_db(async db => {
         const collection = db.collection("users");
         const user_data = await collection.findOne<UserType>({
@@ -113,9 +105,10 @@ export async function get_from<T = string>(identifier: string, field: keyof User
                 { username: identifier },
                 { token: identifier }
             ]
-        });
+        }, {projection});
+
         if (!user_data) { return null; }
-        return user_data[field] as T;
+        return user_data[field] as T ?? null;
     });
 }
 

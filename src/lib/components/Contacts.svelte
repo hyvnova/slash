@@ -6,21 +6,27 @@
 	import type { UserType } from '$lib/types';
 	import AvatarImage from './AvatarImage.svelte';
 	import { ws } from '$lib/websocket';
+	import { onMount } from 'svelte';
 
 	let searching = writable(false);
 
 	export let user: UserType;
 	let contacts: Writable<string[]> = writable(user.friends);
 
+	// Open search modal on pressing 'p'
 
-	// Handling friendships: accepted friend requests and unfriending
-    ws.on('accept friend request', other => {
-		contacts.update(contacts => [other, ...contacts]);
-	})
-	ws.on('unfriend', other => {
-		contacts.update(contacts => contacts.filter(contact => contact !== other));
-	})
-
+	onMount(() => {
+		window.onkeydown = (e) => {
+			if (e.key === 'p') {searching.set(true); e.preventDefault();}
+		};
+		// Handling friendships: accepted friend requests and unfriending
+		ws.on('accept friend request', (other) => {
+			contacts.update((contacts) => [other, ...contacts]);
+		});
+		ws.on('unfriend', (other) => {
+			contacts.update((contacts) => contacts.filter((contact) => contact !== other));
+		});
+	});
 </script>
 
 <SearchModal modal_open={searching} {user} />

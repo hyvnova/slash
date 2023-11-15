@@ -13,7 +13,8 @@ export const GET: RequestHandler = async ({ url, params }) => {
 
     const username = params.username;
 
-    if (!username || !exists(username)) {
+    if (!username || !await exists(username)) {
+        console.log(`User ${username} doesn't exist`);
         return new Response(null, { status: 404 });
     }
 
@@ -24,10 +25,16 @@ export const GET: RequestHandler = async ({ url, params }) => {
         return new Response(null, { status: 404 });
     }
 
+    const avatar_type = avatar_url?.split(".").pop();
+
+    console.log(`User ${username} has an avatar`, avatar_url);
+
     // if avatar is relative, prepend the base url
     if (avatar_url.startsWith("/")) {
-        avatar_url = `${url.protocol}//${url.host}${avatar_url}`;
+        avatar_url = `${url.origin}${avatar_url}`
     }
+    console.log(`Fetching avatar for ${username} from ${avatar_url}`);
+
     const response = await fetch(avatar_url);
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -35,7 +42,7 @@ export const GET: RequestHandler = async ({ url, params }) => {
     return new Response(buffer, {
         status: 200,
         headers: {
-            'Content-Type': response.headers.get('Content-Type') || 'image/png'
+            'Content-Type': response.headers.get('Content-Type') || `image/${avatar_type}`
         }
     });
 
