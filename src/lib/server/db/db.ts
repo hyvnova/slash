@@ -1,5 +1,3 @@
-import type { UserType } from '$lib/types';
-import { randomUUID } from 'crypto';
 import { MongoClient, ServerApiVersion, type Db } from 'mongodb';
 import "dotenv/config";
 

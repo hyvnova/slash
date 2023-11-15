@@ -3,42 +3,28 @@
 	import { onMount } from 'svelte';
 	import Fa from 'svelte-fa';
 	import { writable, type Writable } from 'svelte/store';
+	import { search_users } from '$lib/api_shortcuts';
+	import RelationshipButton from './RelationshipButton.svelte';
+	import type { UserSearchResult, UserType } from '$lib/types';
+	import AvatarImage from './AvatarImage.svelte';
 
 	enum StateType {
 		idle,
 		searching
 	}
 
-	type ResultType = {
-		username: string;
-		avatar: string;
-	};
-
 	export let modal_open: Writable<boolean>;
+	export let user: UserType; // For whom the search is being made
 
 	let query = '';
-	let results: Writable<ResultType[]> = writable([]);
+	let results: Writable<UserSearchResult[]> = writable([]);
 	let state: Writable<StateType> = writable(StateType.idle);
 
 	// This function should be replaced with actual search logic
-	async function search() {
+	async function make_search() {
 		state.set(StateType.searching);
-
-		// Make a request to /api/search
-		fetch('/api/search', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: JSON.stringify({
-				query
-			})
-		})
-			.then((res) => res.json())
-			.then((data) => {
-				results.set(data.results);
-				state.set(StateType.idle);
-			});
+		results.set(await search_users(query, user));
+		state.set(StateType.idle);
 	}
 
 	// When "esc" is pressed close the search modal
@@ -48,6 +34,8 @@
 				modal_open.set(false);
 			}
 		});
+
+		make_search();
 	});
 </script>
 
@@ -71,12 +59,12 @@
 					type="text"
 					bind:value={query}
 					placeholder="Search for some user"
-					on:input={search}
-					on:change={search}
+					on:input={make_search}
+					on:change={make_search}
 					class="
-                    w-full p-2 border-white outline-none rounded-md max-h-max
-                    {$state === StateType.searching ? 'cursor-wait' : ''}
-                    "
+				w-full p-2 border-white outline-none rounded-md max-h-max
+				{$state === StateType.searching ? 'cursor-wait' : ''}
+				"
 				/>
 			</div>
 			<div class="container flex flex-col">
@@ -86,17 +74,16 @@
 						<p class="text-gray-400">Nothing here...</p>
 					{:else}
 						{#each $results as result (result)}
-							<a href="/profile/{result.username}">
-								<div
-									class="
-                                    flex items-center mb-2 p-2 rounded-md
-                                    hover:bg-gray-700
-                                    "
-								>
-									<img src={result.avatar} alt="avatar" class="w-10 h-10 rounded-full" />
-									<a href="/profile/{result.username}" class="ml-2">{result.username}</a>
-								</div>
-							</a>
+							<li
+								class="
+								flex items-center mb-2 p-2 rounded-md w-full
+								"
+							>
+								<AvatarImage username={result.username} />
+								<p class="ml-2">{result.username}</p>
+
+               					<RelationshipButton username={user.username} friendship={result.friendship} other_user={result.username} />
+							</li>
 						{/each}
 					{/if}
 				</ol>

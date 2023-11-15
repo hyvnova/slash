@@ -1,44 +1,29 @@
-<script>
+<script lang="ts">
 
 	import Contacts from '$lib/components/Contacts.svelte';
+	import PendingRequests from '$lib/components/PendingRequests.svelte';
+	import { writable } from 'svelte/store';
+	import type { LayoutServerData } from './$types';
+	import { ws } from '$lib/websocket';
 
-	let contacts = [
-		{
-			username: 'johndoe',
-			avatar: '/default_avatars/1.jpg',
-			status: 'online'
-		},
-		{
-			username: 'max',
-			avatar: '/default_avatars/2.jpg',
-			status: 'offline'
-		},
-		{
-			username: 'longassusername',
-			avatar: '/default_avatars/3.jpg',
-			status: 'online'
-		},
-		{
-			username: 'short',
-			avatar: '/default_avatars/4.jpg',
-			status: 'offline'
-		},
-		{
-			username: 'typical_username',
-			avatar: '/default_avatars/1.jpg',
-			status: 'online'
-		}
-	];
+	export let data: LayoutServerData;
 
+	let requests = writable(data.user.pending_requests);
+
+	// Handling friend requests
+	ws.on('new friend request', requester_username => {
+		requests.update(requests => [requester_username, ...requests]);
+	})
+	ws.on('cancel friend request', requester_username => {
+		requests.update(requests => requests.filter(username => username !== requester_username));
+	})
 </script>
 
 <main class="w-screen">
-	<!-- Contacts
-    A horizontal carousel of contacts
-    Each contact is a minimalist card with a name, avatar, and status
--->
-
 	<nav class="container flex justify-center items-center">
-        <Contacts contacts={contacts} />
+		{#if $requests.length > 0}
+			<PendingRequests username={data.user.username} {requests}/>
+		{/if}
+        <Contacts user={data.user}/>
 	</nav>
 </main>

@@ -1,4 +1,5 @@
-import { find_matching, get_by } from "$lib/server/db";
+import { find_matching, get_by, get_from } from "$lib/server/db";
+import { FriendshipStatusType, type UserType } from "$lib/types";
 import { json, type RequestHandler } from "@sveltejs/kit";
 
 /**
@@ -10,49 +11,71 @@ function similars(target: string, items: string[]) {
     return items.filter(item => item.includes(target));
 }
 
+
 type ExpectedParams = {
-    query: string, // Search query (username, email)
+    query: string, // Search query 
+    user: UserType // User's data
 }
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
+/**
+ * Searches for users that match the query
+ * @param {string} query Search query (username, email)
+ * @param {UserType} user 
+ */
+export const POST: RequestHandler = async ({ request }) => {
     let data: ExpectedParams = await request.json();
 
-    let { query } = data;
+    let { query, user } = data;
 
-    // Check if all parameters are present
-    if (!query) {
-        return json({
-            error: "Missing parameters. Required parameters: query: string"
-        }, { status: 400 })
+    // No query, no results
+    if (!query || !user) { 
+        return json([]); 
     }
-
-
-    // Get the token from the cookies
-    const token = cookies.get("token")
-
-    // If the token is not present, return to / (home)
-    if (!token) {
-        return json({
-            error: "You are not logged in."
-        }, { status: 400 })
-    }
-
-    // Get the user data from the token
-    const user = await get_by(token);
 
     // Search for users
-    // filter results, only allow similar usernames if are user friends
-    let results = (await find_matching(query, ["username", "avatar"])).filter(result => {
+    // Filter results, only allow similar usernames if they are user friends
+    let results = (
+        await find_matching<{ 
+            username: string, 
+            avatar: string, 
+            friends: string[],
+            requests: string[]
+        }>
+        (query, ["username", "avatar", "friends", "requests"])
+    )
+    .filter(result => {
         // Skip if the result is the user itself
         if (result.username === user.username) return false;
 
-        // If query match or if user friends 
-        return result.username == query || similars(query, user.friends).includes(result.username as string);
+        // If the query matches or if the user is friends
+        return result.username == query || similars(query, user.friends).includes(result.username);
+    })
+    .map(async result => {
+        let requests: string[] = await get_from(result.username, "pending_requests") || [];
+        let redejected: string[] = await get_from(result.username, "rejected_requests") || [];
+        let friendship: FriendshipStatusType = FriendshipStatusType.NONE;
+
+        // If the user is friends
+        if (user.friends.includes(result.username)) {
+            friendship = FriendshipStatusType.FRIENDS;
+        }
+
+        // If user has sent a friend request
+        if (requests.includes(user.username)) {
+            friendship = FriendshipStatusType.REQUESTED;
+        }
+
+        // If user request has been rejected
+        if (redejected.includes(user.username)) {
+            friendship = FriendshipStatusType.REJECTED;
+        }
+
+        return {
+            username: result.username,
+            avatar: result.avatar,
+            friendship
+        };
     });
 
-    return json({
-        success: true,
-        results: results ?? []
-    }, { status: 200 })
-
+    return json(results);
 };

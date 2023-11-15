@@ -1,38 +1,41 @@
 <script lang="ts">
 	import Fa from 'svelte-fa';
 	import { faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons';
-	import { writable } from 'svelte/store';
+	import { writable, type Writable } from 'svelte/store';
 	import SearchModal from './SearchModal.svelte';
+	import type { UserType } from '$lib/types';
+	import AvatarImage from './AvatarImage.svelte';
+	import { ws } from '$lib/websocket';
 
 	let searching = writable(false);
 
-	export let contacts: {
-		username: string;
-		avatar: string;
-		status: string;
-	}[];
+	export let user: UserType;
+	let contacts: Writable<string[]> = writable(user.friends);
+
+
+	// Handling friendships: accepted friend requests and unfriending
+    ws.on('accept friend request', other => {
+		contacts.update(contacts => [other, ...contacts]);
+	})
+	ws.on('unfriend', other => {
+		contacts.update(contacts => contacts.filter(contact => contact !== other));
+	})
+
 </script>
 
+<SearchModal modal_open={searching} {user} />
 
-	<SearchModal modal_open={searching} />
-
-
-<div class="mt-4 flex justify-normal items-center p-2 w-auto overflow-auto">
+<div class="mt-4 flex justify-normal items-center p-2 w-auto overflow-y-hidden overflow-x-auto">
 	<button class="border-none p-1 mx-1 grow-rotate w-auto" on:click={() => searching.set(true)}>
 		<Fa icon={faMagnifyingGlass} class="text-2xl text-#888 mr-2 hover:text-white" />
 	</button>
 
-	{#each contacts as contact}
+	{#each $contacts as contact}
 		<div
-			class="flex items-center px-1 border rounded-md border-lightgray mx-1 select-none transition:border"
+			class="flex items-center border rounded-md border-lightgray mx-1 p-1 select-none transition:border"
 		>
-			<div class="w-8 rounded-full bg-#F50057 flex justify-center items-center mr-2">
-				<img src={contact.avatar} alt="Avatar" class="w-auto rounded-full" />
-			</div>
-			<div>
-				<h4 class="m-0 font-normal text-gray-200">{contact.username}</h4>
-				<p class="m-0 text-#888">{contact.status}</p>
-			</div>
+			<AvatarImage username={contact} />
+			<h4 class="m-2 font-normal text-gray-200">{contact}</h4>
 		</div>
 	{/each}
 </div>

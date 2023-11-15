@@ -4,6 +4,24 @@ import type { UserType } from "$lib/types";
 
 
 /**
+ * Check if a user exists
+ * @param identifier - The token, username, or email to search for
+ * @returns True if the user exists, otherwise false
+ */
+export async function exists(identifier: string): Promise<boolean> {
+    return await with_db(async db => {
+        const collection = db.collection<UserType>("users");
+        const user_data = await collection.findOne<UserType>({
+            $or: [
+                { token: identifier },
+                { username: identifier },
+            ]
+        });
+        return user_data !== null;
+    });
+}
+
+/**
  * Add a user to the database
  * @param data - The user data to add
  */
@@ -14,6 +32,9 @@ export async function add_user(data: Partial<UserType>) {
         data.token = randomUUID();
         data.verified = false;
         data.friends = [];
+        data.chats = [];
+        data.pending_requests = [];
+        data.rejected_requests = [];
 
         // Assign a default avatar 
         data.avatar ||= `/default_avatars/${Math.floor(Math.random() * 4) + 1}.jpg`;
@@ -43,13 +64,14 @@ export async function find_by(fields: Partial<UserType>): Promise<UserType | nul
  * @param fields - The fields to return
  * @returns An array of user data matching the query and fields
  */
-export async function find_matching(query: string, fields: (keyof UserType)[]): Promise<Partial<UserType>[]> {
+export async function find_matching<T extends Partial<UserType>>(query: string, fields: (keyof T)[]): Promise<T[]> {
+
     const projection: any = {};
     fields.forEach(field => projection[field] = 1);
 
     return await with_db(async db => {
         const collection = db.collection<UserType>("users");
-        const user_data = await collection.find<Partial<UserType>>({
+        const user_data = await collection.find<T>({
             $or: [
                 { username: { $regex: query, $options: "i" } }
             ]
@@ -63,7 +85,7 @@ export async function find_matching(query: string, fields: (keyof UserType)[]): 
  * @param identifier - The token to search for
  * @returns The user data if found, otherwise null
  */
-export async function get_by(identifier: string): Promise<UserType> {
+export async function get_by(identifier: string): Promise<UserType | null> {
     return await with_db(async db => {
         const collection = db.collection("users");
         const user_data = await collection.findOne<UserType>({
@@ -72,7 +94,8 @@ export async function get_by(identifier: string): Promise<UserType> {
                 { username: identifier }
             ]
         });
-        return user_data as UserType;
+
+        return user_data;
     });
 }
 
@@ -83,9 +106,6 @@ export async function get_by(identifier: string): Promise<UserType> {
  * @returns The value of the specified field if found, otherwise null
  */
 export async function get_from<T = string>(identifier: string, field: keyof UserType): Promise<T | null> {
-    const projection: any = {};
-    projection[field] = 1;
-
     return await with_db(async db => {
         const collection = db.collection("users");
         const user_data = await collection.findOne<UserType>({
@@ -93,9 +113,9 @@ export async function get_from<T = string>(identifier: string, field: keyof User
                 { username: identifier },
                 { token: identifier }
             ]
-        }, { projection });
-
-        return user_data ? user_data[field] as T : null;
+        });
+        if (!user_data) { return null; }
+        return user_data[field] as T;
     });
 }
 
