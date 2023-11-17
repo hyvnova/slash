@@ -6,10 +6,11 @@ This file defines the general schema of how sockets work server-client
 When going online, offline
 This will be sent to all friends of the user.
 `StatysType: 'online' | 'offline'`
+When `user connect` event is emitted, the client will be considered either online or it's previous custom status.
 
 | Action      | Event Name           | Data                              |
 | ----------- | -------------------- | --------------------------------- |
-| online      | status               | status: StatusType, friends: string[]|
+| set         | set status           | status: string, friends: string[] |
 
 
 ## Friend requests

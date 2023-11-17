@@ -1,9 +1,15 @@
 import { MongoClient, ServerApiVersion, type Db } from 'mongodb';
 import "dotenv/config";
 
+try {
+    process.env.DEV = import.meta.env.DEV ? "true" : "false";
+} catch (e) {
+    process.env.DEV = "true";
+}
+
 // Database URI and name
 const DB_URI = process.env.DB_URI;
-const DB_NAME = import.meta.env.DEV ? "dev" : "prod";
+const DB_NAME = process.env.DB_NAME ? "dev" : "prod";
 
 if (!DB_URI) {
     throw new Error("Database URI is not set");
