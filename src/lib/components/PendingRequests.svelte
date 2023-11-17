@@ -5,12 +5,22 @@
 	import { FriendshipStatusType } from '$lib/types';
 	import { update_friendship } from '$lib/api_shortcuts';
 	import AvatarImage from './AvatarImage.svelte';
-
+	import { onMount } from 'svelte';
 
 	export let requests: Writable<string[]>;
+	export let friends: Writable<string[]>;
 	export let username: string;
 
 	let modal_open = writable(false);
+
+	// When "esc" is pressed close the search modal
+	onMount(() => {
+		window.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape') {
+				modal_open.set(false);
+			}
+		});
+	});
 </script>
 
 {#if $modal_open}
@@ -29,37 +39,43 @@
 		>
 			<ol class="w-full">
 				{#each $requests as requester}
+				<button
+					class="border-none bg-none w-full p-1"
+				>
 					<li
-						class="
-								flex items-center mb-2 p-2 rounded-md w-full
+						class="h-full
+								hover-blick
+								flex items-center p-2 rounded-md w-full
+								 hover:bg-gray-700
 								"
 					>
 						<AvatarImage username={requester} />
 						<p class="ml-2 text-lg">{requester}</p>
 
-                        <!-- Accept -->
+						<!-- Accept -->
 						<button
-                            class="ml-auto p-1 mx-2 w-auto border-green-500 rounded-md hover:bg-green-600"
-                            on:click={() => {
-                                update_friendship(username, requester, FriendshipStatusType.FRIENDS);
-                                requests.update(() => $requests.filter((request) => request != requester));
-                            }}
-                        >
-                            <Fa icon={faCheck} class="text-2xl text-white" />
-                        </button>
-                        
-                        <!-- Reject -->
-                        <button
-                            class="p-1 mx-2 w-auto border-red-500 rounded-md hover:bg-red-600"
-                            on:click={() => {
-                                update_friendship(username, requester, FriendshipStatusType.REJECTED);
-                                requests.update(() => $requests.filter((request) => request != requester));
-                            }}
-                        >
-                            <Fa icon={faTimes} class="text-2xl text-white" />
-                        </button>
+							class="ml-auto p-1 mx-2 w-auto border-green-500 rounded-md hover:bg-green-600 hover:text-white"
+							on:click={() => {
+								update_friendship(username, requester, FriendshipStatusType.FRIENDS);
+								requests.update(() => $requests.filter((request) => request != requester));
+								friends.update((friends) => [requester, ...friends]);
+							}}
+						>
+							<Fa icon={faCheck} class="text-2xl" />
+						</button>
 
+						<!-- Reject -->
+						<button
+							class="p-1 mx-2 w-auto border-red-500 rounded-md hover:bg-red-600 hover:text-white"
+							on:click={() => {
+								update_friendship(username, requester, FriendshipStatusType.REJECTED);
+								requests.update(() => $requests.filter((request) => request != requester));
+							}}
+						>
+							<Fa icon={faTimes} class="text-2xl" />
+						</button>
 					</li>
+					</button>
 				{/each}
 			</ol>
 		</div>
@@ -87,6 +103,20 @@
 		}
 		100% {
 			filter: brightness(0.5);
+		}
+	}
+	.hover-blick:hover {
+		animation: soft-blink 3s infinite;
+	}
+	@keyframes soft-blink {
+		0% {
+			opacity: 0.7;
+		}
+		50% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0.75;
 		}
 	}
 </style>

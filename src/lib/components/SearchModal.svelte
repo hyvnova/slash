@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { faTimes } from '@fortawesome/free-solid-svg-icons';
+	import { faMagnifyingGlass, faTimes } from '@fortawesome/free-solid-svg-icons';
 	import { onMount } from 'svelte';
 	import Fa from 'svelte-fa';
 	import { writable, type Writable } from 'svelte/store';
@@ -34,10 +34,14 @@
 				modal_open.set(false);
 			}
 		});
-
-		make_search();
 	});
 </script>
+
+
+<button class="border-none p-1 mx-1 grow-rotate w-auto" on:click={() => modal_open.set(true)}>
+	<Fa icon={faMagnifyingGlass} class="text-2xl text-#888 mr-2 hover:text-white" />
+</button>
+
 {#if $modal_open}
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div class="fixed inset-0 z-10 overflow-auto bg-black bg-opacity-40">
@@ -90,3 +94,24 @@
 		</div>
 	</div>
 {/if}
+
+
+
+<style>
+	.grow-rotate {
+		animation: grow 0.5s ease-in-out, rotate 3s ease-in-out infinite forwards;
+		animation-delay: 4s;
+	}
+
+	@keyframes grow {
+		50% {
+			transform: scale(1.2);
+		}
+	}
+
+	@keyframes rotate {
+		50% {
+			transform: rotate(65deg);
+		}
+	}
+</style>

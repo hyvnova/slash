@@ -29,6 +29,11 @@ export async function add_user(data: Partial<UserType>) {
     return await with_db(async db => {
         const collection = db.collection<UserType>("users");
 
+        // If the user already exists, throw an error
+        if (await exists(data.username as string)) {
+            return;
+        }
+
         data.token = randomUUID();
         data.verified = false;
         data.friends = [];
