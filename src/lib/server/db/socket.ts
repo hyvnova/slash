@@ -14,6 +14,44 @@ await with_db(async db => {
     await collection.createIndex({ username: 1 }, { unique: true });
 });
 
+/**
+ * Create a user online record
+ * @param username 
+ * @returns 
+ */
+export async function create_user_online(username: string) {
+    return await with_db(async db => {
+        const collection = db.collection("online");
+
+        await collection.insertOne({
+            username,
+            socket_id: "",
+            status: null
+        });
+    });
+}
+
+/**
+ * Check if record exists
+ * @param username
+ * @returns boolean
+ */
+export async function exists(username: string): Promise<boolean> {
+    return await with_db(async db => {
+        const collection = db.collection<OnlineType>("online");
+
+        const user = await collection.findOne({
+            username
+        }, {
+            projection: {
+                username: 1
+            }
+        });
+
+        return user !== null;
+    });
+}
+
 
 /**
  * Get the status of a user
@@ -23,6 +61,11 @@ await with_db(async db => {
 export async function get_status(username: string): Promise<string | null> {
     return await with_db(async db => {
         const collection = db.collection<OnlineType>("online");
+
+        // If the user doesn't exist, create a record for them
+        if (!await exists(username)) {
+            await create_user_online(username);
+        }
 
         const user = await collection.findOne({
             username
@@ -45,7 +88,7 @@ export async function get_status(username: string): Promise<string | null> {
  */
 export async function connect(socket_id: string, username: string) {
     return await with_db(async db => {
-        const collection = db.collection("users");
+        const collection = db.collection("online");
 
         let status = await get_status(username);
 
@@ -68,7 +111,7 @@ export async function connect(socket_id: string, username: string) {
  */
 export async function disconnect(socket_id: string) {
     return await with_db(async db => {
-        const collection = db.collection("users");
+        const collection = db.collection("online");
 
         // Update the user
         await collection.updateOne({

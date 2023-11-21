@@ -1,4 +1,4 @@
-import client from 'socket.io-client';
-const ENDPOINT = 'http://localhost:3000/';
+import { get } from "svelte/store";
+import { socket } from "./stores/websocket";
 
-export const ws = client(ENDPOINT);
+export const ws = get(socket);

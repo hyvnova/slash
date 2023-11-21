@@ -1,4 +1,5 @@
-import { get_from, update_user } from "$lib/server/db";
+import { get_from, set_user } from "$lib/server/db";
+import { create_chat } from "$lib/server/db/chat";
 import { FriendshipStatusType } from "$lib/types";
 import type { RequestHandler } from "@sveltejs/kit";
 
@@ -29,13 +30,13 @@ export const POST: RequestHandler = async ({ request }) => {
 
         // Cancel the request
         if (other_requests.includes(user)) {
-            update_user(other, { pending_requests: other_requests.filter(request => request !== user) });
+            set_user(other, { pending_requests: other_requests.filter(request => request !== user) });
         }
         // Unfriend
         else {
             if (!rejected.includes(other)) { rejected.push(other); }
-            update_user(user, { friends: friends.filter(friend => friend !== other), rejected_requests: rejected});
-            update_user(other, { friends: other_friends.filter(friend => friend !== user) });
+            set_user(user, { friends: friends.filter(friend => friend !== other), rejected_requests: rejected});
+            set_user(other, { friends: other_friends.filter(friend => friend !== user) });
         }
 
         return new Response(null, { status: 200 });
@@ -45,7 +46,7 @@ export const POST: RequestHandler = async ({ request }) => {
         let requests = await get_from<string[]>(other, "pending_requests") || [];
 
         if (!requests.includes(user)) {
-            update_user(other, { pending_requests: [...requests, user] });
+            set_user(other, { pending_requests: [...requests, user] });
         }
 
         return new Response(null, { status: 200 });
@@ -58,15 +59,18 @@ export const POST: RequestHandler = async ({ request }) => {
         let other_friends = await get_from<string[]>(other, "friends") || [];
 
         // Remove the request from the user's pending requests
-        update_user(user, { pending_requests: requests.filter(request => request !== other) });
+        set_user(user, { pending_requests: requests.filter(request => request !== other) });
 
         // Add the user to the other's friends
         if (!other_friends.includes(user)) {
-            update_user(other, { friends: [...other_friends, user] });
+            set_user(other, { friends: [...other_friends, user] });
         }
         if (!friends.includes(other)) {
-            update_user(user, { friends: [...friends, other] });
+            set_user(user, { friends: [...friends, other] });
         }
+
+        // Create a chat between the two users
+        await create_chat([user, other]);
 
         return new Response(null, { status: 200 });
     }
@@ -76,11 +80,11 @@ export const POST: RequestHandler = async ({ request }) => {
         let rejected = await get_from<string[]>(user, "rejected_requests") || [];
 
         // Remove the request from the user's pending requests
-        update_user(user, { pending_requests: requests.filter(request => request !== other) });
+        set_user(user, { pending_requests: requests.filter(request => request !== other) });
 
         // Add the user to the other's friends
         if (!rejected.includes(other)) {
-            update_user(user, { rejected_requests: [...rejected, other] });
+            set_user(user, { rejected_requests: [...rejected, other] });
         }
 
         return new Response(null, { status: 200 });

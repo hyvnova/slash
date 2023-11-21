@@ -1,16 +1,15 @@
 import { Server, type ServerOptions } from 'socket.io';
-import { connect, disconnect, get_username, is_online } from '../src/lib/server/db/socket';
+import { connect, disconnect, get_username, is_online } from './db/socket';
 
 export default function injectSocketIO(server: Partial<ServerOptions> | undefined) {
     const io = new Server(server);
 
     io.on('connection', (socket) => {
-        socket.on('user connect', (username: string) => {
-            socket.join(username);
-            
-            connect(socket.id, username);
 
-            console.debug(username, 'connected');
+        socket.on('user connect', async (username: string) => {
+            socket.join(username);
+            await connect(socket.id, username);
+            console.debug('connected', username);
         });
 
         socket.on('disconnect', async () => {

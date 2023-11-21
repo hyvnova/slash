@@ -16,7 +16,7 @@ export async function exists(identifier: string): Promise<boolean> {
                 { token: identifier },
                 { username: identifier },
             ]
-        }, { projection: { _id: 1 }} ) ;
+        }, { projection: { _id: 1 } });
         return user_data !== null;
     });
 }
@@ -110,7 +110,7 @@ export async function get_from<T = string>(identifier: string, field: keyof User
                 { username: identifier },
                 { token: identifier }
             ]
-        }, {projection});
+        }, { projection });
 
         if (!user_data) { return null; }
         return user_data[field] as T ?? null;
@@ -118,11 +118,11 @@ export async function get_from<T = string>(identifier: string, field: keyof User
 }
 
 /**
- * Update a user in the database
+ * Set specific fields on a user by token, username
  * @param identifier - The token, username, of the user to update
  * @param data - The updated user data
  */
-export async function update_user(identifier: string, data: Partial<UserType>) {
+export async function set_user(identifier: string, data: Partial<UserType>) {
     return await with_db(async db => {
 
         const collection = db.collection("users");
@@ -136,6 +136,27 @@ export async function update_user(identifier: string, data: Partial<UserType>) {
         }, {
             $set: data
         });
+
+    });
+}
+
+/**
+ * Update a user by token, username
+ * @param identifier - The token, username, of the user to query
+ * @param query - The query to update  (mongodb update query Ex. { $push: { friends: "username" } })
+ */
+export async function update_user(identifier: string, query: Record<string, any>) {
+    return await with_db(async db => {
+
+        const collection = db.collection("users");
+
+        // Update the user
+        await collection.updateOne({
+            $or: [
+                { token: identifier },
+                { username: identifier }
+            ]
+        }, query);
 
     });
 }

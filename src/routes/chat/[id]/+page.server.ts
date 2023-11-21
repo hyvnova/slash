@@ -1,10 +1,11 @@
+import { get_chat } from "$lib/server/db/chat";
 import { redirect } from "@sveltejs/kit";
-import type { LayoutServerLoad } from "./$types";
+import type { PageServerLoad } from "./$types";
 import { get_by } from "$lib/server/db";
-import type { UserType } from "$lib/types";
 
 
-export const load: LayoutServerLoad = async ({ cookies }) => {
+export const load: PageServerLoad = async ({ params, cookies }) => {
+    
     // Get the token from the cookies
     const token = cookies.get("token")
 
@@ -19,18 +20,14 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
         cookies.delete("token", { path: "/", secure: process.env.NODE_ENV === "production" }); throw redirect(302, "/")
     }
 
+    const chat = await get_chat(params.id);
 
-    // Otherwise, return the user data
-    return {
-        user: {
-            username: user.username,
-            avatar: user.avatar,
-            friends: user.friends,
-            pending_requests: user.pending_requests,
-            chats: user.chats,
-            verified: user.verified
-        } as UserType
-
+    // If the chat is not found or user is not included in it, return to /me user page
+    if (!chat || !chat.users.includes(user.username)) {
+        throw redirect(302, "/me")
     }
 
+    return {
+        chat
+    }
 }

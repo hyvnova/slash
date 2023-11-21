@@ -1,5 +1,5 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { add_user, get_from, update_user } from '$lib/server/db';
+import { add_user, get_from, set_user, update_user } from '$lib/server/db';
 import type { UserType } from '$lib/types';
 
 export const GET: RequestHandler = async ({request}) => {
@@ -31,12 +31,7 @@ export const GET: RequestHandler = async ({request}) => {
         created.push(data as UserType)
     }
 
-    let pendingRequests = await get_from<string[]>('nova', "pending_requests");
-    let updatedPendingRequests = pendingRequests ? [...pendingRequests, ...names] : names;
-
-    await update_user('manuel', {
-        pending_requests: updatedPendingRequests
-    });
+    await update_user('nova', { $push: { pending_requests: { $each: names } } })
     return json(created)
 };
 

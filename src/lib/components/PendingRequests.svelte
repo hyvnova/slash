@@ -6,6 +6,7 @@
 	import { update_friendship } from '$lib/api_shortcuts';
 	import AvatarImage from './AvatarImage.svelte';
 	import { onMount } from 'svelte';
+	import { ws } from '$lib/websocket';
 
 	export let requests: Writable<string[]>;
 	export let friends: Writable<string[]>;
@@ -37,10 +38,13 @@
 		<div
 			class="flex flex-col items-center bg-gray-800 m-auto mt-24 p-2 rounded-md border border-gray-700 w-4/5"
 		>
+			<h3 class="text-xl text-gray-100 mb-2">Pending requests</h3>
+
 			<ol class="w-full">
 				{#each $requests as requester}
 				<button
 					class="border-none bg-none w-full p-1"
+					title="Friend request from {requester}"
 				>
 					<li
 						class="h-full
@@ -53,12 +57,14 @@
 						<p class="ml-2 text-lg">{requester}</p>
 
 						<!-- Accept -->
+						<div class="flex flex-grow items-center justify-end">
 						<button
-							class="ml-auto p-1 mx-2 w-auto border-green-500 rounded-md hover:bg-green-600 hover:text-white"
+							class="mr-2 h-max w-auto p-1 border-green-500 rounded-sm hover:bg-green-600 border-r-0 hover:text-white"
 							on:click={() => {
 								update_friendship(username, requester, FriendshipStatusType.FRIENDS);
 								requests.update(() => $requests.filter((request) => request != requester));
 								friends.update((friends) => [requester, ...friends]);
+								ws.emit("accept freind request", requester);
 							}}
 						>
 							<Fa icon={faCheck} class="text-2xl" />
@@ -66,14 +72,16 @@
 
 						<!-- Reject -->
 						<button
-							class="p-1 mx-2 w-auto border-red-500 rounded-md hover:bg-red-600 hover:text-white"
+							class="w-auto h-max p-1 border-red-500 rounded-sm hover:bg-red-600 border-l-0 hover:text-white"
 							on:click={() => {
 								update_friendship(username, requester, FriendshipStatusType.REJECTED);
 								requests.update(() => $requests.filter((request) => request != requester));
+								ws.emit("reject freind request", requester);
 							}}
 						>
 							<Fa icon={faTimes} class="text-2xl" />
 						</button>
+						</div>
 					</li>
 					</button>
 				{/each}
@@ -83,6 +91,7 @@
 {:else}
 	<button
 		class="bright border-none p-1 mx-1 grow-rotate w-auto"
+		title="Pending requests"
 		on:click={() => modal_open.set(true)}
 	>
 		<Fa icon={faUserPlus} class="text-2xl" />

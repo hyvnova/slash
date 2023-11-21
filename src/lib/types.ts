@@ -9,12 +9,15 @@ export type UserType = {
     friends: string[]; // Usernames
     pending_requests: string[]; // Usernames - Pending friend requests 
     rejected_requests: string[]; // Usernames - Rejected friend requests
-    chats: string[]; // Chat ids
+    chats: {
+        id: string;
+        members: string[]; // Usernames
+    }[]; // Chat ids
 }
 
 export type AttachmentType = {
     id: string;
-    url: string;
+    url: string; // A way to point to attachments, contains: sender, chat, filename
     type: string; // image, video, audio, file
 }
 
@@ -30,7 +33,7 @@ export type ChatType = {
     id: string;
     users: string[]; // Usernames
     messages: string[]; // Message ids
-    head: MessageType[]; // Last 10 messages
+    head: MessageType | null; // Last message
     attachments: string[]; // Attachment ids
 }
 
