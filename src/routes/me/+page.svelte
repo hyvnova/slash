@@ -8,6 +8,7 @@
 	import PendingRequests from '$lib/components/PendingRequests.svelte';
 	import { faCog } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
+	import BottomBar from '$lib/components/BottomBar.svelte';
 
 	export let data: LayoutServerData;
 
@@ -42,7 +43,6 @@
 		});
 	});
 
-
 	function get_chat_id(other: string) {
 		return user.chats.find((chat) => chat.members.includes(other))?.id;
 	}
@@ -52,13 +52,17 @@
 	<nav class="mt-2 flex justify-between items-center w-full p-2 border-b border-gray-700">
 		{#if $requests.length > 0}
 			<PendingRequests username={user.username} {requests} {friends} />
-		{/if}
+		{/if} 
 
-		<SearchModal modal_open={searching} {user} />
+		<SearchModal
+			modal_open={searching}
+			{user}
+			remove_friend={(username) => {
+				friends.update((contacts) => contacts.filter((contact) => contact !== username));
+			}}
+		/>
 
-		<a href="/me/settings" class="rotate text-gray-400 hover:text-gray-100"
-			title="Settings"
-		>
+		<a href="/me/settings" class="rotate text-gray-400 hover:text-gray-100" title="Settings">
 			<Fa icon={faCog} class="text-2xl" />
 		</a>
 	</nav>
@@ -68,10 +72,7 @@
 	>
 		{#each $friends as friend}
 			<!-- svelte-ignore a11y-missing-attribute -->
-			<a
-				class="w-full"
-				href="/chat/{get_chat_id(friend)}"
-			>		
+			<a class="w-full" href="/chat/{get_chat_id(friend)}">
 				<div
 					class="flex items-center justify-start rounded-md p-2 my-1
 					transition-colors
@@ -91,6 +92,8 @@
 		{/if}
 	</div>
 </div>
+
+<BottomBar username={data.user.username} verified={data.user.verified} />
 
 <style>
 	.rotate {

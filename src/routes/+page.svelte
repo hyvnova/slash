@@ -72,7 +72,7 @@
 					class="hover:border-blue-700"
 					type="text"
 					title="username"
-					placeholder="cool_username78"
+					placeholder="some_username78"
 					minlength="1"
 					maxlength="16"
 					required
@@ -81,7 +81,7 @@
 					autocomplete="username"
 					bind:value={username}
 					on:keydown={goto_next_sibling}
-					pattern="[a-zA-Z0-9_]+"
+					pattern="[a-z0-9_]+"
 				/>
 
 				<input

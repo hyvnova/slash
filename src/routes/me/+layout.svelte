@@ -1,5 +1,4 @@
 <script lang="ts">
-	import BottomBar from "$lib/components/BottomBar.svelte";
 	import { onMount } from "svelte";
 	import type { LayoutServerData } from "./$types";
 	import { ws } from "$lib/websocket";
@@ -22,5 +21,4 @@
 	<slot />
 </main>
 
-<BottomBar username={data.user.username} verified={data.user.verified}/>
 	

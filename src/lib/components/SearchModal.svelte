@@ -5,8 +5,8 @@
 	import { writable, type Writable } from 'svelte/store';
 	import { search_users } from '$lib/api_shortcuts';
 	import RelationshipButton from './RelationshipButton.svelte';
-	import type { UserSearchResult, UserType } from '$lib/types';
 	import AvatarImage from './AvatarImage.svelte';
+	import type { UserSearchResult, UserType } from '$lib/types';
 
 	enum StateType {
 		idle,
@@ -15,6 +15,7 @@
 
 	export let modal_open: Writable<boolean>;
 	export let user: UserType; // For whom the search is being made
+	export let remove_friend: (username: string) => void;
 
 	let query = '';
 	let results: Writable<UserSearchResult[]> = writable([]);
@@ -37,8 +38,9 @@
 	});
 </script>
 
-
-<button class="border-none p-1 mx-1 grow-rotate w-auto" on:click={() => modal_open.set(true)}
+<button
+	class="border-none p-1 mx-1 grow-rotate w-auto"
+	on:click={() => modal_open.set(true)}
 	title="Search for users"
 >
 	<Fa icon={faMagnifyingGlass} class="text-2xl text-#888 mr-2 hover:text-white" />
@@ -79,21 +81,26 @@
 						<p class="text-gray-400">Nothing here...</p>
 					{:else}
 						{#each $results as result (result)}
-						<button
-							title="Search result: {result.username}"
-							class="w-full border-none bg-none p-1"
-						>
-							<li
-								class="
+							<button
+								title="Search result: {result.username}"
+								class="w-full border-none bg-none p-1"
+							>
+								<li
+									class="
 								flex items-center mb-2 p-2 rounded-md w-full
 								"
-							>
-								<AvatarImage username={result.username}/>
-								<p class="ml-2">{result.username}</p>
+								>
+									<AvatarImage username={result.username} />
+									<p class="ml-2">{result.username}</p>
 
-               					<RelationshipButton username={user.username} friendship={result.friendship} other_user={result.username} />
-							</li>
-						</button>
+									<RelationshipButton
+										username={user.username}
+										friendship={result.friendship}
+										other_user={result.username}
+										{remove_friend}
+									/>
+								</li>
+							</button>
 						{/each}
 					{/if}
 				</ol>
@@ -101,8 +108,6 @@
 		</div>
 	</div>
 {/if}
-
-
 
 <style>
 	.grow-rotate {

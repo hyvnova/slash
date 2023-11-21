@@ -7,6 +7,7 @@
     export let username: string;
     export let friendship: Writable<FriendshipStatusType>;
     export let other_user: string;
+    export let remove_friend: (username: string) => void;
 
     let is_button_hovered = false;
 
@@ -63,8 +64,8 @@
                 other_user,
                 FriendshipStatusType.NONE
             );
-
             ws.emit('unfriend', other_user);
+            remove_friend(other_user);
         }}
         on:mouseenter={() => is_button_hovered = true}
         on:mouseleave={() => is_button_hovered = false}
