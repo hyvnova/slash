@@ -1,5 +1,28 @@
 import type { Writable } from "svelte/store";
 
+/**
+ * Socket events.
+ * Read `/server/sockets.md` for more info.
+ * @enum {string}
+ * @readonly
+ * Used to avoid typos and to have a single source of truth
+ */
+export const enum Events {
+    // General
+    connect = "user connect",
+
+    // Friend Requests / Friendships
+    new_friend_request = "new friend request",
+    cancel_friend_request = "cancel friend request",
+    accept_friend_request = "accept friend request",
+    reject_friend_request = "reject friend request",
+    unfriend = "unfriend",
+
+    // Status
+    set_status = "set status",
+    status = "status",
+}
+
 export type UserType = {
     username: string; //Works as an id
     password: string; // Hashed password
@@ -46,11 +69,15 @@ export type NotificationType = Writable<{
 
 
 
+/**
+ * Represents the relationship between two users
+ */
 export enum FriendshipStatusType {
-    NONE = "none",
-    FRIENDS = "friends",
-    REQUESTED = "requested",
-    REJECTED = "rejected"
+    NONE = "none", // both sideas; default state
+    FRIENDS = "friends", // both sides; after accepting a friend request
+    REQUESTED = "requested", // both sides; after sending a friend request
+    REJECTED = "rejected",  // for rejecter's side; after rejecting a friend request
+    WAS_REJECTED = "was_rejected" // for rejected side; after rejecting a friend request
 }
 
 export type UserSearchResult = {

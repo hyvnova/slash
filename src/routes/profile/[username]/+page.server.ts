@@ -51,7 +51,7 @@ export const load: PageServerLoad = async ({ cookies, params, url }) => {
 }
 
 export const actions = {
-    update_username: async ({ request, cookies }) => {
+    update_username: async ({ request, cookies, url }) => {
         let new_username = (await request.formData()).get("username") as string;
 
         // Validate username
@@ -66,10 +66,10 @@ export const actions = {
             $set: { username: new_username }
         });
 
-        throw redirect(302, "/profile/" + new_username)
+        throw redirect(302, url.toString())
     },
 
-    update_avatar: async ({ request, cookies }) => {
+    update_avatar: async ({ request, cookies, url }) => {
         let new_avatar = (await request.formData()).get("avatar") as string;
 
         // Validate avatar
@@ -91,6 +91,6 @@ export const actions = {
             $set: { avatar: new_avatar }
         });
 
-        throw redirect(302, "/profile/" + cookies.get("username"))
+        throw redirect(302, url.toString())
     }
 } as Actions;

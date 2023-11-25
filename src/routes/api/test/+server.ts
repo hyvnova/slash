@@ -1,8 +1,8 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { add_user, get_from, set_user, update_user } from '$lib/server/db';
+import { add_user, update_user } from '$lib/server/db';
 import type { UserType } from '$lib/types';
 
-export const GET: RequestHandler = async ({request}) => {
+export const GET: RequestHandler = async ({}) => {
     // Number of users to create = 10
 
     // hardcode some user names here 

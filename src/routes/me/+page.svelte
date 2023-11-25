@@ -9,6 +9,7 @@
 	import { faCog } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import BottomBar from '$lib/components/BottomBar.svelte';
+	import { Events } from '$lib/types';
 
 	export let data: LayoutServerData;
 
@@ -27,18 +28,18 @@
 		};
 
 		// Handling friend requests
-		ws.on('new friend request', (requester_username) => {
+		ws.on(Events.new_friend_request, (requester_username) => {
 			requests.update((requests) => [requester_username, ...requests]);
 		});
-		ws.on('cancel friend request', (requester_username) => {
+		ws.on(Events.cancel_friend_request, (requester_username) => {
 			requests.update((requests) => requests.filter((username) => username !== requester_username));
 		});
 
 		// Handling friendships: accepted friend requests and unfriending
-		ws.on('accept friend request', (other) => {
+		ws.on(Events.accept_friend_request, (other) => {
 			friends.update((contacts) => [other, ...contacts]);
 		});
-		ws.on('unfriend', (other) => {
+		ws.on(Events.unfriend, (other) => {
 			friends.update((contacts) => contacts.filter((contact) => contact !== other));
 		});
 	});
@@ -52,7 +53,7 @@
 	<nav class="mt-2 flex justify-between items-center w-full p-2 border-b border-gray-700">
 		{#if $requests.length > 0}
 			<PendingRequests username={user.username} {requests} {friends} />
-		{/if} 
+		{/if}
 
 		<SearchModal
 			modal_open={searching}
@@ -68,19 +69,22 @@
 	</nav>
 
 	<div
-		class="rounded-sm w-full mt-4 flex flex-col justify-center items-start p-2 overflow-y-hidden overflow-x-auto"
+		class="rounded-sm w-full mt-4
+		flex flex-col justify-center
+		items-start p-2 overflow-y-hidden overflow-x-auto
+		"
 	>
 		{#each $friends as friend}
 			<!-- svelte-ignore a11y-missing-attribute -->
-			<a class="w-full" href="/chat/{get_chat_id(friend)}">
+			<a class="w-full p-1" href="/me/chat/{friend}">
 				<div
-					class="flex items-center justify-start rounded-md p-2 my-1
+					class="flex items-center justify-start rounded-md p-2
 					transition-colors
 					hover:bg-gray-700 cursor-pointer w-full
 				"
 				>
 					<AvatarImage username={friend} />
-					<h4 class="ml-4 font-normal text-gray-200">{friend}</h4>
+					<h4 class="ml-4 font-normal text-lg text-gray-200">{friend}</h4>
 				</div>
 			</a>
 		{/each}

@@ -44,5 +44,6 @@ export async function update_friendship(user: string, other: string, status: Fri
         },
         body: JSON.stringify({ user, other, status })
     })
+    console.log("update rel", user, other, status, res.status );
     return res.status === 200;
 }

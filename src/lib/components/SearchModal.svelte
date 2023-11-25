@@ -83,12 +83,12 @@
 						{#each $results as result (result)}
 							<button
 								title="Search result: {result.username}"
-								class="w-full border-none bg-none p-1"
+								class="w-full border-none hover:bg-gray-700 p-1 flex justify-center items-center"
 							>
 								<li
 									class="
-								flex items-center mb-2 p-2 rounded-md w-full
-								"
+    flex items-center justify-center mb-2 p-2 rounded-md w-full 
+    "
 								>
 									<AvatarImage username={result.username} />
 									<p class="ml-2">{result.username}</p>
