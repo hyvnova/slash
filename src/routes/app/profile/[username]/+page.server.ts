@@ -1,5 +1,5 @@
 import type { PageServerLoad, Actions } from "./$types"
-import { get_by, get_from, update_user } from "$lib/server/db"
+import { get_by, update_user } from "$lib/server/db"
 import { error, redirect } from "@sveltejs/kit";
 import { REGEX_IMAGE_URL, REGEX_USERNAME } from "$lib";
 
@@ -30,7 +30,7 @@ export const load: PageServerLoad = async ({ cookies, params, url }) => {
         }
         // If user is not found, then the token is invalid
         else {
-            throw redirect(302, "/join");
+            throw redirect(302, "/");
         }
     }
 

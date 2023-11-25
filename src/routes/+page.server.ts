@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
     // If user is already logged in, redirect to /me
     let token = cookies.get("token");
-    if (token && await exists(token)) { throw redirect(302, "/me"); }
+    if (token && await exists(token)) { throw redirect(302, "/app/me"); }
 
 }
 
@@ -56,6 +56,6 @@ export const actions = {
 
 
         // If everything is correct, then redirect to /me
-        throw redirect(302, "/me");
+        throw redirect(302, "/app/me");
     }
 } satisfies Actions;

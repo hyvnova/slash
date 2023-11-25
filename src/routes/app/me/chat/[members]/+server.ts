@@ -60,5 +60,5 @@ export const GET: RequestHandler = async ({ params, cookies }) => {
     }
 
     // Otherwise, redirect to the chat room
-    throw redirect(302, `/chat/${chat_id}`)
+    throw redirect(302, `/app/chat/${chat_id}`)
 }

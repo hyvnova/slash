@@ -1,5 +1,25 @@
 import type { Writable } from "svelte/store";
 
+
+
+const BASE = "/app"; /* Base route, where the app is hosted. Accessed after login. */
+
+/**
+ * Routes
+ * @enum {string}
+ * @readonly
+ * Used to avoid typos and to have a single source of truth
+ */
+export const enum Routes {
+    HOME = BASE + "/me",
+    SETTINGS = BASE + "/me/settings",
+    CHAT = BASE + "/chat", // Follwed /[chat_id]
+    CHAT_REDIRECT = BASE + "/me/chat", // Used to redirect to the chat page. Followed by /[meembers]
+    PROFILE = BASE + "/profile",
+}
+
+
+
 /**
  * Socket events.
  * Read `/server/sockets.md` for more info.
@@ -85,4 +105,5 @@ export type UserSearchResult = {
     avatar: string,
     friendship: Writable<FriendshipStatusType> 
 }
+
 

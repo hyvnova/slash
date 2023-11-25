@@ -3,7 +3,14 @@ import { connect, disconnect, get_username, is_online } from '../src/lib/server/
 import { Events } from '../src/lib/types';
 
 export default function injectSocketIO(server: Partial<ServerOptions> | undefined) {
-    const io = new Server(server);
+    const io = new Server({
+        cors: {
+            origin: '*',
+            methods: ['GET', 'POST'],
+        },
+        maxHttpBufferSize: 1e8, // 100 MB
+        ...server,
+    });
 
     io.on('connection', (socket) => {
         socket.on(Events.connect, (username: string) => {

@@ -9,7 +9,7 @@
 	import { faCog } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import BottomBar from '$lib/components/BottomBar.svelte';
-	import { Events } from '$lib/types';
+	import { Events, Routes } from '$lib/types';
 
 	export let data: LayoutServerData;
 
@@ -43,10 +43,6 @@
 			friends.update((contacts) => contacts.filter((contact) => contact !== other));
 		});
 	});
-
-	function get_chat_id(other: string) {
-		return user.chats.find((chat) => chat.members.includes(other))?.id;
-	}
 </script>
 
 <div class="container">
@@ -63,7 +59,7 @@
 			}}
 		/>
 
-		<a href="/me/settings" class="rotate text-gray-400 hover:text-gray-100" title="Settings">
+		<a href={Routes.SETTINGS} class="rotate text-gray-400 hover:text-gray-100" title="Settings">
 			<Fa icon={faCog} class="text-2xl" />
 		</a>
 	</nav>
@@ -76,7 +72,7 @@
 	>
 		{#each $friends as friend}
 			<!-- svelte-ignore a11y-missing-attribute -->
-			<a class="w-full p-1" href="/me/chat/{friend}">
+			<a class="w-full p-1" href="{Routes.CHAT_REDIRECT}/{friend}">
 				<div
 					class="flex items-center justify-start rounded-md p-2
 					transition-colors

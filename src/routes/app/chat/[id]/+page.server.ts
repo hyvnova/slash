@@ -24,7 +24,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 
     // If the chat is not found or user is not included in it, return to /me user page
     if (!chat || !chat.users.includes(user.username)) {
-        throw redirect(302, "/me")
+        throw redirect(302, "/app/me")
     }
 
     return {
