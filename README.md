@@ -1,38 +1,31 @@
-# create-svelte
+Here is an updated README.md draft with less focus on the technical details:
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+# slash
 
-## Creating a project
+A minimalist, fast, lightweight and anonymous chat application.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Key Features
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+- Minimalist interface - focus is on chat, not distracting extras
+- Lightning fast messages - powered by websockets for real-time communication
+- Anonymous profiles - no personal details required to chat
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+## Run Locally
 
-## Developing
+- Clone repo 
+- npm install
+- npm run dev
+- Visit http://localhost:3000
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Contributing
 
-```bash
-npm run dev
+Pull requests are welcome! I'd love help improving:  
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+- Security and anonymity features
+- Message persistence options
+- Accessibility
+- Additional themes
 
-## Building
+## License
 
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+This project is open source under the [MIT license](https://choosealicense.com/licenses/mit/).
