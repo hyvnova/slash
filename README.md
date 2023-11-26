@@ -11,7 +11,7 @@ A minimalist, fast, lightweight and anonymous chat application.
 - Anonymous profiles - no personal details required to chat
 
 ## Run Locally
-
+To run locally you will need an `.env` file containing a variable `BD_URI="mongodb connection uri"`
 - Clone repo 
 - npm install
 - npm run dev
