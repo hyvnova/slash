@@ -1,6 +1,12 @@
-import { Server, type ServerOptions } from 'socket.io';
+import { Server, Socket, type ServerOptions } from 'socket.io';
 import { connect, disconnect, get_username, is_online } from '../src/lib/server/db/socket';
-import { Events } from '../src/lib/types';
+import { Events, MessageType } from '../src/lib/types';
+import { DefaultEventsMap } from 'socket.io/dist/typed-events';
+
+// @ts-ignore
+function get_chat_id(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>): string {
+    return Array.from(socket.rooms)[1] as string;
+}
 
 export default function injectSocketIO(server: Partial<ServerOptions> | undefined) {
     const io = new Server({
@@ -15,7 +21,7 @@ export default function injectSocketIO(server: Partial<ServerOptions> | undefine
     io.on('connection', (socket) => {
         socket.on(Events.connect, (username: string) => {
             socket.join(username);
-            
+
             connect(socket.id, username);
 
             console.debug(username, 'connected');
@@ -25,6 +31,22 @@ export default function injectSocketIO(server: Partial<ServerOptions> | undefine
             console.debug('disconnected', await get_username(socket.id));
             await disconnect(socket.id);
         });
+
+        /** 
+         * Join Chat
+         */
+        socket.on(Events.join_chat, async (chat_id: string) => {
+            // Leave all other rooms
+            Object.keys(socket.rooms).forEach((room) => {
+                if (room !== socket.id) {
+                    socket.leave(room);
+                }
+            });
+            socket.join(chat_id);
+            console.debug(await get_username(socket.id), 'joined chat', chat_id);
+        });
+
+
 
         /**
          * Set Status
@@ -66,5 +88,20 @@ export default function injectSocketIO(server: Partial<ServerOptions> | undefine
             }
         });
 
+
+        /**
+         * Messages: send, delete, edit
+         */
+        socket.on(Events.new_message, async (message: Partial<MessageType>) => {
+            io.to(get_chat_id(socket)).emit(Events.new_message, message);
+        });
+
+        socket.on(Events.delete_message, async (message_id: string) => {
+            io.to(get_chat_id(socket)).emit(Events.delete_message, message_id);
+        });
+
+        socket.on(Events.edit_message, async (message: MessageType) => {
+            io.to(get_chat_id(socket)).emit(Events.edit_message, message);
+        });
     });
 }

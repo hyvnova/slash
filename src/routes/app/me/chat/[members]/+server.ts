@@ -6,6 +6,7 @@
  */
 
 import { get_by } from "$lib/server/db";
+import { Routes } from "$lib/types";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 
 
@@ -60,5 +61,5 @@ export const GET: RequestHandler = async ({ params, cookies }) => {
     }
 
     // Otherwise, redirect to the chat room
-    throw redirect(302, `/app/chat/${chat_id}`)
+    throw redirect(302, `${Routes.CHAT}/${chat_id}`)
 }

@@ -11,6 +11,61 @@
 	<meta:og description="A fast, light-weight and anonymous chat application." />
 	%sveltekit.head%
 </head>
+<style>
+	@font-face {
+		font-family: 'Ubuntu';
+		src: url('%sveltekit.assets%/fonts/Ubuntu/Ubuntu-Regular.ttf') format('truetype');
+		font-weight: normal;
+		font-style: normal;
+	}
+
+	@font-face {
+		font-family: 'Ubuntu';
+		src: url('%sveltekit.assets%/fonts/Ubuntu/Ubuntu-Bold.ttf') format('truetype');
+		font-weight: bold;
+		font-style: normal;
+	}
+
+	@font-face {
+		font-family: 'Ubuntu';
+		src: url('%sveltekit.assets%/fonts/Ubuntu/Ubuntu-Italic.ttf') format('truetype');
+		font-weight: normal;
+		font-style: italic;
+	}
+
+	@font-face {
+		font-family: 'Ubuntu';
+		src: url('%sveltekit.assets%/fonts/Ubuntu/Ubuntu-BoldItalic.ttf') format('truetype');
+		font-weight: bold;
+		font-style: italic;
+	}
+
+	@font-face {
+		font-family: 'Ubuntu';
+		src: url('%sveltekit.assets%/fonts/Ubuntu/Ubuntu-Light.ttf') format('truetype');
+		font-weight: 300;
+		font-style: normal;
+	}
+
+	@font-face {
+		font-family: 'Ubuntu';
+		src: url('%sveltekit.assets%/fonts/Ubuntu/Ubuntu-LightItalic.ttf') format('truetype');
+		font-weight: 300;
+		font-style: italic;
+	}
+
+	@font-face {
+		font-family: 'Noto Color Emoji';
+		src: url('%sveltekit.assets%/fonts/Noto_Color_Emoji/NotoColorEmoji-Regular.ttf') format('truetype');
+		font-weight: 500;
+		font-style: normal;
+		word-spacing: normal;
+	}
+
+	* {
+		font-family: 'Ubuntu', 'Noto Color Emoji',  sans-serif;
+	}
+</style>
 
 <body data-sveltekit-preload-data="hover" data-theme="dark">
 	<div style="display: contents" data-theme="dark">%sveltekit.body%</div>

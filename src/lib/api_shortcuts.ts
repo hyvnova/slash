@@ -1,4 +1,4 @@
-import type { FriendshipStatusType, UserSearchResult, UserType } from "$lib/types";
+import type { FriendshipStatusType, MessageType, UserSearchResult, UserType } from "$lib/types";
 import { writable } from "svelte/store";
 
 
@@ -45,5 +45,25 @@ export async function update_friendship(user: string, other: string, status: Fri
         body: JSON.stringify({ user, other, status })
     })
     console.log("update rel", user, other, status, res.status );
+    return res.status === 200;
+}
+
+/**
+ * Handles message events/actions
+ */
+export async function handle_message(params: {
+    action: "send" | "delete" | "edit",
+    chat_id: string,
+    message_id?: string,
+    message?: Partial<MessageType>,
+}) {
+    let res = await fetch("/api/message", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(params)
+    })
+
     return res.status === 200;
 }

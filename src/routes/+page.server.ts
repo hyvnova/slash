@@ -2,7 +2,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { get_by, get_from, add_user, exists,  } from "$lib/server/db";
 import { redirect } from "@sveltejs/kit";
 import bcrypt from 'bcrypt';
-import type { UserType } from "$lib/types";
+import { Routes, type UserType } from "$lib/types";
 import "dotenv/config";
 
 
@@ -10,7 +10,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 
     // If user is already logged in, redirect to /me
     let token = cookies.get("token");
-    if (token && await exists(token)) { throw redirect(302, "/app/me"); }
+    if (token && await exists(token)) { throw redirect(302, Routes.HOME); }
 
 }
 
@@ -56,6 +56,6 @@ export const actions = {
 
 
         // If everything is correct, then redirect to /me
-        throw redirect(302, "/app/me");
+        throw redirect(302, Routes.HOME);
     }
 } satisfies Actions;

@@ -1,6 +1,13 @@
 # How it works
 This file defines the general schema of how sockets work server-client
 
+## Connection
+When a user connects the server or joins a room...
+| Action      | Event Name            | Data                              |
+| ----------- | --------------------- | --------------------------------- |
+| connect     | user connect          | username: string                  |
+| join_room   | join room             | chat_id: string                   |
+
 
 ## Status
 When going online, offline
@@ -29,3 +36,12 @@ When a friendship is: created, deleted
 | ----------- | --------------------- | --------------------------------- |
 | create      | accept friend request | other_username   |
 | delete      | unfriend              | other_username   |
+
+
+## Messages
+When a message is: sent, read, deleted, edited
+| Action      | Event Name            | Data                              |
+| ----------- | --------------------- | --------------------------------- |
+| send        | new message          |  message: Partial<MessageType> |
+| delete      | delete message       | message_id: string             |
+| edit        | edit message         | message: MessageType                  |

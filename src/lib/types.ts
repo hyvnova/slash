@@ -30,6 +30,7 @@ export const enum Routes {
 export const enum Events {
     // General
     connect = "user connect",
+    join_chat = "join chat", // Payload: chat id
 
     // Friend Requests / Friendships
     new_friend_request = "new friend request",
@@ -41,6 +42,11 @@ export const enum Events {
     // Status
     set_status = "set status",
     status = "status",
+
+    // Messages
+    new_message = "new message",
+    delete_message = "delete message",
+    edit_message = "edit message",
 }
 
 export type UserType = {
@@ -68,15 +74,16 @@ export type MessageType = {
     id: string;
     author: string; // Username
     content: string;
-    timestamp: number;
+    timestamp: string; // Local time 
     attachments: AttachmentType[]; // URLs
+
 }
 
 export type ChatType = {
     id: string;
     users: string[]; // Usernames
-    messages: string[]; // Message ids
-    head: MessageType | null; // Last message
+    messages: MessageType[]; // Messages. When chat is requested, only the last 30 messages are sent
+    last_message: MessageType | null; // Last message
     attachments: string[]; // Attachment ids
 }
 
