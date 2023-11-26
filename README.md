@@ -1,5 +1,3 @@
-Here is an updated README.md draft with less focus on the technical details:
-
 # slash
 
 A minimalist, fast, lightweight and anonymous chat application.
