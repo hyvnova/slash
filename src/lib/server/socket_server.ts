@@ -1,10 +1,10 @@
-import { Server, type Socket, type ServerOptions } from 'socket.io';
+import { Server, type ServerOptions } from 'socket.io';
 import { connect, disconnect, get_username, is_online } from './db/socket';
 import { Events, type MessageType } from './../types';
 
 
 // @ts-ignore
-function get_chat_id(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>): string {
+function get_chat_id(socket): string {
     return Array.from(socket.rooms)[1] as string;
 }
 
@@ -18,13 +18,13 @@ export default function injectSocketIO(server: Partial<ServerOptions> | undefine
         ...server,
     });
 
+
     io.on('connection', (socket) => {
-        socket.on(Events.CONNECT, (username: string) => {
+
+        socket.on('user connect', async (username: string) => {
             socket.join(username);
-
-            connect(socket.id, username);
-
-            console.debug(username, 'connected');
+            await connect(socket.id, username);
+            console.debug('connected', username);
         });
 
         socket.on('disconnect', async () => {
@@ -32,30 +32,14 @@ export default function injectSocketIO(server: Partial<ServerOptions> | undefine
             await disconnect(socket.id);
         });
 
-        /** 
-         * Join Chat
-         */
-        socket.on(Events.JOIN_CHAT, async (chat_id: string) => {
-            console.debug("join_chat", chat_id)
-            console.debug(await get_username(socket.id), 'joined chat');
-
-            // Leave all other rooms
-            Object.keys(socket.rooms).forEach((room) => {
-                if (room !== socket.id) {
-                    socket.leave(room);
-                }
-            });
-            socket.join(chat_id);
-        });
-
         /**
          * Set Status
          */
-        socket.on(Events.SET_STATUS, async (status: string, friends: string[]) => {
+        socket.on('set status', async (status: string, friends: string[]) => {
             let username = await get_username(socket.id);
             friends.forEach(async (friend) => {
                 if (await is_online(friend)) {
-                    io.to(friend).emit(Events.STATUS, status, username);
+                    io.to(friend).emit('status', status, username);
                 }
             });
         });
@@ -64,43 +48,24 @@ export default function injectSocketIO(server: Partial<ServerOptions> | undefine
          * Friend Requests 
          * Used to update other's friend requests UI on the fly
          */
-        const friend_requests_states = [
-            Events.NEW_FRIEND_REQUEST,
-            Events.CANCEL_FRIEND_REQUEST,
-            Events.ACCEPT_FRIEND_REQUEST,
-            Events.REJECT_FRIEND_REQUEST,
-        ]
+        const friend_requests_states = ['new', 'cancel', 'accept', 'reject'];
         for (const state of friend_requests_states) {
-            socket.on(state, async (friend: string) => {
+            socket.on(`${state} friend request`, async (friend: string) => {
 
                 let username = await get_username(socket.id);
-                console.debug(state, friend, username);
+                console.debug(`${state} friend request`, friend, username);
 
                 if (await is_online(friend)) {
-                    io.to(friend).emit(state, username);
+                    io.to(friend).emit(`${state} friend request`, username);
                 }
             });
         }
 
-        socket.on(Events.UNFRIEND, async (friend: string) => {
+        socket.on('unfriend', async (friend: string) => {
             if (await is_online(friend)) {
-                io.to(friend).emit(Events.UNFRIEND, await get_username(socket.id));
+                io.to(friend).emit('unfriend', await get_username(socket.id));
             }
         });
 
-        /**
-         * Messages: send, delete, edit
-         */
-        socket.on(Events.NEW_MESSAGE, async (message: Partial<MessageType>) => {
-            io.to(get_chat_id(socket)).emit(Events.NEW_MESSAGE, message);
-        });
-
-        socket.on(Events.DELETE_MESSAGE, async (message_id: string) => {
-            io.to(get_chat_id(socket)).emit(Events.DELETE_MESSAGE, message_id);
-        });
-
-        socket.on(Events.EDIT_MESSAGE, async (message: MessageType) => {
-            io.to(get_chat_id(socket)).emit(Events.EDIT_MESSAGE, message);
-        });
     });
 }
