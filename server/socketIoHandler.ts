@@ -1,7 +1,6 @@
 import { Server, Socket, type ServerOptions } from 'socket.io';
 import { connect, disconnect, get_username, is_online } from '../src/lib/server/db/socket';
 import { Events, MessageType } from '../src/lib/types';
-import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 // @ts-ignore
 function get_chat_id(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>): string {
@@ -36,6 +35,9 @@ export default function injectSocketIO(server: Partial<ServerOptions> | undefine
          * Join Chat
          */
         socket.on(Events.join_chat, async (chat_id: string) => {
+            console.debug("join_chat", chat_id)
+            console.debug(await get_username(socket.id), 'joined chat');
+
             // Leave all other rooms
             Object.keys(socket.rooms).forEach((room) => {
                 if (room !== socket.id) {
@@ -43,7 +45,6 @@ export default function injectSocketIO(server: Partial<ServerOptions> | undefine
                 }
             });
             socket.join(chat_id);
-            console.debug(await get_username(socket.id), 'joined chat', chat_id);
         });
 
 

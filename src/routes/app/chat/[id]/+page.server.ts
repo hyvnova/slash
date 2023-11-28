@@ -2,8 +2,7 @@ import { get_chat } from "$lib/server/db/chat";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { get_by } from "$lib/server/db";
-import { Routes } from "$lib/types";
-
+import {  Routes } from "$lib/types";
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
     // Get the token from the cookies
@@ -37,6 +36,6 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
             chats: user.chats,
             verified: user.verified
         },
-        other: chat.users.find((u) => u !== user.username)
+        other: chat.users.find((u) => u !== user.username) as string
     }
 }

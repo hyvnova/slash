@@ -29,24 +29,24 @@ export const enum Routes {
  */
 export const enum Events {
     // General
-    connect = "user connect",
-    join_chat = "join chat", // Payload: chat id
+    CONNECT = "user connect", 
+    JOIN_CHAT = "join chat", 
 
     // Friend Requests / Friendships
-    new_friend_request = "new friend request",
-    cancel_friend_request = "cancel friend request",
-    accept_friend_request = "accept friend request",
-    reject_friend_request = "reject friend request",
-    unfriend = "unfriend",
+    NEW_FRIEND_REQUEST = "new friend request",
+    CANCEL_FRIEND_REQUEST = "cancel friend request",
+    ACCEPT_FRIEND_REQUEST = "accept friend request",
+    REJECT_FRIEND_REQUEST = "reject friend request",
+    UNFRIEND = "unfriend",
 
     // Status
-    set_status = "set status",
-    status = "status",
+    SET_STATUS = "set status",
+    STATUS = "status",
 
     // Messages
-    new_message = "new message",
-    delete_message = "delete message",
-    edit_message = "edit message",
+    NEW_MESSAGE = "new message",
+    DELETE_MESSAGE = "delete message",
+    EDIT_MESSAGE = "edit message",
 }
 
 export type UserType = {

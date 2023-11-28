@@ -16,12 +16,12 @@
 
 	// Handling friend requests status change
 	onMount(() => {
-		ws.on(Events.accept_friend_request, (other) => {
+		ws.on(Events.ACCEPT_FRIEND_REQUEST, (other) => {
 			if (other === other_user) {
 				friendship.set(FriendshipStatusType.FRIENDS);
 			}
 		});
-		ws.on(Events.reject_friend_request, (other) => {
+		ws.on(Events.REJECT_FRIEND_REQUEST, (other) => {
 			if (other === other_user) {
 				friendship.set(FriendshipStatusType.REJECTED);
 			}
@@ -36,7 +36,7 @@
 		on:click={async () => {
 			friendship.set(FriendshipStatusType.REQUESTED);
 			await update_friendship(username, other_user, FriendshipStatusType.REQUESTED);
-			ws.emit(Events.new_friend_request, other_user);
+			ws.emit(Events.NEW_FRIEND_REQUEST, other_user);
 		}}
 		>Add
 
@@ -56,7 +56,7 @@
 			friendship.set(FriendshipStatusType.NONE);
 			await update_friendship(username, other_user, FriendshipStatusType.NONE);
 
-			ws.emit(Events.cancel_friend_request, other_user);
+			ws.emit(Events.CANCEL_FRIEND_REQUEST, other_user);
 		}}>Cancel</button
 	>
 
@@ -69,7 +69,7 @@
 		on:click={async () => {
 			friendship.set(FriendshipStatusType.NONE);
 			await update_friendship(username, other_user, FriendshipStatusType.NONE);
-			ws.emit(Events.unfriend, other_user);
+			ws.emit(Events.UNFRIEND, other_user);
 			remove_friend(other_user);
 		}}
 		on:mouseenter={() => (is_button_hovered = true)}

@@ -28,18 +28,18 @@
 		};
 
 		// Handling friend requests
-		ws.on(Events.new_friend_request, (requester_username) => {
+		ws.on(Events.NEW_FRIEND_REQUEST, (requester_username) => {
 			requests.update((requests) => [requester_username, ...requests]);
 		});
-		ws.on(Events.cancel_friend_request, (requester_username) => {
+		ws.on(Events.CANCEL_FRIEND_REQUEST, (requester_username) => {
 			requests.update((requests) => requests.filter((username) => username !== requester_username));
 		});
 
 		// Handling friendships: accepted friend requests and unfriending
-		ws.on(Events.accept_friend_request, (other) => {
+		ws.on(Events.ACCEPT_FRIEND_REQUEST, (other) => {
 			friends.update((contacts) => [other, ...contacts]);
 		});
-		ws.on(Events.unfriend, (other) => {
+		ws.on(Events.UNFRIEND, (other) => {
 			friends.update((contacts) => contacts.filter((contact) => contact !== other));
 		});
 	});

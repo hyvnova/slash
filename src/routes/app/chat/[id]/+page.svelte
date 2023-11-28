@@ -16,14 +16,15 @@
 	let message: string = '';
 
 	onMount(() => {
-		ws.emit(Events.join_chat, data.chat.id);
+		// Connect to the chat
+		ws.emit(Events.CONNECT, data.user.username);
+    	ws.emit(Events.JOIN_CHAT, data.chat.id);
 
-		ws.on(Events.new_message, (msg: MessageType) => {
+		ws.on(Events.NEW_MESSAGE, (msg: MessageType) => {
 			messages.update((old) => [...old, msg]);
 		});
 
-		ws.on(Events.edit_message, (msg: MessageType) => {
-			messages.update((old) => {
+		ws.on(Events.EDIT_MESSAGE, (msg: MessageType) => {JOIN_CHATges.update((old) => {
 				let index = old.findIndex((m) => m.id === msg.id);
 				if (index === -1) {
 					return old;
@@ -33,7 +34,7 @@
 			});
 		});
 
-		ws.on(Events.delete_message, (msg: MessageType) => {
+		ws.on(Events.DELETE_MESSAGE, (msg: MessageType) => {
 			messages.update((old) => {
 				let index = old.findIndex((m) => m.id === msg.id);
 				if (index === -1) {
@@ -62,7 +63,10 @@
 			message: msg
 		});
 
-		ws.emit('new message', msg);
+		ws.emit(Events.NEW_MESSAGE, msg);
+		messages.update((old) => [...old, msg as MessageType]);
+
+		message = '';
 	}
 </script>
 
@@ -103,17 +107,14 @@
 	<div class="bottom-bar flex items-center justify-center">
 		<div class="contanier rounded-lg w-full flex justify-center items-center max-w-2xl mx-auto">
 			<div class="w-10/12">
-				<input
-					type="text"
-					class="w-full text-gray-100 m-0"
-					placeholder="Type a message..."
-					bind:value={message}
-					on:keydown={async (e) => {
-						if (e.key === 'Enter') {
-							await send_message();
-						}
-					}}
-				/>
+				<form on:submit|preventDefault={send_message}>
+					<input
+						type="text"
+						class="w-full text-gray-100 m-0"
+						placeholder="Type a message..."
+						bind:value={message}
+					/>
+				</form>
 			</div>
 		</div>
 	</div>

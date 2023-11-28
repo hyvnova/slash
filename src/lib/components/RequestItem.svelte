@@ -31,7 +31,7 @@
 				on:click={async () => {
 					await update_friendship(username, requester, FriendshipStatusType.REJECTED);
 					remove_request(requester);
-					ws.emit(Events.reject_friend_request, requester);
+					ws.emit(Events.REJECT_FRIEND_REQUEST, requester);
 				}}
 				title="Reject request"
 			>
@@ -47,7 +47,7 @@
 					await update_friendship(username, requester, FriendshipStatusType.FRIENDS);
 					remove_request(requester);
 					add_friend(requester);
-					ws.emit(Events.accept_friend_request, requester);
+					ws.emit(Events.ACCEPT_FRIEND_REQUEST, requester);
 				}}
 				title="Accept request"
 			>
