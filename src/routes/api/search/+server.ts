@@ -1,4 +1,4 @@
-import { find_matching, get_by, get_from } from "$lib/server/db";
+import { find_matching, get_from } from "$lib/server/db/user";
 import { FriendshipStatusType, type UserType } from "$lib/types";
 import { json, type RequestHandler } from "@sveltejs/kit";
 

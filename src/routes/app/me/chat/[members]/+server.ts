@@ -5,7 +5,7 @@
  * @param Redirect to `/chat/[id]` if the chat exists. Otherwise, redirect to error page `/me/chat/+error.svelte`.
  */
 
-import { get_by } from "$lib/server/db";
+import { get_by } from "$lib/server/db/user";
 import { Routes } from "$lib/types";
 import { error, redirect, type RequestHandler } from "@sveltejs/kit";
 

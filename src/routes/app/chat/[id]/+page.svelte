@@ -8,23 +8,30 @@
 	import { writable } from 'svelte/store';
 	import { handle_message } from '$lib/api_shortcuts';
 	import { ws } from '$lib/websocket';
-	import { onMount } from 'svelte';
+	import { afterUpdate, onMount } from 'svelte';
+	import ChatContainer from '$lib/components/ChatContainer.svelte';
 
 	export let data: PageServerData;
 
 	let messages = writable(data.chat.messages);
 	let message: string = '';
 
+	export let container: HTMLElement;
+
+
 	onMount(() => {
+		container.scrollTop = container.scrollHeight;
+
 		// Connect to the chat
 		ws.emit(Events.CONNECT, data.user.username);
-    	ws.emit(Events.JOIN_CHAT, data.chat.id);
+		ws.emit(Events.JOIN_CHAT, data.chat.id);
 
 		ws.on(Events.NEW_MESSAGE, (msg: MessageType) => {
 			messages.update((old) => [...old, msg]);
 		});
 
-		ws.on(Events.EDIT_MESSAGE, (msg: MessageType) => {JOIN_CHATges.update((old) => {
+		ws.on(Events.EDIT_MESSAGE, (msg: MessageType) => {
+			messages.update((old) => {
 				let index = old.findIndex((m) => m.id === msg.id);
 				if (index === -1) {
 					return old;
@@ -50,12 +57,14 @@
 		if (!message) {
 			return;
 		}
-
+	
 		let msg: Partial<MessageType> = {
 			content: message,
 			author: data.user.username,
-			timestamp: Date.now().toLocaleString()
+			timestamp: (new Date()).toLocaleString()
 		};
+
+		message = '';
 
 		await handle_message({
 			action: 'send',
@@ -66,7 +75,6 @@
 		ws.emit(Events.NEW_MESSAGE, msg);
 		messages.update((old) => [...old, msg as MessageType]);
 
-		message = '';
 	}
 </script>
 
@@ -76,7 +84,10 @@
 	<meta name="keywords" content="slash, chat, slashchat, slash chat" />
 </svelte:head>
 
-<main class="w-screen max-w-2xl mx-auto">
+<main class="max-w-2xl mx-auto layout"
+	bind:this={container}
+>
+	
 	<!-- Top-->
 	<nav class="my-2 flex justify-between items-center w-full p-2 border-b border-gray-700">
 		<a href={Routes.HOME} class="ml-1 rotate text-gray-400 hover:text-gray-100">
@@ -97,35 +108,46 @@
 	</nav>
 
 	<!-- Chat container -->
-	<div class="flex flex-col max-h-full overflow-y-auto p-2 m-1">
-		{#each $messages as message}
-			<Message username={data.user.username} {message} />
-		{/each}
-	</div>
+	<ChatContainer
+		username={data.user.username}
+		{messages}
+	/>
+
 
 	<!-- Input-->
-	<div class="bottom-bar flex items-center justify-center">
-		<div class="contanier rounded-lg w-full flex justify-center items-center max-w-2xl mx-auto">
-			<div class="w-10/12">
-				<form on:submit|preventDefault={send_message}>
-					<input
-						type="text"
-						class="w-full text-gray-100 m-0"
-						placeholder="Type a message..."
-						bind:value={message}
-					/>
-				</form>
-			</div>
-		</div>
+	<div class="p-0 m-0 mt-2 max-w-2xl 
+		flex justify-center items-center
+		border-t
+		border-gray-600
+		pt-2
+		"
+	>
+			<form on:submit|preventDefault={send_message}
+				class="m-0 my-auto p-0 w-10/12"
+			>
+				<input
+					type="text"
+					alt="Message input"
+					autocomplete="off"
+					autocorrect="off"
+					autocapitalize="off"
+					spellcheck="false"
+					class="w-full text-gray-100 m-0"
+					placeholder="Type a message..."
+					bind:value={message}
+				/>
+			</form>
 	</div>
 </main>
 
 <style>
-	.bottom-bar {
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		width: 100%;
-		transition: transform 0.3s ease; /* Optional: Add a smooth transition effect */
+	.layout {
+		display: grid;
+		grid-template-columns: 1;
+		grid-template-rows: auto 1fr auto;
+		max-height: 100vh;
+		height: 100vh;
 	}
+	/* scroll to bottom */
+
 </style>

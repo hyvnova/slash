@@ -1,5 +1,5 @@
 import type { Actions, PageServerLoad } from "./$types";
-import { get_by, get_from, add_user, exists,  } from "$lib/server/db";
+import { get_by, get_from, add_user, exists,  } from "$lib/server/db/user";
 import { redirect } from "@sveltejs/kit";
 import bcrypt from 'bcrypt';
 import { Routes, type UserType } from "$lib/types";

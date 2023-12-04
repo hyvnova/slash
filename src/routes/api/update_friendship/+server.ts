@@ -1,4 +1,4 @@
-import { get_from, set_user, update_user } from "$lib/server/db";
+import { get_from, set_user, update_user } from "$lib/server/db/user";
 import { create_chat } from "$lib/server/db/chat";
 import { FriendshipStatusType } from "$lib/types";
 import type { RequestHandler } from "@sveltejs/kit";

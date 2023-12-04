@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 import type { LayoutServerLoad } from "./$types";
-import { get_by } from "$lib/server/db";
+import { get_by } from "$lib/server/db/user";
 import { Events, type UserType } from "$lib/types";
 import { ws } from "$lib/websocket";
 

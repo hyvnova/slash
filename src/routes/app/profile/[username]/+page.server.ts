@@ -1,5 +1,5 @@
 import type { PageServerLoad, Actions } from "./$types"
-import { get_by, update_user } from "$lib/server/db"
+import { get_by, update_user } from "$lib/server/db/user"
 import { error, redirect } from "@sveltejs/kit";
 import { REGEX_IMAGE_URL, REGEX_USERNAME } from "$lib";
 

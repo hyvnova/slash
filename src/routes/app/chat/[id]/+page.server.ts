@@ -1,7 +1,7 @@
 import { get_chat } from "$lib/server/db/chat";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import { get_by } from "$lib/server/db";
+import { get_by } from "$lib/server/db/user";
 import {  Routes } from "$lib/types";
 
 export const load: PageServerLoad = async ({ params, cookies }) => {

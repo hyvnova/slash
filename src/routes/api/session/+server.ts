@@ -1,4 +1,4 @@
-import { delete_user } from "$lib/server/db";
+import { delete_user } from "$lib/server/db/user";
 import { json, type RequestHandler } from "@sveltejs/kit";
 import "dotenv/config";
 
