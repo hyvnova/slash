@@ -6,7 +6,7 @@
  * If the user doesn't exist, returns a 404
  */
 
-import { exists, get_from } from "$lib/server/db";
+import { exists, get_from } from "$lib/server/db/user";
 import type { RequestHandler } from "@sveltejs/kit";
 
 export const GET: RequestHandler = async ({ url, params }) => {
