@@ -1,82 +1,86 @@
 <script lang="ts">
-	import { update_friendship } from "$lib/api_shortcuts";
-	import { FriendshipStatusType } from "$lib/types";
-	import { ws } from "$lib/websocket";
-	import type { Writable } from "svelte/store";
+	import { update_friendship } from '$lib/api_shortcuts';
+	import { Events, FriendshipStatusType } from '$lib/types';
+	import { ws } from '$lib/websocket';
+	import { faWarning } from '@fortawesome/free-solid-svg-icons';
+	import { onMount } from 'svelte';
+	import Fa from 'svelte-fa';
+	import type { Writable } from 'svelte/store';
 
-    export let username: string;
-    export let friendship: Writable<FriendshipStatusType>;
-    export let other_user: string;
-    export let remove_friend: (username: string) => void;
+	export let username: string;
+	export let friendship: Writable<FriendshipStatusType>;
+	export let other_user: string;
+	export let remove_friend: (username: string) => void;
 
-    let is_button_hovered = false;
+	let is_button_hovered = false;
 
-    // Handling friend requests
-    ws.on('accept friend request', other => {
-        if (other === other_user) {
-            friendship.set(FriendshipStatusType.FRIENDS);
-        }
-    })
-    ws.on('reject friend request', other => {
-        if (other === other_user) {
-            friendship.set(FriendshipStatusType.REJECTED);
-        }
-    })
-
+	// Handling friend requests status change
+	onMount(() => {
+		ws.on(Events.ACCEPT_FRIEND_REQUEST, (other) => {
+			if (other === other_user) {
+				friendship.set(FriendshipStatusType.FRIENDS);
+			}
+		});
+		ws.on(Events.REJECT_FRIEND_REQUEST, (other) => {
+			if (other === other_user) {
+				friendship.set(FriendshipStatusType.REJECTED);
+			}
+		});
+	});
 </script>
-{#if $friendship === FriendshipStatusType.NONE}
-    <button
-        class="ml-auto border-green-600 text-white rounded-lg py-1 px-4 w-auto float-right hover:bg-green-500"
-        on:click={() => {
-            friendship.set(FriendshipStatusType.REQUESTED);
-            update_friendship(
-                username,
-                other_user,
-                FriendshipStatusType.REQUESTED
-            );
 
-            ws.emit('new friend request', other_user);
-        }}>Add</button
-    >
+<!-- Send friend request -->
+{#if $friendship === FriendshipStatusType.NONE || $friendship === FriendshipStatusType.REJECTED}
+	<button
+		class="ml-auto border-green-600 text-white rounded-lg py-1 px-4 w-auto float-right hover:bg-green-500"
+		on:click={async () => {
+			friendship.set(FriendshipStatusType.REQUESTED);
+			await update_friendship(username, other_user, FriendshipStatusType.REQUESTED);
+			ws.emit(Events.NEW_FRIEND_REQUEST, other_user);
+		}}
+		>Add
+
+		<!-- If user has previously rejected -->
+		{#if $friendship === FriendshipStatusType.REJECTED}
+		<p title="You previously rejected this user" class="inline">
+			<Fa icon={faWarning} class="text-yellow-600 text-lg inline" />
+		</p>
+		{/if}
+	</button>
+
+<!-- Cancel friend request -->
 {:else if $friendship === FriendshipStatusType.REQUESTED}
-    <button
-        class="ml-auto border-white text-white rounded-lg py-1 px-4 w-auto float-right hover:bg-red-500"
-        on:click={() => {
-            friendship.set(FriendshipStatusType.NONE);
-            update_friendship(
-                username,
-                other_user,
-                FriendshipStatusType.NONE
-            );
+	<button
+		class="ml-auto border-white text-white rounded-lg py-1 px-4 w-auto float-right hover:bg-red-500"
+		on:click={async () => {
+			friendship.set(FriendshipStatusType.NONE);
+			await update_friendship(username, other_user, FriendshipStatusType.NONE);
 
-            ws.emit('cancel friend request', other_user);
-        }}>Cancel</button
-    >
+			ws.emit(Events.CANCEL_FRIEND_REQUEST, other_user);
+		}}>Cancel</button
+	>
+
+<!-- Unfriend -->
 {:else if $friendship === FriendshipStatusType.FRIENDS}
-    <button
-        class="ml-auto  text-white rounded-lg py-1 px-4 w-auto float-right border-white 
-        {is_button_hovered ? "bg-red-500" : "bg-blue-500"}
+	<button
+		class="ml-auto text-white rounded-lg py-1 px-4 w-auto float-right border-white
+        {is_button_hovered ? 'bg-red-500' : 'bg-blue-500'}
         "
-        on:click={() => {
-            friendship.set(FriendshipStatusType.NONE);
-            update_friendship(
-                username,
-                other_user,
-                FriendshipStatusType.NONE
-            );
-            ws.emit('unfriend', other_user);
-            remove_friend(other_user);
-        }}
-        on:mouseenter={() => is_button_hovered = true}
-        on:mouseleave={() => is_button_hovered = false}
-    >
-         {is_button_hovered ? "Unfriend" : "Friends"}
-    </button>
+		on:click={async () => {
+			friendship.set(FriendshipStatusType.NONE);
+			await update_friendship(username, other_user, FriendshipStatusType.NONE);
+			ws.emit(Events.UNFRIEND, other_user);
+			remove_friend(other_user);
+		}}
+		on:mouseenter={() => (is_button_hovered = true)}
+		on:mouseleave={() => (is_button_hovered = false)}
+	>
+		{is_button_hovered ? 'Unfriend' : 'Friends'}
+	</button>
 
-{:else if $friendship === FriendshipStatusType.REJECTED}
-    <p
-        class="ml-auto text-white rounded-lg py-1 px-4 w-auto float-right border-white bg-red-500"
-    >
-        Your request was rejected
-    </p>
+<!-- Request rejected -->
+{:else if $friendship === FriendshipStatusType.WAS_REJECTED}
+	<p class="ml-auto text-white rounded-lg py-1 px-4 w-auto float-right border-white bg-red-500">
+		Your request was rejected
+	</p>
 {/if}

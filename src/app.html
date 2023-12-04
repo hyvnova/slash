@@ -11,6 +11,64 @@
 	<meta:og description="A fast, light-weight and anonymous chat application." />
 	%sveltekit.head%
 </head>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Noto+Color+Emoji&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+	/* Writer */
+	@font-face {
+		font-family: 'Writer';
+		src: url('%sveltekit.assets%/fonts/Writer/Writer-Regular.ttf') format('truetype');
+		font-weight: 500;
+		font-style: normal;
+	}
+	@font-face {
+		font-family: 'Writer';
+		src: url('%sveltekit.assets%/fonts/Writer/Writer-Bold.ttf') format('truetype');
+		font-weight: bold;
+		font-style: normal;
+	}
+	@font-face {
+		font-family: 'Writer';
+		src: url('%sveltekit.assets%/fonts/Writer/Writer-Italic.ttf') format('truetype');
+		font-weight: 500;
+		font-style: italic;
+	}
+	@font-face {
+		font-family: 'Writer';
+		src: url('%sveltekit.assets%/fonts/Writer/Writer-BoldItalic.ttf') format('truetype');
+		font-weight: bold;
+		font-style: italic;
+	}
+	@font-face {
+		font-family: 'Writer';
+		src: url('%sveltekit.assets%/fonts/Writer/Writer-Light.ttf') format('truetype');
+		font-weight: 300;
+		font-style: normal;
+	}
+	@font-face {
+		font-family: 'Writer';
+		src: url('%sveltekit.assets%/fonts/Writer/Writer-LightItalic.ttf') format('truetype');
+		font-weight: 300;
+		font-style: italic;
+	}
+	@font-face {
+		font-family: 'Writer';
+		src: url('%sveltekit.assets%/fonts/Writer/Writer-Medium.ttf') format('truetype');
+		font-weight: 500;
+		font-style: normal;
+	}
+	@font-face {
+		font-family: 'Writer';
+		src: url('%sveltekit.assets%/fonts/Writer/Writer-MediumItalic.ttf') format('truetype');
+		font-weight: 500;
+		font-style: italic;
+	}
+
+
+	* {
+		font-family: 'Ubuntu', 'Noto Color Emoji', Arial, Helvetica, sans-serif;
+	}
+</style>
 
 <body data-sveltekit-preload-data="hover" data-theme="dark">
 	<div style="display: contents" data-theme="dark">%sveltekit.body%</div>

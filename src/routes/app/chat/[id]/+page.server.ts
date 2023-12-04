@@ -2,10 +2,9 @@ import { get_chat } from "$lib/server/db/chat";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { get_by } from "$lib/server/db";
-
+import {  Routes } from "$lib/types";
 
 export const load: PageServerLoad = async ({ params, cookies }) => {
-    
     // Get the token from the cookies
     const token = cookies.get("token")
 
@@ -24,10 +23,19 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 
     // If the chat is not found or user is not included in it, return to /me user page
     if (!chat || !chat.users.includes(user.username)) {
-        throw redirect(302, "/me")
+        throw redirect(302, Routes.HOME)
     }
 
     return {
-        chat
+        chat,
+        user: {
+            username: user.username,
+            avatar: user.avatar,
+            friends: user.friends,
+            pending_requests: user.pending_requests,
+            chats: user.chats,
+            verified: user.verified
+        },
+        other: chat.users.find((u) => u !== user.username) as string
     }
 }

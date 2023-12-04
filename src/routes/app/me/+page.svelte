@@ -9,6 +9,7 @@
 	import { faCog } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import BottomBar from '$lib/components/BottomBar.svelte';
+	import { Events, Routes } from '$lib/types';
 
 	export let data: LayoutServerData;
 
@@ -27,32 +28,28 @@
 		};
 
 		// Handling friend requests
-		ws.on('new friend request', (requester_username) => {
+		ws.on(Events.NEW_FRIEND_REQUEST, (requester_username) => {
 			requests.update((requests) => [requester_username, ...requests]);
 		});
-		ws.on('cancel friend request', (requester_username) => {
+		ws.on(Events.CANCEL_FRIEND_REQUEST, (requester_username) => {
 			requests.update((requests) => requests.filter((username) => username !== requester_username));
 		});
 
 		// Handling friendships: accepted friend requests and unfriending
-		ws.on('accept friend request', (other) => {
+		ws.on(Events.ACCEPT_FRIEND_REQUEST, (other) => {
 			friends.update((contacts) => [other, ...contacts]);
 		});
-		ws.on('unfriend', (other) => {
+		ws.on(Events.UNFRIEND, (other) => {
 			friends.update((contacts) => contacts.filter((contact) => contact !== other));
 		});
 	});
-
-	function get_chat_id(other: string) {
-		return user.chats.find((chat) => chat.members.includes(other))?.id;
-	}
 </script>
 
 <div class="container">
 	<nav class="mt-2 flex justify-between items-center w-full p-2 border-b border-gray-700">
 		{#if $requests.length > 0}
 			<PendingRequests username={user.username} {requests} {friends} />
-		{/if} 
+		{/if}
 
 		<SearchModal
 			modal_open={searching}
@@ -62,25 +59,28 @@
 			}}
 		/>
 
-		<a href="/me/settings" class="rotate text-gray-400 hover:text-gray-100" title="Settings">
+		<a href={Routes.SETTINGS} class="rotate text-gray-400 hover:text-gray-100" title="Settings">
 			<Fa icon={faCog} class="text-2xl" />
 		</a>
 	</nav>
 
 	<div
-		class="rounded-sm w-full mt-4 flex flex-col justify-center items-start p-2 overflow-y-hidden overflow-x-auto"
+		class="rounded-sm w-full mt-4
+		flex flex-col justify-center
+		items-start p-2 overflow-y-hidden overflow-x-auto
+		"
 	>
 		{#each $friends as friend}
 			<!-- svelte-ignore a11y-missing-attribute -->
-			<a class="w-full" href="/chat/{get_chat_id(friend)}">
+			<a class="w-full p-1" href="{Routes.CHAT_REDIRECT}/{friend}">
 				<div
-					class="flex items-center justify-start rounded-md p-2 my-1
+					class="flex items-center justify-start rounded-md p-2
 					transition-colors
 					hover:bg-gray-700 cursor-pointer w-full
 				"
 				>
 					<AvatarImage username={friend} />
-					<h4 class="ml-4 font-normal text-gray-200">{friend}</h4>
+					<h4 class="ml-4 font-normal text-lg text-gray-200">{friend}</h4>
 				</div>
 			</a>
 		{/each}

@@ -1,12 +1,9 @@
 <script lang="ts">
-	import { faCheck, faTimes, faUserPlus } from '@fortawesome/free-solid-svg-icons';
+	import { faTimes, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import { writable, type Writable } from 'svelte/store';
-	import { FriendshipStatusType } from '$lib/types';
-	import { update_friendship } from '$lib/api_shortcuts';
-	import AvatarImage from './AvatarImage.svelte';
+	import RequestItem from './RequestItem.svelte';
 	import { onMount } from 'svelte';
-	import { ws } from '$lib/websocket';
 
 	export let requests: Writable<string[]>;
 	export let friends: Writable<string[]>;
@@ -22,6 +19,14 @@
 			}
 		});
 	});
+
+	const remove_request = (username: string) => {
+		requests.update(() => $requests.filter((request) => request != username));
+	}
+
+	const add_friend = (username: string) => {
+		friends.update((friends) => [username, ...friends]);
+	}
 </script>
 
 {#if $modal_open}
@@ -36,54 +41,18 @@
 		</div>
 
 		<div
-			class="flex flex-col items-center bg-gray-800 m-auto mt-24 p-2 rounded-md border border-gray-700 w-4/5"
+			class="flex flex-col items-center bg-gray-800 m-auto mt-24 p-2 rounded-md border border-gray-700 w-4/5 max-w-screen-xl"
 		>
 			<h3 class="text-xl text-gray-100 mb-2">Pending requests</h3>
 
 			<ol class="w-full">
 				{#each $requests as requester}
-				<button
-					class="border-none bg-none w-full p-1"
-					title="Friend request from {requester}"
-				>
-					<li
-						class="h-full
-								hover-blick
-								flex items-center p-2 rounded-md w-full
-								 hover:bg-gray-700
-								"
-					>
-						<AvatarImage username={requester} />
-						<p class="ml-2 text-lg">{requester}</p>
-
-						<!-- Accept -->
-						<div class="flex flex-grow items-center justify-end">
-						<button
-							class="mr-2 h-max w-auto p-1 border-green-500 rounded-sm hover:bg-green-600 border-r-0 hover:text-white"
-							on:click={() => {
-								update_friendship(username, requester, FriendshipStatusType.FRIENDS);
-								requests.update(() => $requests.filter((request) => request != requester));
-								friends.update((friends) => [requester, ...friends]);
-								ws.emit("accept freind request", requester);
-							}}
-						>
-							<Fa icon={faCheck} class="text-2xl" />
-						</button>
-
-						<!-- Reject -->
-						<button
-							class="w-auto h-max p-1 border-red-500 rounded-sm hover:bg-red-600 border-l-0 hover:text-white"
-							on:click={() => {
-								update_friendship(username, requester, FriendshipStatusType.REJECTED);
-								requests.update(() => $requests.filter((request) => request != requester));
-								ws.emit("reject freind request", requester);
-							}}
-						>
-							<Fa icon={faTimes} class="text-2xl" />
-						</button>
-						</div>
-					</li>
-					</button>
+					<RequestItem 
+						{username}
+						{requester}
+						{remove_request}
+						{add_friend}
+					/>
 				{/each}
 			</ol>
 		</div>
@@ -112,20 +81,6 @@
 		}
 		100% {
 			filter: brightness(0.5);
-		}
-	}
-	.hover-blick:hover {
-		animation: soft-blink 3s infinite;
-	}
-	@keyframes soft-blink {
-		0% {
-			opacity: 0.7;
-		}
-		50% {
-			opacity: 1;
-		}
-		100% {
-			opacity: 0.75;
 		}
 	}
 </style>

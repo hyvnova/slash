@@ -3,6 +3,7 @@
 	import Fa from 'svelte-fa';
 	import AvatarImage from './AvatarImage.svelte';
 	import { faCertificate } from '@fortawesome/free-solid-svg-icons';
+	import { Routes } from '$lib/types';
 
 	export let username: string;
 	export let verified: boolean;
@@ -12,7 +13,7 @@
 	<div class="contanier w-8/12 p-2 rounded-lg bg-gray-800">
 		<div class="flex justify-between items-center">
 			<!-- Profile icon -->
-			<a href="/profile/{username}" class="rotate text-gray-400 hover:text-gray-100" title="Profile">
+			<a href="{Routes.PROFILE}/{username}" class="rotate text-gray-400 hover:text-gray-100" title="Profile">
 				<AvatarImage {username} />
 			</a>
 

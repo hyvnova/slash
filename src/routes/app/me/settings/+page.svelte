@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Routes } from "$lib/types";
 	import { faHome } from "@fortawesome/free-solid-svg-icons";
 	import Fa from "svelte-fa";
 
@@ -19,7 +20,7 @@
 
 <div class="container">
 	<nav class="mt-2 flex justify-between items-center w-full p-2 border-b border-gray-700">
-		<a href="/me/" class="rotate text-gray-400 hover:text-gray-100">
+		<a href={Routes.HOME} class="rotate text-gray-400 hover:text-gray-100">
 			<Fa icon={faHome} class="text-2xl" />
 		</a>
 	</nav>

@@ -1,4 +1,4 @@
-import { get_from, set_user } from "$lib/server/db";
+import { get_from, set_user, update_user } from "$lib/server/db";
 import { create_chat } from "$lib/server/db/chat";
 import { FriendshipStatusType } from "$lib/types";
 import type { RequestHandler } from "@sveltejs/kit";
@@ -24,29 +24,38 @@ export const POST: RequestHandler = async ({ request }) => {
     // @ts-ignore
     if (status === FriendshipStatusType.NONE) {
         let other_requests = await get_from<string[]>(other, "pending_requests") || [];
-        let friends = await get_from<string[]>(user, "friends") || [];
-        let other_friends = await get_from<string[]>(other, "friends") || [];
         let rejected = await get_from<string[]>(user, "rejected_requests") || [];
 
         // Cancel the request
         if (other_requests.includes(user)) {
-            set_user(other, { pending_requests: other_requests.filter(request => request !== user) });
+            update_user(other, { $pull: { pending_requests: user } });
         }
         // Unfriend
         else {
             if (!rejected.includes(other)) { rejected.push(other); }
-            set_user(user, { friends: friends.filter(friend => friend !== other), rejected_requests: rejected});
-            set_user(other, { friends: other_friends.filter(friend => friend !== user) });
+            update_user(user, { $pull: { friends: other, rejected_requests: other } });
+            update_user(other, { $pull: { friends: user } });
         }
 
         return new Response(null, { status: 200 });
 
     // When sending a request
     } else if (status === FriendshipStatusType.REQUESTED) {
-        let requests = await get_from<string[]>(other, "pending_requests") || [];
+        let rejected = await get_from<string[]>(user, "rejected_requests") || [];
+        let other_requests = await get_from<string[]>(other, "pending_requests") || [];
 
-        if (!requests.includes(user)) {
-            set_user(other, { pending_requests: [...requests, user] });
+
+        // If user previously rejected other remove it
+        if (rejected.includes(other)) {
+            update_user(user, {
+                $pull: { rejected_requests: other }
+            })
+        }
+
+        if (!other_requests.includes(user)) {
+            update_user(other, {
+                $push: { pending_request: user}
+            })
         }
 
         return new Response(null, { status: 200 });
@@ -54,19 +63,18 @@ export const POST: RequestHandler = async ({ request }) => {
 
     // When accepting a request
     else if (status === FriendshipStatusType.FRIENDS) {
-        let requests = await get_from<string[]>(user, "pending_requests") || [];
         let friends = await get_from<string[]>(user, "friends") || [];
         let other_friends = await get_from<string[]>(other, "friends") || [];
 
         // Remove the request from the user's pending requests
-        set_user(user, { pending_requests: requests.filter(request => request !== other) });
+        update_user(user, { $pull: { pending_requests: other } });
 
         // Add the user to the other's friends
         if (!other_friends.includes(user)) {
-            set_user(other, { friends: [...other_friends, user] });
+            update_user(other, { $push: { friends: user } });
         }
         if (!friends.includes(other)) {
-            set_user(user, { friends: [...friends, other] });
+            update_user(user, { $push: { friends: other } });
         }
 
         // Create a chat between the two users
@@ -74,17 +82,17 @@ export const POST: RequestHandler = async ({ request }) => {
 
         return new Response(null, { status: 200 });
     }
+
     // When rejecting a request
     else if (status === FriendshipStatusType.REJECTED) {
-        let requests = await get_from<string[]>(user, "pending_requests") || [];
         let rejected = await get_from<string[]>(user, "rejected_requests") || [];
 
         // Remove the request from the user's pending requests
-        set_user(user, { pending_requests: requests.filter(request => request !== other) });
+        update_user(user, { $pull: { pending_requests: other } });
 
         // Add the user to the other's friends
         if (!rejected.includes(other)) {
-            set_user(user, { rejected_requests: [...rejected, other] });
+            update_user(user, { $push: { rejected_requests: other } });
         }
 
         return new Response(null, { status: 200 });

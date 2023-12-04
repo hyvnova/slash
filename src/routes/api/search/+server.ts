@@ -51,8 +51,9 @@ export const POST: RequestHandler = async ({ request }) => {
         return result.username == query || similars(query, user.friends).includes(result.username);
     })
     .map(async result => {
-        let requests: string[] = await get_from(result.username, "pending_requests") || [];
-        let redejected: string[] = await get_from(result.username, "rejected_requests") || [];
+        let user_rejected: string[] = await get_from(result.username, "rejected_requests") || [];
+        let other_requests: string[] = await get_from(result.username, "pending_requests") || [];
+        let other_rejected: string[] = await get_from(result.username, "rejected_requests") || [];
         let friendship: FriendshipStatusType = FriendshipStatusType.NONE;
 
         // If the user is friends
@@ -61,12 +62,16 @@ export const POST: RequestHandler = async ({ request }) => {
         }
 
         // If user has sent a friend request
-        if (requests.includes(user.username)) {
+        if (other_requests.includes(user.username)) {
             friendship = FriendshipStatusType.REQUESTED;
         }
 
         // If user request has been rejected
-        if (redejected.includes(user.username)) {
+        if (other_rejected.includes(user.username)) {
+            friendship = FriendshipStatusType.WAS_REJECTED;
+        }
+        // If the user rejected the request
+        if (user_rejected.includes(result.username)) {
             friendship = FriendshipStatusType.REJECTED;
         }
 

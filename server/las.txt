@@ -1,23 +1,8 @@
 import { Server, type ServerOptions } from 'socket.io';
 import { connect, disconnect, get_username, is_online } from './db/socket';
-import { Events, type MessageType } from './../types';
-
-
-// @ts-ignore
-function get_chat_id(socket): string {
-    return Array.from(socket.rooms)[1] as string;
-}
 
 export default function injectSocketIO(server: Partial<ServerOptions> | undefined) {
-    const io = new Server({
-        cors: {
-            origin: '*',
-            methods: ['GET', 'POST'],
-        },
-        maxHttpBufferSize: 1e8, // 100 MB
-        ...server,
-    });
-
+    const io = new Server(server);
 
     io.on('connection', (socket) => {
 
