@@ -73,8 +73,6 @@
 		});
 
 		ws.emit(Events.NEW_MESSAGE, msg);
-		messages.update((old) => [...old, msg as MessageType]);
-
 	}
 </script>
 
@@ -148,6 +146,4 @@
 		max-height: 100vh;
 		height: 100vh;
 	}
-	/* scroll to bottom */
-
 </style>

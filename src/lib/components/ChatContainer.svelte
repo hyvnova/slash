@@ -7,9 +7,17 @@
 	export let messages: Writable<MessageType[]>;
 	export let username: string;
 	let container: HTMLDivElement;
+
+
+	function scroll_to_bottom() {
+		let margin = container.scrollHeight - container.clientHeight;
+		container.scrollTo(0, container.scrollHeight + margin);
+	}
+
 	afterUpdate(() => {
-		container.scrollTo(0, container.scrollHeight);
+		scroll_to_bottom();
 	});
+	
 </script>
 
 <div

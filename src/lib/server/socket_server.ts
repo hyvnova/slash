@@ -14,16 +14,12 @@ export default function injectSocketIO(server: ServerOptions) {
     const io = new Server(server);
 
     io.on('connection', (socket) => {
-        socket.on(Events.CONNECT, (username: string) => {
+        socket.on(Events.CONNECT, async (username: string) => {
             socket.join(username);
-
-            connect(socket.id, username);
-
-            console.debug(username, 'connected');
+            await connect(socket.id, username);
         });
 
         socket.on('disconnect', async () => {
-            console.debug('disconnected', await get_username(socket.id));
             await disconnect(socket.id);
         });
 
@@ -32,7 +28,8 @@ export default function injectSocketIO(server: ServerOptions) {
          */
         socket.on(Events.JOIN_CHAT, async (chat_id: string) => {
             console.debug("join_chat", chat_id)
-            console.debug(await get_username(socket.id), 'joined chat');
+            let username = await get_username(socket.id);
+            console.debug(username, 'joined chat');
 
             // Leave all other rooms
             Object.keys(socket.rooms).forEach((room) => {
