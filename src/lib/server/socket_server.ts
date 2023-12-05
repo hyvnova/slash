@@ -8,15 +8,10 @@ function get_chat_id(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultE
     return Array.from(socket.rooms)[1] as string;
 }
 
-export default function injectSocketIO(server: Partial<ServerOptions> | undefined) {
-    const io = new Server({
-        cors: {
-            origin: '*',
-            methods: ['GET', 'POST'],
-        },
-        maxHttpBufferSize: 1e8, // 100 MB
-        ...server,
-    });
+export default function injectSocketIO(server: ServerOptions) {
+    server.maxHttpBufferSize = 1e6 // 10MB 
+
+    const io = new Server(server);
 
     io.on('connection', (socket) => {
         socket.on(Events.CONNECT, (username: string) => {
