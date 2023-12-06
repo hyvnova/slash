@@ -8,6 +8,7 @@
 	import { BarLoader } from 'svelte-loading-spinners';
 
 	import { beforeNavigate, afterNavigate } from '$app/navigation';
+	import user_config from '$lib/stores/user_config';
 
 	let isLoading = false;
 
@@ -22,6 +23,7 @@
 
 	const transitionIn = { easing: cubicOut, y, duration, delay };
 	const transitionOut = { easing: cubicIn, y: -y, duration };
+
 </script>
 
 
@@ -31,6 +33,18 @@
 
 {#key data.pathname}
 	<div in:fly={transitionIn} out:fly={transitionOut}>
+
+		<div
+			style="font-family:{$user_config.font} !important;"
+		>
 		<slot />
+		</div>
 	</div>
 {/key}
+
+
+<style>
+	* {
+		font-family:'Noto Color Emoji', Arial, Helvetica, sans-serif;
+	}
+</style>
