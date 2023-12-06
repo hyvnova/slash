@@ -93,12 +93,7 @@
 	<ChatContainer username={data.user.username} {messages} />
 
 	<!-- Input-->
-	<div
-		class="p-0 m-0 mt-2 max-w-2xl flex justify-center items-center border-t
-		border-gray-600 pt-2"
-	>
 		<ChatInput username={data.user.username} chat_id={data.chat.id} />
-	</div>
 </main>
 
 <style>

@@ -22,7 +22,7 @@
 
 <div
 	class="flex flex-col overflow-y-auto
-    px-2 scroll-smooth
+    px-2 scroll-smooth transition-all duration-300
     "
 	bind:this={container}
 >

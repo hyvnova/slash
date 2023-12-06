@@ -2,6 +2,7 @@
 	import type { MessageType } from '$lib/types';
 	import { writable } from 'svelte/store';
 	import MessageMetadata from './MessageMetadata.svelte';
+	import SvelteMarkdown from 'svelte-markdown';
 
 	export let username: string;
 	export let message: MessageType;
@@ -9,12 +10,19 @@
 	const owned = username === message.author; // Person who sent the message -> perspective of massage bubble
 
 	let is_hovered = writable<boolean>(false);
+
+	/**
+	 * Mardown parser
+	 * Content inside ```md
+	 */
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-	class="{owned ? 'right' : 'left'} flex justify-center items-center"
+	class="{owned ? 'right' : 'left'} flex justify-center items-center
+			transition-all duration-300"
+
 	on:mouseenter={() => is_hovered.set(true)}
 	on:mouseleave={() => is_hovered.set(false)}
 >
@@ -27,10 +35,15 @@
 	<div
 		class="bubble flex flex-col items-start break-words rounded-xl p-2 mb-2 w-fit
     		border-gray-700 hover:bg-gray-800
+			transition-all duration-300
     		{owned ? 'owned' : ''}"
 	>
 		<div class="flex flex-col items-start">
-			<p class="text-gray-200 text-base">{message.content}</p>
+			<!-- <p class="text-gray-200 text-base">{message.content}</p> -->
+
+			<div class="text-gray-200 text-base">
+				<SvelteMarkdown source={message.content} />
+			</div>
 		</div>
 	</div>
 
