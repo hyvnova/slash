@@ -2,6 +2,14 @@ import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
 
+export const FONTS = [
+    'Ubuntu',
+    'Roboto',
+    'Open Sans',
+    'Writer',
+    'Fira Code',
+    'Fira Sans'
+]
 
 type UserConfig = {
     font: 'Ubuntu' | 'Roboto' | 'Open Sans' | 'Writer' | 'Fira Code' | 'Fira Sans',

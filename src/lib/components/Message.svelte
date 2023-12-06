@@ -2,7 +2,7 @@
 	import type { MessageType } from '$lib/types';
 	import { writable } from 'svelte/store';
 	import MessageMetadata from './MessageMetadata.svelte';
-	import SvelteMarkdown from 'svelte-markdown';
+	import Markdown from '@magidoc/plugin-svelte-marked';
 
 	export let username: string;
 	export let message: MessageType;
@@ -39,10 +39,8 @@
     		{owned ? 'owned' : ''}"
 	>
 		<div class="flex flex-col items-start">
-			<!-- <p class="text-gray-200 text-base">{message.content}</p> -->
-
 			<div class="text-gray-200 text-base">
-				<SvelteMarkdown source={message.content} />
+				<Markdown source={message.content} />
 			</div>
 		</div>
 	</div>

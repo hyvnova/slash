@@ -6,8 +6,6 @@
 	import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import { writable } from 'svelte/store';
-	import Notification from './Notification.svelte';
-	import notification from '$lib/stores/notification';
 
 	export let username: string;
 	export let chat_id: string;
@@ -57,13 +55,25 @@
 			autocorrect="off"
 			autocapitalize="off"
 			spellcheck="false"
-			class="w-full text-gray-100 h-fit max-h-full p-1"
+			class="w-full text-gray-100 h-fit max-h-full p-1 border-none outline-none resize-none bg-transparent"
 			placeholder="Type a message..."
 			bind:value={$message}
 			on:keydown={(e) => {
-				// Send message on enter | If shift is presssed, newline
-				if (e.key === 'Enter' && !e.shiftKey) {
+				// Send message on enter + (ctrl or shift)
+				if ($message && e.key === 'Enter' && (e.ctrlKey || e.shiftKey)) {
 					send_message();
+				}
+
+				// Silly thing - send empty message on ctrl + shift + down
+				if (e.key === 'ArrowDown' && (e.ctrlKey && e.shiftKey)) {
+					$message = "";
+					send_message();
+				}
+
+				// Tab to insert tab
+				if (e.key === 'Tab') {
+					e.preventDefault();
+					$message += "\t";
 				}
 			}}
 		/>
