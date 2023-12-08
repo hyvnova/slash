@@ -10,3 +10,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 TODO.txt
 /prototype
+
+.prettierrc
+.prettierignore
+.npmrc
