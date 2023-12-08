@@ -1,4 +1,4 @@
-import { with_db } from "./db";
+import { db } from "./db";
 
 type OnlineType = {
     username: string; // The username of the user - works as an id
@@ -9,10 +9,8 @@ type OnlineType = {
 /**
  * Create "online" collection if it doesn't exist
  */
-await with_db(async db => {
-    const collection = db.collection<OnlineType>("online");
-    await collection.createIndex({ username: 1 }, { unique: true });
-});
+const collection = db.collection<OnlineType>("online");
+await collection.createIndex({ username: 1 }, { unique: true });
 
 /**
  * Create a user online record
@@ -20,14 +18,12 @@ await with_db(async db => {
  * @returns 
  */
 export async function create_user_online(username: string) {
-    return await with_db(async db => {
-        const collection = db.collection("online");
+    const collection = db.collection("online");
 
-        await collection.insertOne({
-            username,
-            socket_id: "",
-            status: null
-        });
+    await collection.insertOne({
+        username,
+        socket_id: "",
+        status: null
     });
 }
 
@@ -37,19 +33,17 @@ export async function create_user_online(username: string) {
  * @returns boolean
  */
 export async function exists(username: string): Promise<boolean> {
-    return await with_db(async db => {
-        const collection = db.collection<OnlineType>("online");
+    const collection = db.collection<OnlineType>("online");
 
-        const user = await collection.findOne({
-            username
-        }, {
-            projection: {
-                username: 1
-            }
-        });
-
-        return user !== null;
+    const user = await collection.findOne({
+        username
+    }, {
+        projection: {
+            username: 1
+        }
     });
+
+    return user !== null;
 }
 
 
@@ -59,25 +53,23 @@ export async function exists(username: string): Promise<boolean> {
  * @returns The status of the user or null if the user doesn't exist
  */
 export async function get_status(username: string): Promise<string | null> {
-    return await with_db(async db => {
-        const collection = db.collection<OnlineType>("online");
+    const collection = db.collection<OnlineType>("online");
 
-        // If the user doesn't exist, create a record for them
-        if (!await exists(username)) {
-            await create_user_online(username);
+    // If the user doesn't exist, create a record for them
+    if (!await exists(username)) {
+        await create_user_online(username);
+    }
+
+    const user = await collection.findOne({
+        username
+    }, {
+        projection: {
+            status: 1
         }
 
-        const user = await collection.findOne({
-            username
-        }, {
-            projection: {
-                status: 1
-            }
-        
-        });
-
-        return user?.status ?? null;
     });
+
+    return user?.status ?? null;
 }
 
 
@@ -87,22 +79,20 @@ export async function get_status(username: string): Promise<string | null> {
  * @param username - The username of the user
  */
 export async function connect(socket_id: string, username: string) {
-    return await with_db(async db => {
-        const collection = db.collection("online");
+    const collection = db.collection("online");
 
-        let status = await get_status(username);
+    let status = await get_status(username);
 
-        // Update the user
-        await collection.updateOne({
-            username
-        }, {
-            $set: {
-                socket_id,
-                status: status ?? "online"
-            }
-        });
-
+    // Update the user
+    await collection.updateOne({
+        username
+    }, {
+        $set: {
+            socket_id,
+            status: status ?? "online"
+        }
     });
+
 }
 
 /**
@@ -110,41 +100,37 @@ export async function connect(socket_id: string, username: string) {
  * @param socket_id - The socket id of the user
  */
 export async function disconnect(socket_id: string) {
-    return await with_db(async db => {
-        const collection = db.collection("online");
+    const collection = db.collection("online");
 
-        // Update the user
-        await collection.updateOne({
-            socket_id
-        }, {
-            $set: {
-                socket_id: "",
-                status: null
-            }
-        });
-
+    // Update the user
+    await collection.updateOne({
+        socket_id
+    }, {
+        $set: {
+            socket_id: "",
+            status: null
+        }
     });
+
 }
 
 /**
  * Get the username of a user from their socket id
  * @param socket_id - The socket id of the user
  * @returns The username of the user or null if the user doesn't exist
-*/  
+*/
 export async function get_username(socket_id: string): Promise<string | null> {
-    return await with_db(async db => {
-        const collection = db.collection<OnlineType>("online");
+    const collection = db.collection<OnlineType>("online");
 
-        const user = await collection.findOne({
-            socket_id
-        }, {
-            projection: {
-                username: 1
-            }
-        });
-
-        return user?.username ?? null;
+    const user = await collection.findOne({
+        socket_id
+    }, {
+        projection: {
+            username: 1
+        }
     });
+
+    return user?.username ?? null;
 }
 
 /**
@@ -153,17 +139,15 @@ export async function get_username(socket_id: string): Promise<string | null> {
  * @returns True if the user is online, otherwise false
  */
 export async function is_online(username: string): Promise<boolean> {
-    return await with_db(async db => {
-        const collection = db.collection<OnlineType>("online");
+    const collection = db.collection<OnlineType>("online");
 
-        const user = await collection.findOne({
-            username
-        }, {
-            projection: {
-                status: 1
-            }
-        });
-
-        return user?.status !== null;
+    const user = await collection.findOne({
+        username
+    }, {
+        projection: {
+            status: 1
+        }
     });
+
+    return user?.status !== null;
 }

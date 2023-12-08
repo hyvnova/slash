@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { with_db } from "./db";
+import { db } from "./db";
 import type { UserType } from "$lib/types";
 
 
@@ -9,16 +9,14 @@ import type { UserType } from "$lib/types";
  * @returns True if the user exists, otherwise false
  */
 export async function exists(identifier: string): Promise<boolean> {
-    return await with_db(async db => {
-        const collection = db.collection<UserType>("users");
-        const user_data = await collection.findOne<UserType>({
-            $or: [
-                { token: identifier },
-                { username: identifier },
-            ]
-        }, { projection: { _id: 1 } });
-        return user_data !== null;
-    });
+    const collection = db.collection<UserType>("users");
+    const user_data = await collection.findOne<UserType>({
+        $or: [
+            { token: identifier },
+            { username: identifier },
+        ]
+    }, { projection: { _id: 1 } });
+    return user_data !== null;
 }
 
 /**
@@ -26,28 +24,26 @@ export async function exists(identifier: string): Promise<boolean> {
  * @param data - The user data to add
  */
 export async function add_user(data: Partial<UserType>) {
-    return await with_db(async db => {
-        const collection = db.collection<UserType>("users");
+    const collection = db.collection<UserType>("users");
 
-        // If the user already exists, throw an error
-        if (await exists(data.username as string)) {
-            return;
-        }
+    // If the user already exists, throw an error
+    if (await exists(data.username as string)) {
+        return;
+    }
 
-        data.token = randomUUID();
-        data.verified = false;
-        data.friends = [];
-        data.chats = [];
-        data.pending_requests = [];
-        data.rejected_requests = [];
+    data.token = randomUUID();
+    data.verified = false;
+    data.friends = [];
+    data.chats = [];
+    data.pending_requests = [];
+    data.rejected_requests = [];
 
-        // Assign a default avatar 
-        data.avatar ||= `/default_avatars/${Math.floor(Math.random() * 4) + 1}.jpg`;
+    // Assign a default avatar 
+    data.avatar ||= `/default_avatars/${Math.floor(Math.random() * 4) + 1}.jpg`;
 
-        await collection.insertOne(data as UserType);
+    await collection.insertOne(data as UserType);
 
-        return data.token;
-    });
+    return data.token;
 }
 
 
@@ -62,15 +58,13 @@ export async function find_matching<T extends Partial<UserType>>(query: string, 
     const projection: any = {};
     fields.forEach(field => projection[field] = 1);
 
-    return await with_db(async db => {
-        const collection = db.collection<UserType>("users");
-        const user_data = await collection.find<T>({
-            $or: [
-                { username: { $regex: query, $options: "i" } }
-            ]
-        }, { projection }).toArray();
-        return user_data ?? [];
-    });
+    const collection = db.collection<UserType>("users");
+    const user_data = await collection.find<T>({
+        $or: [
+            { username: { $regex: query, $options: "i" } }
+        ]
+    }, { projection }).toArray();
+    return user_data ?? [];
 }
 
 /**
@@ -79,17 +73,15 @@ export async function find_matching<T extends Partial<UserType>>(query: string, 
  * @returns The user data if found, otherwise null
  */
 export async function get_by(identifier: string): Promise<UserType | null> {
-    return await with_db(async db => {
-        const collection = db.collection("users");
-        const user_data = await collection.findOne<UserType>({
-            $or: [
-                { token: identifier },
-                { username: identifier }
-            ]
-        });
-
-        return user_data;
+    const collection = db.collection("users");
+    const user_data = await collection.findOne<UserType>({
+        $or: [
+            { token: identifier },
+            { username: identifier }
+        ]
     });
+
+    return user_data;
 }
 
 /**
@@ -103,18 +95,16 @@ export async function get_from<T = string>(identifier: string, field: keyof User
     // @ts-ignore
     projection[field] = 1;
 
-    return await with_db(async db => {
-        const collection = db.collection("users");
-        const user_data = await collection.findOne<UserType>({
-            $or: [
-                { username: identifier },
-                { token: identifier }
-            ]
-        }, { projection });
+    const collection = db.collection("users");
+    const user_data = await collection.findOne<UserType>({
+        $or: [
+            { username: identifier },
+            { token: identifier }
+        ]
+    }, { projection });
 
-        if (!user_data) { return null; }
-        return user_data[field] as T ?? null;
-    });
+    if (!user_data) { return null; }
+    return user_data[field] as T ?? null;
 }
 
 /**
@@ -123,21 +113,19 @@ export async function get_from<T = string>(identifier: string, field: keyof User
  * @param data - The updated user data
  */
 export async function set_user(identifier: string, data: Partial<UserType>) {
-    return await with_db(async db => {
 
-        const collection = db.collection("users");
+    const collection = db.collection("users");
 
-        // Update the user
-        await collection.updateOne({
-            $or: [
-                { token: identifier },
-                { username: identifier }
-            ]
-        }, {
-            $set: data
-        });
-
+    // Update the user
+    await collection.updateOne({
+        $or: [
+            { token: identifier },
+            { username: identifier }
+        ]
+    }, {
+        $set: data
     });
+
 }
 
 /**
@@ -146,19 +134,16 @@ export async function set_user(identifier: string, data: Partial<UserType>) {
  * @param query - The query to update  (mongodb update query Ex. { $push: { friends: "username" } })
  */
 export async function update_user(identifier: string, query: Record<string, any>) {
-    return await with_db(async db => {
+    const collection = db.collection("users");
 
-        const collection = db.collection("users");
+    // Update the user
+    await collection.updateOne({
+        $or: [
+            { token: identifier },
+            { username: identifier }
+        ]
+    }, query);
 
-        // Update the user
-        await collection.updateOne({
-            $or: [
-                { token: identifier },
-                { username: identifier }
-            ]
-        }, query);
-
-    });
 }
 
 /**
@@ -166,19 +151,17 @@ export async function update_user(identifier: string, query: Record<string, any>
  * @param identifier - The token, username, of the user to delete
  */
 export async function delete_user(identifier: string) {
-    return await with_db(async db => {
 
-        const collection = db.collection("users");
+    const collection = db.collection("users");
 
-        // Delete the user
-        await collection.deleteOne({
-            $or: [
-                { token: identifier },
-                { username: identifier },
-            ]
-        });
-
+    // Delete the user
+    await collection.deleteOne({
+        $or: [
+            { token: identifier },
+            { username: identifier },
+        ]
     });
+
 }
 
 

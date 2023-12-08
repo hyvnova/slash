@@ -68,6 +68,7 @@ export type AttachmentType = {
     id: string;
     type: string; // image, video, audio, file
     name: string; // Original filename
+    size: number; // Size in bytes
 }
 
 export type MessageType = {

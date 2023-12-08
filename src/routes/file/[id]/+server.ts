@@ -12,18 +12,17 @@ export const GET: RequestHandler = async ({ params }) => {
     const id = params.id;
 
     if (!id || !await exists(id)) {
-        return new Response(null, { status: 404 });
+        return new Response(null, { status: 404, statusText: "File not found" });
     }
 
     let file = await get_file(id);
 
     if (!file) {
-        return new Response(null, { status: 404 });
+        return new Response(null, { status: 404, statusText: "File not found" });
     }
 
-    // Log a sample of the file data
     return new Response(
-        file.data as Buffer,
+        file.data,
         {
             status: 200,
             headers: {

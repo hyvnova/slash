@@ -3,7 +3,7 @@
 	import type { AttachmentType } from '$lib/types';
 	import { onMount } from 'svelte';
 
-    export let attachment: AttachmentType;
+	export let attachment: AttachmentType;
 	export let use_cache: boolean = false;
 
 	let url = `/file/${attachment.id}`;
@@ -28,9 +28,11 @@
 	});
 </script>
 
-<img
-	src={url}
-	alt="{attachment.name} - Slash Attachment"
-	class="max-w-sm max-h-sm rounded-sm"
-	loading="lazy"
-/>
+<div class="container max-h-min max-w-[75vw] border border-gray-500 rounded-md m-1 p-1">
+	<img
+		src={url}
+		alt="{attachment.name} - {attachment.type} - {attachment.size} bytes"
+		class="rounded-md w-full h-auto"
+		loading="lazy"
+	/>
+</div>

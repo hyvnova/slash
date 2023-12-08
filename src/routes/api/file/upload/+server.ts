@@ -39,7 +39,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
             result.push({
                 id: id,
                 type: file.type,
-                name: file.name
+                name: file.name,
+                size: file.size
             });
         } catch (e) {
             console.log("Error uploading file", e);

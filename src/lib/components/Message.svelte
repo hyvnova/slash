@@ -1,9 +1,9 @@
 <script lang="ts">
 	import type { MessageType } from '$lib/types';
 	import { writable } from 'svelte/store';
-	import MessageMetadata from './MessageMetadata.svelte';
 	import Markdown from '@magidoc/plugin-svelte-marked';
 	import Attachment from './Attachment.svelte';
+	import MessageTimestamp from './MessageTimestamp.svelte';
 
 	export let username: string;
 	export let message: MessageType;
@@ -11,27 +11,19 @@
 	const owned = username === message.author; // Person who sent the message -> perspective of massage bubble
 
 	let is_hovered = writable<boolean>(false);
-
-	/**
-	 * Mardown parser
-	 * Content inside ```md
-	 */
 </script>
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-	class="{owned ? 'right' : 'left'} flex justify-center items-center
+	class="{owned ? 'flex right' : 'flex-reverse left'}
+			justify-center items-center
 			transition-all duration-300"
+
 	on:mouseenter={() => is_hovered.set(true)}
 	on:mouseleave={() => is_hovered.set(false)}
 >
-	<!-- Metadata on left -->
-	{#if $is_hovered && owned}
-		<div class="mr-4">
-			<MessageMetadata timestamp={message.timestamp} />
-		</div>
-	{/if}
+	<MessageTimestamp {is_hovered} timestamp={message.timestamp} />
 
 	{#if message.content}
 		<div
@@ -45,13 +37,6 @@
 					<Markdown source={message.content} />
 				</div>
 			</div>
-		</div>
-	{/if}
-
-	<!-- Metadata on right -->
-	{#if $is_hovered && !owned}
-		<div class="ml-4">
-			<MessageMetadata timestamp={message.timestamp} />
 		</div>
 	{/if}
 

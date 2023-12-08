@@ -26,8 +26,6 @@ export default function injectSocketIO(server: ServerOptions) {
                 await connect(socket.id, username);
             }
 
-            console.debug(username, 'joined chat');
-
             // Leave all other rooms
             Object.keys(socket.rooms).forEach((room) => {
                 if (room !== socket.id) {
@@ -64,8 +62,6 @@ export default function injectSocketIO(server: ServerOptions) {
             socket.on(state, async (friend: string) => {
 
                 let username = await get_username(socket.id);
-                console.debug(state, friend, username);
-
                 if (await is_online(friend)) {
                     io.to(friend).emit(state, username);
                 }

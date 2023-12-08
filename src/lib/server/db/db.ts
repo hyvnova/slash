@@ -30,18 +30,4 @@ const client = new MongoClient(DB_URI, {
 
 // Connect the client to the server (optional starting in v4.7)
 client.connect();
-
-/**
- * Execute a function with the database
- * @param fn - The function to execute with the database
- * @returns The result of the function
- */
-export async function with_db<T>(fn: (db: Db) => Promise<T>): Promise<T> {
-    const db = client.db(DB_NAME);
-    try {
-        return await fn(db);
-    } finally {
-        // Do nothing
-    }
-}
-
+export const db = client.db(DB_NAME);

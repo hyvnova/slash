@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { with_db } from "./db";
+import { db } from "./db";
 import type { ChatType, MessageType } from "$lib/types";
 
 /**
@@ -22,21 +22,19 @@ export async function create_chat(users: string[]) {
         users: users
     }
 
-    await with_db(async (db) => {
-        await db.collection("chats").insertOne(chat);
+    await db.collection("chats").insertOne(chat);
 
-        // Add the chat to the users
-        for (const user of users) {
-            await db.collection("users").updateOne({ username: user }, {
-                $push: {
-                    chats: {
-                        id: chat.id,
-                        members: users
-                    }
+    // Add the chat to the users
+    for (const user of users) {
+        await db.collection("users").updateOne({ username: user }, {
+            $push: {
+                chats: {
+                    id: chat.id,
+                    members: users
                 }
-            });
-        }
-    });
+            }
+        });
+    }
 }
 
 /**
@@ -45,10 +43,7 @@ export async function create_chat(users: string[]) {
  * @returns The chat id or null if no chat exists
  */
 export async function exists_chat(users: string[]) {
-    return await with_db(async (db) => {
-        return await db.collection<ChatType>("chats").findOne({ users: { $all: users } }, { projection: { id: 1 } })
-    });
-
+    return await db.collection<ChatType>("chats").findOne({ users: { $all: users } }, { projection: { id: 1 } })
 }
 
 /**
@@ -58,15 +53,13 @@ export async function exists_chat(users: string[]) {
  * @returns The chat object
  */
 export async function get_chat(id: string) {
-    return await with_db(async (db) => {
-        const chats = db.collection<ChatType>("chats")
-        return await chats.findOne(
-            { id: id },
-            { projection: { _id: 0, messages: { $slice: -30 } } }
-        );
+    const chats = db.collection<ChatType>("chats")
+    return await chats.findOne(
+        { id: id },
+        { projection: { _id: 0, messages: { $slice: -30 } } }
+    );
 
 
-    });
 }
 
 /**
@@ -74,9 +67,7 @@ export async function get_chat(id: string) {
  * @param chat_id 
  */
 export async function delete_chat(chat_id: string) {
-    return await with_db(async (db) => {
-        await db.collection<ChatType>("chats").deleteOne({ id: chat_id });
-    });
+    await db.collection<ChatType>("chats").deleteOne({ id: chat_id });
 }
 
 /**
@@ -91,10 +82,8 @@ export async function delete_chat(chat_id: string) {
 export async function add_message(chat_id: string, message: Partial<MessageType>) {
     message.id = randomUUID();
     message.attachments ||= [];
-    
-    return await with_db(async (db) => {
-        await db.collection<ChatType>("chats").updateOne({ id: chat_id }, { $push: { messages: message as MessageType } });
-    });
+
+    await db.collection<ChatType>("chats").updateOne({ id: chat_id }, { $push: { messages: message as MessageType } });
 }
 
 /** 
@@ -103,9 +92,7 @@ export async function add_message(chat_id: string, message: Partial<MessageType>
  * @param message_id
  */
 export async function delete_message(chat_id: string, message_id: string) {
-    return await with_db(async (db) => {
-        await db.collection<ChatType>("chats").updateOne({ id: chat_id }, { $pull: { messages: { id: message_id } } });
-    });
+    await db.collection<ChatType>("chats").updateOne({ id: chat_id }, { $pull: { messages: { id: message_id } } });
 }
 
 /**
@@ -118,8 +105,6 @@ export async function edit_message(chat_id: string, message_id: string, new_mess
     new_message.id = randomUUID();
     new_message.attachments ||= [];
 
-    return await with_db(async (db) => {
-        await db.collection<ChatType>("chats").updateOne({ id: chat_id, "messages.id": message_id }, { $set: { "messages.$": new_message as MessageType } });
-    })
+    await db.collection<ChatType>("chats").updateOne({ id: chat_id, "messages.id": message_id }, { $set: { "messages.$": new_message as MessageType } });
 }
 

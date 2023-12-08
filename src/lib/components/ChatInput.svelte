@@ -43,7 +43,7 @@
 		let msg: Partial<MessageType> = {
 			content: $message,
 			author: username,
-			timestamp: new Date().toLocaleString(),
+			timestamp: new Date().toLocaleString(undefined, { second: undefined}),
 			attachments: attachments
 		};
 
