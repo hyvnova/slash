@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { cached_images } from '$lib/stores/cached_images';
+	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
 	import type { AttachmentType } from '$lib/types';
 	import { onMount } from 'svelte';
 
@@ -34,5 +35,9 @@
 		alt="{attachment.name} - {attachment.type} - {attachment.size} bytes"
 		class="rounded-md w-full h-auto"
 		loading="lazy"
+
+		on:load={() => {
+			$scroll_to_bottom()
+		}}
 	/>
 </div>
