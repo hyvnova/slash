@@ -66,8 +66,8 @@ export type UserType = {
 
 export type AttachmentType = {
     id: string;
-    url: string; // A way to point to attachments, contains: sender, chat, filename
     type: string; // image, video, audio, file
+    name: string; // Original filename
 }
 
 export type MessageType = {

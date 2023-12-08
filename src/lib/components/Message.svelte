@@ -3,6 +3,7 @@
 	import { writable } from 'svelte/store';
 	import MessageMetadata from './MessageMetadata.svelte';
 	import Markdown from '@magidoc/plugin-svelte-marked';
+	import Attachment from './Attachment.svelte';
 
 	export let username: string;
 	export let message: MessageType;
@@ -22,7 +23,6 @@
 <div
 	class="{owned ? 'right' : 'left'} flex justify-center items-center
 			transition-all duration-300"
-
 	on:mouseenter={() => is_hovered.set(true)}
 	on:mouseleave={() => is_hovered.set(false)}
 >
@@ -32,18 +32,21 @@
 			<MessageMetadata timestamp={message.timestamp} />
 		</div>
 	{/if}
-	<div
-		class="bubble flex flex-col items-start break-words rounded-xl p-2 mb-2 w-fit
+
+	{#if message.content}
+		<div
+			class="bubble flex flex-col items-start break-words rounded-xl p-2 mb-2 w-fit
     		border-gray-700 hover:bg-gray-800
 			transition-all duration-300
     		{owned ? 'owned' : ''}"
-	>
-		<div class="flex flex-col items-start">
-			<div class="text-gray-200 text-base">
-				<Markdown source={message.content} />
+		>
+			<div class="flex flex-col items-start">
+				<div class="text-gray-200 text-base">
+					<Markdown source={message.content} />
+				</div>
 			</div>
 		</div>
-	</div>
+	{/if}
 
 	<!-- Metadata on right -->
 	{#if $is_hovered && !owned}
@@ -51,6 +54,10 @@
 			<MessageMetadata timestamp={message.timestamp} />
 		</div>
 	{/if}
+
+	{#each message.attachments as attachment}
+		<Attachment {attachment} />
+	{/each}
 </div>
 
 <style lang="postcss">

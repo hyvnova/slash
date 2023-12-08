@@ -122,3 +122,4 @@ export async function edit_message(chat_id: string, message_id: string, new_mess
         await db.collection<ChatType>("chats").updateOne({ id: chat_id, "messages.id": message_id }, { $set: { "messages.$": new_message as MessageType } });
     })
 }
+

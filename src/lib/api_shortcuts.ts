@@ -1,4 +1,4 @@
-import type { FriendshipStatusType, MessageType, UserSearchResult, UserType } from "$lib/types";
+import type { AttachmentType, FriendshipStatusType, MessageType, UserSearchResult, UserType } from "$lib/types";
 import { writable } from "svelte/store";
 
 
@@ -44,7 +44,6 @@ export async function update_friendship(user: string, other: string, status: Fri
         },
         body: JSON.stringify({ user, other, status })
     })
-    console.log("update rel", user, other, status, res.status );
     return res.status === 200;
 }
 
@@ -66,4 +65,21 @@ export async function handle_message(params: {
     })
 
     return res.status === 200;
+}
+
+
+/**
+ * Message attachment upload
+ */
+export async function upload_attachments(files:FormData): Promise<AttachmentType[]> {
+    let res = await fetch("/api/file/upload", {
+        method: "POST",
+        body: files 
+    })
+
+    if (!res.ok) {
+        console.log("Error uploading attachments", res);
+        return [];
+    }
+    return res.json() as Promise<AttachmentType[]>;
 }

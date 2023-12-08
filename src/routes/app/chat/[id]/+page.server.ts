@@ -1,4 +1,4 @@
-import { get_chat } from "$lib/server/db/chat";
+import { create_chat, get_chat } from "$lib/server/db/chat";
 import { redirect } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import { get_by } from "$lib/server/db/user";
