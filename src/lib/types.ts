@@ -28,7 +28,8 @@ export const enum Routes {
  * Used to avoid typos and to have a single source of truth
  */
 export const enum Events {
-    // General
+    // Connection
+    HANDSHAKE = "handshake", // Used to cofirm the connection
     CONNECT = "user connect", 
     JOIN_CHAT = "join chat", 
 
@@ -77,7 +78,6 @@ export type MessageType = {
     content: string;
     timestamp: string; // Local time 
     attachments: AttachmentType[]; // URLs
-
 }
 
 export type ChatType = {

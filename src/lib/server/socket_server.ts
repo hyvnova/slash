@@ -3,6 +3,8 @@ import { connect, disconnect, get_username, is_online } from './db/socket';
 import { Events, type MessageType } from './../types';
 
 
+type HandshakeCallback = (success: boolean) => void;
+
 export default function injectSocketIO(server: ServerOptions) {
     server.maxHttpBufferSize = 1e6 // 10MB 
 
@@ -12,6 +14,10 @@ export default function injectSocketIO(server: ServerOptions) {
         socket.on(Events.CONNECT, async (username: string) => {
             socket.join(username);
             await connect(socket.id, username);
+        });
+
+        socket.on(Events.HANDSHAKE, (callback: HandshakeCallback) => {
+            callback(true);
         });
 
         socket.on('disconnect', async () => {

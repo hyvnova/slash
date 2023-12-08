@@ -9,6 +9,8 @@
 	import { afterUpdate, onMount, tick } from 'svelte';
 	import ChatContainer from '$lib/components/ChatContainer.svelte';
 	import ChatInput from '$lib/components/ChatInput.svelte';
+	import Notification from '$lib/components/Notification.svelte';
+	import notification from '$lib/stores/notification';
 
 	export let data: PageServerData;
 
@@ -22,7 +24,6 @@
 	}
 
 	onMount(async () => {
-
 		// Connect to the chat
 		ws.emit(Events.CONNECT, data.user.username);
 		ws.emit(Events.JOIN_CHAT, data.chat.id, data.user.username);
@@ -61,6 +62,15 @@
 		scroll_to_bottom();
 	});
 
+	ws.emit(Events.HANDSHAKE, (success: boolean) => {
+		if (!success) {
+			notification.set({
+				type: 'error',
+				title: 'Offline - Connection lost',
+				message: 'Try reloading the page. Some features may not work.'
+			});
+		}
+	});
 </script>
 
 <svelte:head>
@@ -68,6 +78,8 @@
 	<meta name="description" content="Slash chat" />
 	<meta name="keywords" content="slash, chat, slashchat, slash chat" />
 </svelte:head>
+
+<Notification />
 
 <main class="max-w-2xl mx-auto layout scroll-smooth" bind:this={container}>
 	<!-- Top-->
@@ -93,7 +105,7 @@
 	<ChatContainer username={data.user.username} {messages} />
 
 	<!-- Input-->
-		<ChatInput username={data.user.username} chat_id={data.chat.id} />
+	<ChatInput username={data.user.username} chat_id={data.chat.id} />
 </main>
 
 <style>
