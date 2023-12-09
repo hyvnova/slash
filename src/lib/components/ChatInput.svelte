@@ -43,7 +43,7 @@
 		let msg: Partial<MessageType> = {
 			content: $message,
 			author: username,
-			timestamp: new Date().toLocaleString(undefined, { second: undefined}),
+			timestamp: new Date().toLocaleString(undefined, { second: undefined }),
 			attachments: attachments
 		};
 
@@ -61,16 +61,31 @@
 
 <div
 	class="flex justify-center items-center border-t border-gray-600
-			p-0 m-0 mt-2 max-w-2xl pt-2"
+			p-0 m-0 mt-2 max-w-2xl py-2"
 >
-	<form on:submit|preventDefault={send_message} class="m-0 p-0 h-auto my-auto w-10/12 outline-none">
+	<!-- If no content, upload file button -->
+	<button
+		class="border flex justify-center items-center w-10 h-10 px-2 rounded-full mx-1"
+		on:click={() => {
+			file_input.click();
+		}}
+	>
+		<Fa icon={faPaperclip} class="text-gray-100" />
+	</button>
+
+	<!-- Show number of files-->
+	{#if $files}
+		<span class="text-gray-100 mx-2" title="{$files.length} files selected">{$files.length}</span>
+	{/if}
+
+	<form on:submit|preventDefault={send_message} class="m-0 p-0 h-auto my-auto w-10/12 outline-none mx-1">
 		<!-- File upload -->
 		<input
 			type="file"
 			multiple
 			class="hidden"
 			bind:files={$files}
-			accept="image/*, video/*, audio/*, .pdf, .doc, .docx, .ppt, .pptx, .xls, .xlsx, .txt"
+			accept="image/* text/* application/* video/* audio/* .*"
 			name="file"
 			bind:this={file_input}
 		/>
@@ -108,28 +123,12 @@
 			}}
 		/>
 	</form>
-	<!-- Send button -->
-	{#if $message || $files}
-		<button
-			class="border flex justify-center items-center w-10 h-10 px-2 rounded-full ml-2"
-			on:click={send_message}
-		>
-			<Fa icon={faPaperPlane} class="text-gray-100" />
-		</button>
-	{:else}
-		<!-- If no content, upload file button -->
-		<button
-			class="border flex justify-center items-center w-10 h-10 px-2 rounded-full ml-2"
-			on:click={() => {
-				file_input.click();
-			}}
-		>
-			<Fa icon={faPaperclip} class="text-gray-100" />
-		</button>
-	{/if}
 
-	<!-- Show number of files-->
-	{#if $files}
-		<span class="text-gray-100 mx-2" title="{$files.length} files selected">{$files.length}</span>
-	{/if}
+	<!-- Send button -->
+	<button
+		class="border flex justify-center items-center w-10 h-10 px-2 rounded-full mx-1"
+		on:click={send_message}
+	>
+		<Fa icon={faPaperPlane} class="text-gray-100" />
+	</button>
 </div>

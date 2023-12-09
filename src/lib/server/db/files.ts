@@ -24,8 +24,7 @@ async function upload_gridfs(file: File): Promise<string> {
         metadata: {
             name: file.name,
             size: file.size,
-        },
-        aliases: [id],
+        }
     });
 
     uploadStream.on('error', (error) => {
@@ -38,9 +37,13 @@ async function upload_gridfs(file: File): Promise<string> {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    uploadStream.write(buffer);
-    uploadStream.end();
+    // Split buffer into 16MB chunks
+    const chunkSizeBytes = 1024 * 1024 * 16;
+    for (let i = 0; i < buffer.length; i += chunkSizeBytes) {
+        uploadStream.write(buffer.slice(i, i + chunkSizeBytes));
+    }
 
+    uploadStream.end();
 
     return id;
 }
@@ -51,12 +54,9 @@ export async function upload_file(file: File): Promise<string> {
 
 export async function get_file(id: string): Promise<FileType | null> {
     // Get file from bucket
-    const cursor = bucket.find({
-        $or: [
-            { aliases: id },
-            { filename: id },
-        ]
-    }, { limit: 1 });
+    const cursor = bucket.find(
+        { filename: id },
+        { limit: 1 });
 
     const file = await cursor.next();
     if (!file) { return null; }
@@ -92,12 +92,9 @@ export async function get_file(id: string): Promise<FileType | null> {
  * Check if file exists
  */
 export async function exists(id: string): Promise<boolean> {
-    const cursor = bucket.find({
-        $or: [
-            { aliases: id },
-            { filename: id },
-        ]
-    }, { limit: 1 });
+    const cursor = bucket.find(
+        { filename: id },
+        { limit: 1 });
 
     const file = await cursor.next();
     return !!file;

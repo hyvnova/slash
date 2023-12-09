@@ -29,7 +29,8 @@
 	});
 </script>
 
-<div class="container max-h-min max-w-[75vw] border border-gray-500 rounded-md m-1 p-1">
+<div class="container max-h-min max-w-[75vw] border border-gray-500 rounded-md m-1 p-1"
+>
 	<img
 		src={url}
 		alt="{attachment.name} - {attachment.type} - {attachment.size} bytes"
