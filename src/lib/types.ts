@@ -43,12 +43,21 @@ export const enum Events {
     // Status
     SET_STATUS = "set status",
     STATUS = "status",
+    GET_FRIENDS_STATUS = "get friends status",
 
     // Messages
     NEW_MESSAGE = "new message",
     DELETE_MESSAGE = "delete message",
     EDIT_MESSAGE = "edit message",
 }
+
+
+export const enum Status {
+    OFFLINE = "offline",
+    ONLINE = "online",
+    TYPING = "typing",
+}
+
 
 export type UserType = {
     username: string; //Works as an id
@@ -82,7 +91,7 @@ export type MessageType = {
 
 export type ChatType = {
     id: string;
-    users: string[]; // Usernames
+    members: string[]; // Usernames
     messages: MessageType[]; // Messages. When chat is requested, only the last 30 messages are sent
     last_message: MessageType | null; // Last message
     attachments: string[]; // Attachment ids

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { writable, type Writable } from 'svelte/store';
+	import { get, writable, type Writable } from 'svelte/store';
 	import AvatarImage from '$lib/components/AvatarImage.svelte';
 	import type { LayoutServerData } from './$types';
 	import SearchModal from '$lib/components/SearchModal.svelte';
@@ -9,7 +9,7 @@
 	import { faCog } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 	import BottomBar from '$lib/components/BottomBar.svelte';
-	import { Events, Routes } from '$lib/types';
+	import { Events, Routes, Status } from '$lib/types';
 
 	export let data: LayoutServerData;
 
@@ -17,6 +17,11 @@
 	let requests = writable(user.pending_requests);
 	let searching = writable(false);
 	let friends: Writable<string[]> = writable(user.friends);
+
+	let friend_status: Record<string, Writable<Status>> = {};
+	for (let friend of user.friends) {
+		friend_status[friend] = writable(Status.OFFLINE);
+	}
 
 	onMount(() => {
 		// Open search modal on pressing 'p'
@@ -42,6 +47,19 @@
 		ws.on(Events.UNFRIEND, (other) => {
 			friends.update((contacts) => contacts.filter((contact) => contact !== other));
 		});
+
+		// Handling friend status
+		ws.on(Events.STATUS, (username: string, status: Status) => {
+			if (username in friend_status) {
+				friend_status[username].set(status);
+			}
+		});
+
+		// Emit online status
+		ws.emit(Events.SET_STATUS, Status.ONLINE, friends);
+
+		// Request friend status
+		ws.emit(Events.GET_FRIENDS_STATUS, user.friends);
 	});
 </script>
 
@@ -80,7 +98,12 @@
 				"
 				>
 					<AvatarImage username={friend} />
+
 					<h4 class="ml-4 font-normal text-lg text-gray-200">{friend}</h4>
+					<span class="mx-2 text-gray-500"> - </span>
+					<p class="{get(friend_status[friend])} text-gray-400 text-sm">
+						{get(friend_status[friend])}
+					</p>
 				</div>
 			</a>
 		{/each}

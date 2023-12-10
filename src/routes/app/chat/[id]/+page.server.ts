@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
     const chat = await get_chat(params.id);
 
     // If the chat is not found or user is not included in it, return to /me user page
-    if (!chat || !chat.users.includes(user.username)) {
+    if (!chat || !chat.members.includes(user.username)) {
         throw redirect(302, Routes.HOME)
     }
 
@@ -36,6 +36,6 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
             chats: user.chats,
             verified: user.verified
         },
-        other: chat.users.find((u) => u !== user.username) as string
+        other: chat.members.find((u) => u !== user.username) as string
     }
 }

@@ -21,3 +21,15 @@
     background: #555;
 }
 
+/* Status */
+.online {
+    color: #2ECC71;
+}
+
+.offline {
+    color: #95A5A6;
+}
+
+.typing {
+    color: #3498DB;
+}

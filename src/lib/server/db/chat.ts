@@ -19,7 +19,7 @@ export async function create_chat(users: string[]) {
         last_message: null,
         id: randomUUID(),
         messages: [],
-        users: users
+        members: users
     }
 
     await db.collection("chats").insertOne(chat);
@@ -43,7 +43,7 @@ export async function create_chat(users: string[]) {
  * @returns The chat id or null if no chat exists
  */
 export async function exists_chat(users: string[]) {
-    return await db.collection<ChatType>("chats").findOne({ users: { $all: users } }, { projection: { id: 1 } })
+    return await db.collection<ChatType>("chats").findOne({ members: { $all: users } }, { projection: { id: 1 } })
 }
 
 /**

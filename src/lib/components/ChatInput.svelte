@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { handle_message, upload_attachments } from '$lib/api_shortcuts';
 	import messsage_drafts from '$lib/stores/message_drafts';
-	import { Events, type AttachmentType, type MessageType } from '$lib/types';
+	import { Events, type AttachmentType, type MessageType, Status } from '$lib/types';
 	import { ws } from '$lib/websocket';
 	import { faPaperPlane, faPaperclip } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
@@ -9,6 +9,7 @@
 
 	export let username: string;
 	export let chat_id: string;
+	export let chat_members: string[];
 
 	let message = writable($messsage_drafts[chat_id] || '');
 	let files = writable<FileList | null>(null);
@@ -120,6 +121,9 @@
 					e.preventDefault();
 					$message += '\t';
 				}
+
+				// Send typing event
+				ws.emit(Events.SET_STATUS, Status.TYPING, chat_members);
 			}}
 		/>
 	</form>

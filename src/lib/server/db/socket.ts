@@ -1,9 +1,11 @@
+import { Status } from "./../../types";
+import { get_chat } from "./chat";
 import { db } from "./db";
 
 type OnlineType = {
     username: string; // The username of the user - works as an id
     socket_id: string;
-    status: string | null; // null if offline, otherwise the status: online or custom
+    status: Status;
 }
 
 /**
@@ -23,7 +25,7 @@ export async function create_user_online(username: string) {
     await collection.insertOne({
         username,
         socket_id: "",
-        status: null
+        status: Status.OFFLINE
     });
 }
 
@@ -69,7 +71,32 @@ export async function get_status(username: string): Promise<string | null> {
 
     });
 
-    return user?.status ?? null;
+    return user?.status ?? Status.OFFLINE;
+}
+
+
+/**
+ * Set the status of a user
+ * @param username - The username of the user
+ * @param status - The status of the user
+ * @returns The status of the user or null if the user doesn't exist
+ */
+export async function set_status(username: string, status: string) {
+    const collection = db.collection("online");
+
+    // If the user doesn't exist, create a record for them
+    if (!await exists(username)) {
+        await create_user_online(username);
+    }
+
+    // Update the user
+    await collection.updateOne({
+        username
+    }, {
+        $set: {
+            status
+        }
+    });
 }
 
 
@@ -81,15 +108,13 @@ export async function get_status(username: string): Promise<string | null> {
 export async function connect(socket_id: string, username: string) {
     const collection = db.collection("online");
 
-    let status = await get_status(username);
-
     // Update the user
     await collection.updateOne({
         username
     }, {
         $set: {
             socket_id,
-            status: status ?? "online"
+            status: Status.ONLINE
         }
     });
 
@@ -108,7 +133,7 @@ export async function disconnect(socket_id: string) {
     }, {
         $set: {
             socket_id: "",
-            status: null
+            status: Status.OFFLINE
         }
     });
 
@@ -138,16 +163,44 @@ export async function get_username(socket_id: string): Promise<string | null> {
  * @param username - The username of the user
  * @returns True if the user is online, otherwise false
  */
-export async function is_online(username: string): Promise<boolean> {
+export async function is_online(identifier: string): Promise<boolean> {
     const collection = db.collection<OnlineType>("online");
 
     const user = await collection.findOne({
-        username
+        $or: [
+            { username: identifier },
+            { socket_id: identifier }         
+        ]
     }, {
         projection: {
             status: 1
         }
     });
 
-    return user?.status !== null;
+    return user?.status == Status.ONLINE;
+}
+
+/**
+ * Get online chat members 
+ * @param chat_id - The id of the chat
+ * @returns An array of online members
+ */
+export async function get_online_members(chat_id: string) {
+    const collection = db.collection<OnlineType>("online");
+
+    const members = await collection.find({
+        username: {
+            $in: (await get_chat(chat_id))?.members ?? []
+        }
+    }, {
+        projection: {
+            username: 1
+        }
+    }).toArray();
+
+    // Filter out offline members
+    return members.filter(
+        async (members) => members.username !== null && await is_online(members.username)
+    );
+
 }

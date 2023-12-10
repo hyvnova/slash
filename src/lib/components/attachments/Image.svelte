@@ -29,16 +29,14 @@
 	});
 </script>
 
-<div class="container max-h-min max-w-[75vw] border border-gray-500 rounded-md m-1 p-1"
->
+<div class="container h-auto max-w-[50vw] border border-gray-500 rounded-md m-1 p-1">
 	<img
 		src={url}
 		alt="{attachment.name} - {attachment.type} - {attachment.size} bytes"
-		class="rounded-md w-full h-auto"
+		class="rounded-md w-autp h-auto"
 		loading="lazy"
-
 		on:load={() => {
-			$scroll_to_bottom()
+			$scroll_to_bottom();
 		}}
 	/>
 </div>

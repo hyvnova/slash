@@ -16,21 +16,18 @@
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <div
-	class="{owned ? 'flex right' : 'flex-reverse left'}
-			justify-center items-center
-			transition-all duration-300"
-
+	class="flex {owned ? 'flex-row-reverse right' : 'flex-row left'} items-center
+			transition-all duration-300
+			w-full mb-2
+		"
 	on:mouseenter={() => is_hovered.set(true)}
 	on:mouseleave={() => is_hovered.set(false)}
 >
-	<MessageTimestamp {is_hovered} timestamp={message.timestamp} />
-
 	{#if message.content}
 		<div
-			class="bubble flex flex-col items-start break-words rounded-xl p-2 mb-2 w-fit
-    		border-gray-700 hover:bg-gray-800
-			transition-all duration-300
-    		{owned ? 'owned' : ''}"
+			class="bubble flex flex-col items-start break-words rounded-xl p-2 w-auto
+					transition-all duration-300
+    				{owned ? 'owned' : 'other'}"
 		>
 			<div class="flex flex-col items-start">
 				<div class="text-gray-200 text-base">
@@ -43,6 +40,10 @@
 	{#each message.attachments as attachment}
 		<Attachment {attachment} />
 	{/each}
+	
+	<MessageTimestamp {is_hovered} timestamp={message.timestamp} />
+
+
 </div>
 
 <style lang="postcss">
@@ -65,6 +66,15 @@
 		border-bottom-right-radius: 0;
 	}
 	.owned:hover {
+		background-color: theme(colors.gray.800);
+	}
+
+	.other {
+		border: 2px solid theme(colors.gray.700);
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0.75em;
+	}
+	.other:hover {
 		background-color: theme(colors.gray.800);
 	}
 </style>

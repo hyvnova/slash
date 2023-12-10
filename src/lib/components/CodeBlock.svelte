@@ -77,13 +77,11 @@
 </svelte:head>
 
 <pre class="m-0 p-0 flex flex-grow items-center justify-center ">
-    
     <code class="language-{language} h-full w-full">{code}</code>
 </pre>
 
 <style>
 	pre {
 		padding: 0px !important;
-		height: max-content !important;
 	}
 </style>
