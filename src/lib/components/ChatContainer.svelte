@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { MessageType } from '$lib/types';
 	import type { Writable } from 'svelte/store';
-	import { afterUpdate } from 'svelte';
+	import { afterUpdate} from 'svelte';
 	import Message from './Message.svelte';
 	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
 
@@ -11,21 +11,22 @@
 
 
 	scroll_to_bottom.set(() => {
-		let margin = container.scrollHeight - container.clientHeight;
-		container.scrollTo(0, container.scrollHeight + margin);
+		container.scrollTo(0, container.scrollHeight + 200);
 	});
 
-	afterUpdate(() => {
+	afterUpdate(async () => {
 		$scroll_to_bottom();
 	});
+
 </script>
 
 <div
-	class="flex flex-col overflow-y-auto
+	class="flex flex-col overflow-y-auto w-full min-h-full
     px-2 scroll-smooth transition-all duration-300
     "
 	bind:this={container}
-	on:change={() => $scroll_to_bottom()}
+	on:load={$scroll_to_bottom}
+	on:change={$scroll_to_bottom}
 >
 	{#each $messages as message}
 		<Message {username} {message} />

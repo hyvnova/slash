@@ -91,7 +91,9 @@
 			bind:this={file_input}
 		/>
 
+		<!-- svelte-ignore a11y-autofocus -->
 		<textarea
+			autofocus
 			autocomplete="off"
 			autocorrect="off"
 			autocapitalize="off"

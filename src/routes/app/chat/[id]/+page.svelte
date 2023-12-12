@@ -18,12 +18,13 @@
 	let messages = writable(data.chat.messages);
 	let friend_status = writable<Status>(Status.OFFLINE);
 
-	function scroll_to_bottom() {
-		let margin = container.scrollHeight - container.clientHeight;
-		container.scrollTo(0, container.scrollHeight + margin);
-	}
+	function scroll_to_bottom() { container.scrollTo(0, container.scrollHeight); }
+
+	let other_typing_timeout: string | number | NodeJS.Timeout | undefined;
 
 	onMount(async () => {
+		await tick();
+
 		ws.emit(Events.HANDSHAKE, (success: boolean) => {
 			if (!success) {
 				notification.set({
@@ -36,6 +37,7 @@
 
 		ws.on(Events.NEW_MESSAGE, (msg: MessageType) => {
 			messages.update((old) => [...old, msg]);
+			scroll_to_bottom();
 		});
 
 		ws.on(Events.EDIT_MESSAGE, (msg: MessageType) => {
@@ -62,11 +64,12 @@
 
 		ws.on(Events.STATUS, (username: string, status: Status) => {
 			if (username === data.other) {
-				friend_status.set(status);
+				friend_status.set(status || Status.OFFLINE);
 
 				// If the user is typing, set the status to online after 2 seconds
 				if (status == Status.TYPING) {
-					setTimeout(() => {
+					clearTimeout(other_typing_timeout);
+					other_typing_timeout = setTimeout(() => {
 						friend_status.set(Status.ONLINE);
 					}, 2000);
 				}
@@ -77,14 +80,11 @@
 		ws.emit(Events.CONNECT, data.user.username);
 		ws.emit(Events.JOIN_CHAT, data.chat.id, data.user.username);
 		ws.emit(Events.SET_STATUS, Status.ONLINE, data.chat.members);
+		ws.emit(Events.GET_FRIENDS_STATUS, data.chat.members)
 
-		await tick();
 		scroll_to_bottom();
 	});
 
-	afterUpdate(() => {
-		scroll_to_bottom();
-	});
 </script>
 
 <svelte:head>
@@ -95,7 +95,7 @@
 
 <Notification />
 
-<main class="max-w-3xl mx-auto layout scroll-smooth" bind:this={container}>
+<main class="max-w-3xl mx-auto layout" bind:this={container}>
 	<!-- Top-->
 	<nav class="my-1 flex justify-between items-center w-full p-1 border-b border-gray-700">
 		<a href={Routes.HOME} class="ml-1 rotate text-gray-400 hover:text-gray-100">
@@ -133,10 +133,12 @@
 
 <style lang="postcss">
 	.layout {
-		display: grid;
+		display: grid;		
 		grid-template-columns: 1;
 		grid-template-rows: auto 1fr auto;
+		min-height: 100vh;
 		max-height: 100vh;
-		height: 100vh;
+		margin: 0px;
+		padding: 0px;
 	}
 </style>

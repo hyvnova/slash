@@ -6,8 +6,6 @@
 	import notification from '$lib/stores/notification';
 	import Notification from '$lib/components/Notification.svelte';
 
-	export let data: LayoutServerData;
-
 	onMount(() => {	// handshake
 		ws.emit(Events.HANDSHAKE, (success: boolean) => {
 			if (!success) {
@@ -18,10 +16,6 @@
 				});
 			}
 		});
-
-		// Online status
-		ws.emit(Events.CONNECT, data.user.username);
-		ws.emit(Events.SET_STATUS, Status.ONLINE, data.user.friends);
 	});
 </script>
 

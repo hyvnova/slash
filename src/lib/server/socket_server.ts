@@ -1,5 +1,5 @@
 import { Server, type ServerOptions } from 'socket.io';
-import { connect, disconnect, get_online_members, get_status, get_username, is_online, set_status } from './db/socket';
+import { connect, disconnect, get_online_members, get_socket_id, get_status, get_username, is_online, set_status } from './db/socket';
 import { Events, type MessageType, Status } from './../types';
 
 
@@ -16,9 +16,7 @@ export default function injectSocketIO(server: ServerOptions) {
             await connect(socket.id, username);
         });
 
-        socket.on(Events.HANDSHAKE, (callback: HandshakeCallback) => {
-            callback(true);
-        });
+        socket.on(Events.HANDSHAKE, (callback: HandshakeCallback) => { callback(true); });
 
         socket.on('disconnect', async () => {
             await disconnect(socket.id);
@@ -34,7 +32,7 @@ export default function injectSocketIO(server: ServerOptions) {
 
             // Leave all other rooms
             Object.keys(socket.rooms).forEach((room) => {
-                if (room !== socket.id) {
+                if (room !== socket.id && room !== chat_id && room !== username) {
                     socket.leave(room);
                 }
             });
@@ -57,6 +55,8 @@ export default function injectSocketIO(server: ServerOptions) {
          * status - status of the user
          */
         socket.on(Events.STATUS, async (username: string, status: Status) => {
+            console.log("status", username, status);
+
             if (await is_online(socket.id)) {
                 console.log("status", username, status);
                 io.to(socket.id).emit(Events.STATUS, username, status);
@@ -66,7 +66,7 @@ export default function injectSocketIO(server: ServerOptions) {
         /**
          * Set Status
          */
-        socket.on(Events.SET_STATUS, async (status: string, friends: string[]) => {
+        socket.on(Events.SET_STATUS, async (status: Status, friends: string[]) => {
             
             let username = await get_username(socket.id);
             if (!username) { return;}
@@ -76,6 +76,7 @@ export default function injectSocketIO(server: ServerOptions) {
 
             friends.forEach(async (friend) => {
                 if (await is_online(friend)) {
+                    console.log("set status", username, status, friend);
                     io.to(friend).emit(Events.STATUS, username, status);
                 }
             });

@@ -28,7 +28,6 @@
 			let text = await res.text();
 			content = text || 'Empty file';
 			state.set(State.LOADED);
-			$scroll_to_bottom();
 		} else {
 			if (tries < 3) {
 				tries++;
@@ -37,6 +36,8 @@
 				state.set(State.FAILED);
 			}
 		}
+		$scroll_to_bottom();
+
 	};
 
 	// Get the file from the server
@@ -44,19 +45,21 @@
 </script>
 
 <div
-	class="container
+	class="container overflow-x-hidden
             border border-gray-500
         	h-auto max-w-[75vw]
             rounded-md m-1 p-1
         "
+
+	on:load={$scroll_to_bottom}
 >
 	<!-- Header - -->
-	<div class="flex items-center justify-center border-b border-gray-500 p-1">
-		<span class="text-sm text-gray-300">{attachment.name}</span>
+	<div class="flex flex-wrap items-center justify-center border-b border-gray-500 p-1">
+		<p class="text-sm text-gray-300 text-ellipsis">{attachment.name}</p>
 		<span class="text-sm text-gray-500 mx-1"> | </span>
-		<span class="text-sm text-gray-400">{size}</span>
+		<p class="text-sm text-gray-400">{size}</p>
 		<span class="text-sm text-gray-500 mx-1"> | </span>
-		<span class="text-sm text-gray-400">{attachment.type}</span>
+		<p class="text-sm text-gray-400">{attachment.type}</p>
 
 		<span class="text-sm text-gray-500 mx-1"> | </span>
 

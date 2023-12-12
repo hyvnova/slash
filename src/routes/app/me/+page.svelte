@@ -4,7 +4,7 @@
 	import type { LayoutServerData } from './$types';
 	import SearchModal from '$lib/components/SearchModal.svelte';
 	import { ws } from '$lib/websocket';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import PendingRequests from '$lib/components/PendingRequests.svelte';
 	import { faCog } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
@@ -23,7 +23,9 @@
 		friend_status[friend] = writable(Status.OFFLINE);
 	}
 
-	onMount(() => {
+	onMount(async () => {
+		await tick();
+
 		// Open search modal on pressing 'p'
 		window.onkeydown = (e) => {
 			if (e.key === 'p') {
@@ -52,14 +54,19 @@
 		ws.on(Events.STATUS, (username: string, status: Status) => {
 			if (username in friend_status) {
 				friend_status[username].set(status);
+
 			}
 		});
 
+		// Connect to websocket
+		ws.emit(Events.CONNECT, user.username)
+
 		// Emit online status
-		ws.emit(Events.SET_STATUS, Status.ONLINE, friends);
+		ws.emit(Events.SET_STATUS, Status.ONLINE, $friends);
 
 		// Request friend status
-		ws.emit(Events.GET_FRIENDS_STATUS, user.friends);
+		ws.emit(Events.GET_FRIENDS_STATUS, $friends);
+
 	});
 </script>
 

@@ -81,7 +81,7 @@ export async function get_status(username: string): Promise<string | null> {
  * @param status - The status of the user
  * @returns The status of the user or null if the user doesn't exist
  */
-export async function set_status(username: string, status: string) {
+export async function set_status(username: string, status: Status) {
     const collection = db.collection("online");
 
     // If the user doesn't exist, create a record for them
@@ -203,4 +203,23 @@ export async function get_online_members(chat_id: string) {
         async (members) => members.username !== null && await is_online(members.username)
     );
 
+}
+
+/**
+ * Get socket id of a user
+ * @param username - The username of the user
+ * @returns The socket id of the user or null if the user doesn't exist
+ */
+export async function get_socket_id(username: string): Promise<string | null> {
+    const collection = db.collection<OnlineType>("online");
+
+    const user = await collection.findOne({
+        username
+    }, {
+        projection: {
+            socket_id: 1
+        }
+    });
+
+    return user?.socket_id ?? null;
 }
