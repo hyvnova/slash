@@ -1,5 +1,5 @@
 import { Server, type ServerOptions } from 'socket.io';
-import { connect, disconnect, get_online_members, get_socket_id, get_status, get_username, is_online, set_status } from './db/socket';
+import { connect, disconnect, get_online_members, get_status, get_username, is_online, set_status } from './db/socket';
 import { Events, type MessageType, Status } from './../types';
 
 
@@ -76,7 +76,6 @@ export default function injectSocketIO(server: ServerOptions) {
 
             friends.forEach(async (friend) => {
                 if (await is_online(friend)) {
-                    console.log("set status", username, status, friend);
                     io.to(friend).emit(Events.STATUS, username, status);
                 }
             });

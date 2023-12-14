@@ -62,7 +62,7 @@
 
 <div
 	class="flex justify-center items-center border-t border-gray-600
-			p-0 m-0 mt-2 max-w-2xl py-2"
+			p-0 m-0 mt-2 max-w-full py-2"
 >
 	<!-- If no content, upload file button -->
 	<button

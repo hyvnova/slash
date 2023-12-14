@@ -138,7 +138,5 @@
 		grid-template-rows: auto 1fr auto;
 		min-height: 100vh;
 		max-height: 100vh;
-		margin: 0px;
-		padding: 0px;
 	}
 </style>

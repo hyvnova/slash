@@ -1,37 +1,20 @@
 <script lang="ts">
 	import type { MessageType } from '$lib/types';
-	import { writable } from 'svelte/store';
 	import Markdown from '@magidoc/plugin-svelte-marked';
 	import Attachment from './Attachment.svelte';
 	import MessageTimestamp from './MessageTimestamp.svelte';
-	import MessageContextMenu from './MessageContextMenu.svelte';
 
 	export let username: string;
 	export let message: MessageType;
 
 	const owned = username === message.author; // Person who sent the message -> perspective of massage bubble
-
-
-	let is_context_open = writable<boolean>(false);
-	let context_pos = writable({ x: 0, y: 0 });
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
-	on:contextmenu|preventDefault={(e) => {
-
-	}}
-
 	class="flex {owned ? 'flex-row-reverse right' : 'flex-row left'} items-center
 			transition-all duration-300 min-h-fit
 			w-full mb-2
 		"
-	on:click={(e) => {
-		/* Open context menu  on right click */
-		is_context_open.set(true);
-	}}
 >
 	{#if message.content}
 		<div
@@ -51,10 +34,14 @@
 		<Attachment {attachment} />
 	{/each}
 	
+
+	<div class="timestamp flex flex-col items-center justify-center">
+		<MessageTimestamp timestamp={message.timestamp} />
+	</div>
 </div>
 
-<!-- svelte-ignore missing-declaration -->
-<svelte:component this={MessageContextMenu} bind:is_open={is_context_open} bind:pos={context_pos}/>
+<!-- TODO: Message context menu -->
+<!-- <svelte:component this={MessageContextMenu} bind:is_open={is_context_open} pos={context_pos} owned={owned}/> -->
 
 <style lang="postcss">
 	.bubble {
@@ -87,4 +74,15 @@
 	.other:hover {
 		background-color: theme(colors.gray.800);
 	}
+
+
+	.timestamp {
+		opacity: 0;
+		transition: opacity 0.15s ease-in;
+	}
+
+	.timestamp:hover {
+		opacity: 1;
+	}
+
 </style>

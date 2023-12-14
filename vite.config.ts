@@ -5,12 +5,11 @@ import type { ServerOptions } from 'socket.io';
 
 const webSocketServer = {
 	name: 'webSocketServer',
-	configureServer(server: { httpServer: Partial<ServerOptions> | undefined; }) {
+	configureServer(server: { httpServer: Partial<ServerOptions> }) {
 		wss(server.httpServer);
 	}
 };
 
-/** @type {import('vite').UserConfig} */
 const config = {
 	server: {
 		port: 3000
