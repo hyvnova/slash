@@ -10,34 +10,46 @@
 	const owned = username === message.author; // Person who sent the message -> perspective of massage bubble
 </script>
 
-<div
-	class="flex {owned ? 'flex-row-reverse right' : 'flex-row left'} items-center
+<div class="flex flex-col {owned ? 'right' : 'left'}">
+
+	<!-- Message content & timestamp -->
+	<div
+		class="flex {owned ? 'flex-row-reverse right' : 'flex-row left'} items-center
 			transition-all duration-300 min-h-fit
 			w-full mb-2
 		"
->
-	{#if message.content}
-		<div
-			class="bubble flex flex-col items-start break-words rounded-xl p-2 w-auto
-					transition-all duration-300
-    				{owned ? 'owned' : 'other'}"
-		>
-			<div class="flex flex-col items-start">
-				<div class="text-gray-200 text-base">
+	>
+		<!-- Message content -->
+		{#if message.content}
+			<div
+				class="bubble {owned ? 'owned' : 'other'} 
+					flex flex-col items-start break-words rounded-xl p-2
+					w-auto
+				"
+			>
+				<div
+					class="flex flex-col items-start
+						text-gray-200 text-base
+						w-max
+					"
+				>
 					<Markdown source={message.content} />
 				</div>
 			</div>
+		{/if}
+
+		<!-- Timestamp -->
+		<div class="timestamp flex flex-col items-center justify-center w-full h-full">
+			<MessageTimestamp timestamp={message.timestamp} />
 		</div>
-	{/if}
-
-	{#each message.attachments as attachment}
-		<Attachment {attachment} />
-	{/each}
-	
-
-	<div class="timestamp flex flex-col items-center justify-center">
-		<MessageTimestamp timestamp={message.timestamp} />
 	</div>
+
+	<!-- Attachments -->
+	<class class="flex flex-col items-center justify-center w-full h-full">
+		{#each message.attachments as attachment}
+			<Attachment {attachment} />
+		{/each}
+	</class>
 </div>
 
 <!-- TODO: Message context menu -->
@@ -75,7 +87,6 @@
 		background-color: theme(colors.gray.800);
 	}
 
-
 	.timestamp {
 		opacity: 0;
 		transition: opacity 0.15s ease-in;
@@ -84,5 +95,4 @@
 	.timestamp:hover {
 		opacity: 1;
 	}
-
 </style>

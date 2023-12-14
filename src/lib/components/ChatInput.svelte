@@ -44,7 +44,7 @@
 			content: $message,
 			author: username,
 			timestamp: new Date().toLocaleString(undefined, { second: undefined }),
-			attachments: attachments
+			attachments
 		};
 
 		message.set('');
@@ -61,8 +61,9 @@
 
 <div
 	class="flex flex-grow justify-center items-center p-0
-			container max-h-[5vh] mx-auto rounded-lg mb-2 mt-1
+			container max-h-[2.75rem] mx-auto rounded-lg mb-2 mt-1
 			transition-all duration-300
+			max-w-2xl
 			"
 >
 	<!-- Attach file button -->
@@ -147,8 +148,8 @@
 		/>
 		<!-- Send button -->
 		<button
-			class="{$message || $files ? 'opacity-100' : 'w-0 opacity-0'}
-					flex justify-center items-center w-12 h-full rounded-r-lg
+			class="{$message || $files ? 'opacity-100 w-12' : 'w-0 opacity-0'}
+					flex justify-center items-center h-full rounded-r-lg
 					border-gray-600
 					bg-gray-900 hover:bg-gray-300
 					text-gray-200 hover:text-black
