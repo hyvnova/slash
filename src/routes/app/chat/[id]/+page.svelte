@@ -11,6 +11,7 @@
 	import ChatInput from '$lib/components/ChatInput.svelte';
 	import Notification from '$lib/components/Notification.svelte';
 	import notification from '$lib/stores/notification';
+	import NewChatInput from '$lib/components/NewChatInput.svelte';
 
 	export let data: PageServerData;
 
@@ -105,7 +106,9 @@
 	<ChatContainer username={data.user.username} {messages} />
 
 	<!-- Input-->
-	<ChatInput username={data.user.username} chat_id={data.chat.id} />
+	<!-- <ChatInput username={data.user.username} chat_id={data.chat.id} /> -->
+	<NewChatInput  username={data.user.username} chat_id={data.chat.id}/>
+
 </main>
 
 <style>

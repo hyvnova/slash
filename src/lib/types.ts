@@ -82,7 +82,7 @@ export type MessageType = {
 
 export type ChatType = {
     id: string;
-    users: string[]; // Usernames
+    members: string[]; // Usernames
     messages: MessageType[]; // Messages. When chat is requested, only the last 30 messages are sent
     last_message: MessageType | null; // Last message
     attachments: string[]; // Attachment ids
