@@ -3,34 +3,33 @@ import { db } from "./db";
 import type { ChatType, MessageType } from "$lib/types";
 
 /**
- *  Create a chat with the given users
- * @param users 
+ *  Create a chat with the given members
+ * @param members 
  * @returns The chat object
  */
-export async function create_chat(users: string[]) {
+export async function create_chat(members: string[]) {
 
-    if (await exists_chat(users)) {
+    if (await exists_chat(members)) {
         return;
     }
-
 
     let chat: ChatType = {
         attachments: [],
         last_message: null,
         id: randomUUID(),
         messages: [],
-        members: users
+        members
     }
 
     await db.collection("chats").insertOne(chat);
 
-    // Add the chat to the users
-    for (const user of users) {
+    // Add the chat to the members 
+    for (const user of members) {
         await db.collection("users").updateOne({ username: user }, {
             $push: {
                 chats: {
                     id: chat.id,
-                    members: users
+                    members
                 }
             }
         });
@@ -38,12 +37,12 @@ export async function create_chat(users: string[]) {
 }
 
 /**
- * Find an existing chat between the given users
- * @param users
+ * Find an existing chat between the given members
+ * @param members 
  * @returns The chat id or null if no chat exists
  */
-export async function exists_chat(users: string[]) {
-    return await db.collection<ChatType>("chats").findOne({ members: { $all: users } }, { projection: { id: 1 } })
+export async function exists_chat(members: string[]) {
+    return await db.collection<ChatType>("chats").findOne({ members: { $all: members } }, { projection: { id: 1 } })
 }
 
 /**

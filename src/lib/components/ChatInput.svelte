@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { handle_message, upload_attachments } from '$lib/api_shortcuts';
 	import messsage_drafts from '$lib/stores/message_drafts';
-	import { Events, type AttachmentType, type MessageType, Status } from '$lib/types';
+	import { Events, type AttachmentType, type MessageType } from '$lib/types';
 	import { ws } from '$lib/websocket';
 	import { faPaperPlane, faPaperclip } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
@@ -9,7 +9,6 @@
 
 	export let username: string;
 	export let chat_id: string;
-	export let chat_members: string[];
 
 	let message = writable($messsage_drafts[chat_id] || '');
 	let files = writable<FileList | null>(null);
@@ -61,44 +60,65 @@
 </script>
 
 <div
-	class="flex justify-center items-center border-t border-gray-600
-			p-0 m-0 mt-2 max-w-full py-2"
+	class="flex flex-grow justify-center items-center p-0
+			container max-h-[5vh] mx-auto rounded-lg mb-2 mt-1
+			transition-all duration-300
+			"
 >
-	<!-- If no content, upload file button -->
+	<!-- Attach file button -->
 	<button
-		class="border flex justify-center items-center w-10 h-10 px-2 rounded-full mx-1"
+		class="flex justify-center items-center w-12 h-full rounded-l-lg
+					border-gray-600
+					bg-gray-900 hover:bg-gray-300
+					text-gray-200 hover:text-black
+					transition-all duration-300
+					{$files ? 'blink-bg' : ''}
+				"
 		on:click={() => {
 			file_input.click();
 		}}
 	>
-		<Fa icon={faPaperclip} class="text-gray-100" />
+		<Fa icon={faPaperclip} class="mb-1" />
+
+		<!-- Show number of files-->
+		<span 
+			class="
+				{$files ? 'opacity-100 ml-1 mt-2' : 'opacity-0'}
+				" 
+			title=" files selected"
+		>
+			{$files ? $files.length : ''}
+		</span>
 	</button>
 
-	<!-- Show number of files-->
-	{#if $files}
-		<span class="text-gray-100 mx-2" title="{$files.length} files selected">{$files.length}</span>
-	{/if}
-
-	<form on:submit|preventDefault={send_message} class="m-0 p-0 h-auto my-auto w-10/12 outline-none mx-1">
+	<form
+		on:submit|preventDefault={send_message}
+		class="m-0 p-0 h-full w-10/12 max-h-full
+				flex justify-between items-center outline-none
+				bg-gray-800
+				"
+	>
 		<!-- File upload -->
 		<input
 			type="file"
 			multiple
 			class="hidden"
 			bind:files={$files}
-			accept="image/* text/* application/* video/* audio/* .*"
+			accept="image/*, video/*, audio/*, .pdf, .doc, .docx, .ppt, .pptx, .xls, .xlsx, .txt"
 			name="file"
 			bind:this={file_input}
 		/>
 
-		<!-- svelte-ignore a11y-autofocus -->
+		<!-- Message input -->
 		<textarea
-			autofocus
 			autocomplete="off"
 			autocorrect="off"
 			autocapitalize="off"
 			spellcheck="false"
-			class="w-full text-gray-100 h-9 max-h-full px-1 border-none outline-none resize-y bg-transparent"
+			class="w-full h-full p-1 m-0
+					outline-none border-none resize-y overflow-y-auto
+					bg-transparent text-gray-100
+					"
 			placeholder="Type a message..."
 			bind:value={$message}
 			on:keydown={(e) => {
@@ -123,18 +143,36 @@
 					e.preventDefault();
 					$message += '\t';
 				}
-
-				// Send typing event
-				ws.emit(Events.SET_STATUS, Status.TYPING, chat_members);
 			}}
 		/>
+		<!-- Send button -->
+		<button
+			class="{$message || $files ? 'opacity-100' : 'w-0 opacity-0'}
+					flex justify-center items-center w-12 h-full rounded-r-lg
+					border-gray-600
+					bg-gray-900 hover:bg-gray-300
+					text-gray-200 hover:text-black
+					transition-all duration-300
+					"
+			on:click={send_message}
+		>
+			<Fa icon={faPaperPlane} />
+		</button>
 	</form>
-
-	<!-- Send button -->
-	<button
-		class="border flex justify-center items-center w-10 h-10 px-2 rounded-full mx-1"
-		on:click={send_message}
-	>
-		<Fa icon={faPaperPlane} class="text-gray-100" />
-	</button>
 </div>
+
+<style>
+	/* Make background color slighty darker then slightly lighter */
+	.blink-bg {
+		animation: blink-bg 2s infinite ease-in-out;
+	}
+	@keyframes blink-bg {
+		25% {
+			filter: brightness(0.75);
+		}
+		75% {
+			filter: brightness(1.25);
+		}
+	}
+
+</style>
