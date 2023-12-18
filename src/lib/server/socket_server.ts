@@ -6,19 +6,19 @@ import { Events, type MessageType, Status } from './../types';
 type HandshakeCallback = (success: boolean) => void;
 
 export default function injectSocketIO(server: ServerOptions) {
-    console.log("Creating socket server at", server)
-
     server.maxHttpBufferSize = 1e6 // 10MB 
 
     const io = new Server(server);
+    console.log('a user connected');
 
     io.on('connection', (socket) => {
+
         socket.on(Events.CONNECT, async (username: string) => {
             socket.join(username);
             await connect(socket.id, username);
         });
 
-        socket.on(Events.HANDSHAKE, (callback: HandshakeCallback) => { callback(true); });
+        socket.on(Events.HANDSHAKE, (callback: HandshakeCallback) => { console.log("CB"); callback(true); });
 
         socket.on('disconnect', async () => {
             await disconnect(socket.id);

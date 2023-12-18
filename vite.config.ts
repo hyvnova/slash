@@ -1,23 +1,23 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-
 import wss from './src/lib/server/socket_server';
-import type { ServerOptions } from 'socket.io';
+import { defineConfig, type Plugin, type ViteDevServer } from 'vite';
 
-const webSocketServer = {
+const webSocketServer: Plugin = {
 	name: 'webSocketServer',
-	configureServer(server: { httpServer: ServerOptions }) {
+	configureServer(server: ViteDevServer) {
+		console.log('configureServer')
+		// @ts-ignore
 		wss(server.httpServer);
 	}
 };
 
-const config = {
+
+export default defineConfig({
 	server: {
-		port: 3000
+		port: 3000,
 	},
 	preview: {
-		port: 3000
+		port: 3000,
 	},
-	plugins: [sveltekit(), webSocketServer],
-};
-
-export default config;
+	plugins: [await sveltekit(), webSocketServer]
+});
