@@ -11,8 +11,6 @@
 	const type = attachment.type.split('/')[0];
 
 	// Convert bytes to human readable format
-	
-
 	const size = bytes_to_size(attachment.size);
 </script>
 {#if type == 'image'}

@@ -60,7 +60,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
     }
 
-    // TODO: Implement login, signup (This is here because of typescript)
     return json({
         success: true
     }, { status: 200 })

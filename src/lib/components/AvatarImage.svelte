@@ -1,4 +1,8 @@
 <script lang="ts">
+	/**
+	 * TODO: Implement an actual cache
+	*/
+
 	import { cached_images } from '$lib/stores/cached_images';
 	import { onMount } from 'svelte';
 

@@ -1,8 +1,6 @@
 import { db } from './db'; // Import your database utility function
-import { GridFSBucket, ObjectId } from 'mongodb';
+import { GridFSBucket } from 'mongodb';
 import { randomUUID } from 'crypto';
-
-import fs from 'node:fs';
 
 const bucket = new GridFSBucket(db, {
     bucketName: 'files',

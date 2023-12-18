@@ -5,7 +5,7 @@ import type { ServerOptions } from 'socket.io';
 
 const webSocketServer = {
 	name: 'webSocketServer',
-	configureServer(server: { httpServer: Partial<ServerOptions> }) {
+	configureServer(server: { httpServer: ServerOptions }) {
 		wss(server.httpServer);
 	}
 };
@@ -17,7 +17,7 @@ const config = {
 	preview: {
 		port: 3000
 	},
-	plugins: [sveltekit(), webSocketServer]
+	plugins: [sveltekit(), webSocketServer],
 };
 
 export default config;

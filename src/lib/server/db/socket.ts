@@ -12,7 +12,7 @@ type OnlineType = {
  * Create "online" collection if it doesn't exist
  */
 const collection = db.collection<OnlineType>("online");
-await collection.createIndex({ username: 1 }, { unique: true });
+collection.createIndex({ username: 1 }, { unique: true });
 
 /**
  * Create a user online record
@@ -185,24 +185,21 @@ export async function is_online(identifier: string): Promise<boolean> {
  * @param chat_id - The id of the chat
  * @returns An array of online members
  */
-export async function get_online_members(chat_id: string) {
-    const collection = db.collection<OnlineType>("online");
+export async function get_online_from(names: string[] ) {
 
-    const members = await collection.find({
-        username: {
-            $in: (await get_chat(chat_id))?.members ?? []
+    let online: OnlineType[] = [];
+
+    for (const name of names) {
+        if (await is_online(name)) {
+            online.push({
+                username: name,
+                socket_id: "",
+                status: Status.ONLINE
+            });
         }
-    }, {
-        projection: {
-            username: 1
-        }
-    }).toArray();
+    }
 
-    // Filter out offline members
-    return members.filter(
-        async (members) => members.username !== null && await is_online(members.username)
-    );
-
+    return online;
 }
 
 /**

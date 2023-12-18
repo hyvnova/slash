@@ -10,13 +10,16 @@
 	const owned = username === message.author; // Person who sent the message -> perspective of massage bubble
 </script>
 
-<div class="flex flex-col {owned ? 'right' : 'left'}">
+<div 
+class="flex flex-col {owned ? 'right' : 'left'}
+		mb-2"
+>
 
 	<!-- Message content & timestamp -->
 	<div
 		class="flex {owned ? 'flex-row-reverse right' : 'flex-row left'} items-center
 			transition-all duration-300 min-h-fit
-			w-full mb-2
+			w-full
 		"
 	>
 		<!-- Message content -->
