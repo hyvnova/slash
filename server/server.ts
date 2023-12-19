@@ -1,18 +1,26 @@
 import http from 'http';
 import express from 'express';
-import { handler } from './../build/handler.js';
 import injectSocketIO from './socket_server.js'
+import cors from 'cors';
 
 const app = express();
+
+// cors
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: '*',
+    credentials: true,
+    optionsSuccessStatus: 204,
+}))
+
 const server = http.createServer(app);
 
 // Inject SocketIO
 // @ts-ignore
 injectSocketIO(server);
 
-// SvelteKit handlers
-app.use(handler);
 
-server.listen(3000, () => {
-    console.log('Running on http://localhost:3000');
+server.listen(3001, () => {
+    console.log('Running on http://localhost:3001');
 })

@@ -36,9 +36,11 @@
 
 		// Handling friend requests
 		ws.on(Events.NEW_FRIEND_REQUEST, (requester_username) => {
+			if (!requester_username) return;
 			requests.update((requests) => [requester_username, ...requests]);
 		});
 		ws.on(Events.CANCEL_FRIEND_REQUEST, (requester_username) => {
+			if (!requester_username) return;
 			requests.update((requests) => requests.filter((username) => username !== requester_username));
 		});
 

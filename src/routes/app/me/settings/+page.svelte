@@ -32,9 +32,42 @@
 
 	<hr />
 
+	<!-- Appareance -->
 	<section
 		class="container flex flex-col justify-center items-center w-full
 			bg-gray-800 rounded-md p-4 mt-4"
+	>
+		<h2 class="text-2xl text-gray-200 m-1">Appearance</h2>
+
+		<!-- Font family select -->
+		<label for="font-family" class="text-gray-300 m-1">Font family</label>
+		<select
+			class="p-2 border-gray-700 rounded-md text-gray-200 w-64 m-1"
+			bind:value={$user_config.font}
+		>
+			{#each FONTS as font}
+				<option value={font}>{font}</option>
+			{/each}
+		</select>
+
+		<!-- Font size  -->
+		<label for="font-size" class="text-gray-300 m-1">Font size</label>
+		<input
+			type="number"
+			min="8"
+			max="32"
+			class="p-2 border-gray-700 rounded-md text-gray-200 m-1 max-w-[5em]"
+			bind:value={$user_config.font_size}
+		/>
+
+		<!-- Backgrouund  -->
+	</section>
+
+	<!-- Account -->
+	<section
+		class="container flex flex-col justify-center items-center w-full
+			bg-gray-800 rounded-md p-4 mt-4"
+
 	>
 		<h2 class="text-2xl text-gray-200 m-1">Account</h2>
 		<p class="text-gray-300 m-1">
@@ -58,35 +91,4 @@
 			>
 		</div>
 	</section>
-
-	<section
-		class="container flex flex-col justify-center items-center w-full
-			bg-gray-800 rounded-md p-4 mt-4"
-	>
-		<h2 class="text-2xl text-gray-200 m-1">Appearance</h2>
-
-		<!-- Font family select -->
-		<label for="font-family" class="text-gray-300 m-1">Font family</label>
-		<select class="p-2 border-gray-700 rounded-md text-gray-200 w-64 m-1"
-			bind:value={$user_config.font}
-		>
-			{#each FONTS as font}
-				<option value={font}>{font}</option>
-			{/each}
-		</select>
-
-		<!-- Font size  -->
-		<label for="font-size" class="text-gray-300 m-1">Font size</label>
-		<input
-			type="number"
-			min="8"
-			max="32"
-			class="p-2 border-gray-700 rounded-md text-gray-200 m-1 max-w-[5em]"
-			bind:value={$user_config.font_size}
-		/>
-
-		<!-- Backgrouund  -->
-
-	</section>
-
 </main>

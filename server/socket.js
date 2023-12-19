@@ -23,12 +23,11 @@ export function exists(username) {
  * @returns status or "offline" if doesn't exist
  */
 export function get_status(username) {
-    var _a;
     const user = onlineUsers.get(username);
     if (!user) {
         create_user(username);
     }
-    return (_a = user === null || user === void 0 ? void 0 : user.status) !== null && _a !== void 0 ? _a : "offline" /* Status.OFFLINE */;
+    return user?.status ?? "offline" /* Status.OFFLINE */;
 }
 /**
  * Set user status

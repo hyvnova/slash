@@ -8,7 +8,15 @@ type HandshakeCallback = (success: boolean) => void;
 export default function injectSocketIO(server: ServerOptions) {
     server.maxHttpBufferSize = 1e6 // 10MB 
 
-    const io = new Server(server);
+    const io = new Server(server, {
+        cors: {
+            origin: '*',
+            methods: ['GET', 'POST', 'PUT', 'DELETE'],
+            allowedHeaders: '*',
+            credentials: true,
+            optionsSuccessStatus: 204,
+        }
+    });
 
     io.on('connection', (socket) => {
         socket.on(Events.CONNECT, async (username: string) => {

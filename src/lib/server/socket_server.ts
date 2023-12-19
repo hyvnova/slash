@@ -8,8 +8,15 @@ type HandshakeCallback = (success: boolean) => void;
 export default function injectSocketIO(server: ServerOptions) {
     server.maxHttpBufferSize = 1e6 // 10MB 
 
-    const io = new Server(server);
-    console.log('a user connected');
+    const io = new Server(server, {
+        cors: {
+            origin: '*',
+            methods: ['GET', 'POST', 'PUT', 'DELETE'],
+            allowedHeaders: '*',
+            credentials: true,
+            optionsSuccessStatus: 204,
+        }
+    });
 
     io.on('connection', (socket) => {
 
@@ -18,7 +25,7 @@ export default function injectSocketIO(server: ServerOptions) {
             await connect(socket.id, username);
         });
 
-        socket.on(Events.HANDSHAKE, (callback: HandshakeCallback) => { console.log("CB"); callback(true); });
+        socket.on(Events.HANDSHAKE, (callback: HandshakeCallback) => { callback(true); });
 
         socket.on('disconnect', async () => {
             await disconnect(socket.id);

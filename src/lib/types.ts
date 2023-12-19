@@ -124,3 +124,8 @@ export type UserSearchResult = {
 }
 
 
+export enum FileLoadState {
+    LOADING,
+    LOADED,
+    FAILED
+}

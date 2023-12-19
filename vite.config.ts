@@ -5,7 +5,6 @@ import { defineConfig, type Plugin, type ViteDevServer } from 'vite';
 const webSocketServer: Plugin = {
 	name: 'webSocketServer',
 	configureServer(server: ViteDevServer) {
-		console.log('configureServer')
 		// @ts-ignore
 		wss(server.httpServer);
 	}
@@ -15,9 +14,11 @@ const webSocketServer: Plugin = {
 export default defineConfig({
 	server: {
 		port: 3000,
+		cors: true
 	},
 	preview: {
 		port: 3000,
+		cors:true
 	},
 	plugins: [await sveltekit(), webSocketServer]
 });

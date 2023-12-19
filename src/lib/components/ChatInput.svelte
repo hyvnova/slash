@@ -24,17 +24,20 @@
 
 	async function send_message() {
 		$message = $message.trim();
-		if (!$message && !$files) {
+		let attachment_files = $files;
+
+		if (!$message && !attachment_files) {
 			return;
 		}
-
 		let attachments: AttachmentType[] = [];
-		if ($files) {
+
+		if (attachment_files) {
 			const formData = new FormData();
-			for (const file of $files) {
+			for (const file of attachment_files) {
 				formData.append('files', file);
 			}
 			attachments = await upload_attachments(formData);
+			console.log("Files length: ", attachments.length, "Attachment length: ", attachments.length);
 		}
 
 		file_input.files = null;
