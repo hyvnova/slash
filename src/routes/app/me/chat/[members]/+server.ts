@@ -39,7 +39,7 @@ export const GET: RequestHandler = async ({ params, cookies }) => {
 
     // If the user is not found, return to / (home)
     if (!user) {
-        cookies.delete("token", { path: "/", secure: process.env.VERCEL_ENV === "production" }); throw redirect(302, "/")
+        cookies.delete("token", { path: "/", secure: process.env.NODE_ENV === "production" }); throw redirect(302, "/")
     }
 
     members_list.push(user.username);

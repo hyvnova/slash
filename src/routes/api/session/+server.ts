@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
             // Remove token from cookies
             cookies.delete("token", {
                 path: "/",
-                secure: process.env.VERCEL_ENV === "production",
+                secure: process.env.NODE_ENV === "production",
             });
             break;
 
@@ -53,7 +53,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
             // Remove token from cookies
             cookies.delete("token", {
                 path: "/",
-                secure: process.env.VERCEL_ENV === "production",
+                secure: process.env.NODE_ENV === "production",
             });
 
             break;

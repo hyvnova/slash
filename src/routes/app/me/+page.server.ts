@@ -13,6 +13,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
     // Get the user data from the token
     const user = await get_by(token);
 
+    if (!user) { throw redirect(302, "/") }
 
     // Otherwise, return the user data
     return {

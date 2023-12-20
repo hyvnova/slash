@@ -5,6 +5,12 @@ import bcrypt from 'bcrypt';
 import { Routes, type UserType } from "$lib/types";
 import "dotenv/config";
 
+try {
+    process.env.DEV = import.meta.env.DEV ? "true" : "false";
+} catch (e) {
+    process.env.DEV = "true";
+}
+
 
 export const load: PageServerLoad = async ({ cookies }) => {
 
@@ -51,7 +57,7 @@ export const actions = {
         // Save token to session cookie
         cookies.set("token", token, {
             path: "/",
-            secure: process.env.VERCEL_ENV === "production"
+            secure: process.env.NODE_ENV === "production"
         });
 
 
