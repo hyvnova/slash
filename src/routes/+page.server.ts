@@ -51,7 +51,7 @@ export const actions = {
         // Save token to session cookie
         cookies.set("token", token, {
             path: "/",
-            secure: process.env.NODE_ENV === "production"
+            secure: process.env.VERCEL_ENV === "production"
         });
 
 

@@ -16,7 +16,7 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 
     // If the user is not found, return to / (home)
     if (!user) {
-        cookies.delete("token", { path: "/", secure: process.env.NODE_ENV === "production" }); throw redirect(302, "/")
+        cookies.delete("token", { path: "/", secure: process.env.VERCEL_ENV === "production" }); throw redirect(302, "/")
     }
 
     // Otherwise, return the user data

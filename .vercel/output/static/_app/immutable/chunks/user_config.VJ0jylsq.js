@@ -1,0 +1,1 @@
+import{w as e}from"./index.QmuqCeFS.js";const s=["Ubuntu","Roboto","Open Sans","Writer","Fira Code","Fira Sans"],o={font:"Ubuntu",font_size:16,background:{type:"color",value:"transparent"}},a=JSON.parse(localStorage.getItem("user_config")||JSON.stringify(o)),r=e(a);r.subscribe(t=>{localStorage.setItem("user_config",JSON.stringify(t))});export{s as F,r as u};
