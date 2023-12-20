@@ -21,6 +21,6 @@ const server = http.createServer(app);
 injectSocketIO(server);
 
 
-server.listen(3001, () => {
+server.listen(3000, () => {
     console.log('listening on *:3001');
 })

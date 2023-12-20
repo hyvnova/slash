@@ -7,10 +7,10 @@ function __memo(fn) {
 return {
 	appDir: "_app",
 	appPath: "_app",
-	assets: new Set(["default_avatars/1.jpg","default_avatars/2.jpg","default_avatars/3.jpg","default_avatars/4.jpg","favicon.png","fonts/Writer/Writer-Bold.ttf","fonts/Writer/Writer-BoldItalic.ttf","fonts/Writer/Writer-Italic.ttf","fonts/Writer/Writer-Medium.ttf","fonts/Writer/Writer-MediumItalic.ttf","fonts/Writer/Writer-Regular.ttf","fonts/Writer/Writer-SemiBold.ttf","fonts/Writer/Writer-SemiBoldItalic.ttf","nova-auth.png"]),
-	mimeTypes: {".jpg":"image/jpeg",".png":"image/png",".ttf":"font/ttf"},
+	assets: new Set(["default_avatars/1.jpg","default_avatars/2.jpg","default_avatars/3.jpg","default_avatars/4.jpg","favicon.ico","fonts/Writer/Writer-Bold.ttf","fonts/Writer/Writer-BoldItalic.ttf","fonts/Writer/Writer-Italic.ttf","fonts/Writer/Writer-Medium.ttf","fonts/Writer/Writer-MediumItalic.ttf","fonts/Writer/Writer-Regular.ttf","fonts/Writer/Writer-SemiBold.ttf","fonts/Writer/Writer-SemiBoldItalic.ttf","logo.jpeg","nova-auth.png"]),
+	mimeTypes: {".jpg":"image/jpeg",".ttf":"font/ttf",".jpeg":"image/jpeg",".png":"image/png"},
 	_: {
-		client: {"start":"_app/immutable/entry/start.RXRQ4_aY.js","app":"_app/immutable/entry/app.W4x2mrCx.js","imports":["_app/immutable/entry/start.RXRQ4_aY.js","_app/immutable/chunks/scheduler.EpWGcs72.js","_app/immutable/chunks/singletons.jeDsdSwJ.js","_app/immutable/chunks/index.QmuqCeFS.js","_app/immutable/entry/app.W4x2mrCx.js","_app/immutable/chunks/scheduler.EpWGcs72.js","_app/immutable/chunks/index.vVMILz9O.js"],"stylesheets":[],"fonts":[],"uses_env_dynamic_public":false},
+		client: {"start":"_app/immutable/entry/start.iOlAXtva.js","app":"_app/immutable/entry/app.VSfDvqYh.js","imports":["_app/immutable/entry/start.iOlAXtva.js","_app/immutable/chunks/scheduler.EpWGcs72.js","_app/immutable/chunks/singletons.HB2epW-c.js","_app/immutable/chunks/index.QmuqCeFS.js","_app/immutable/entry/app.VSfDvqYh.js","_app/immutable/chunks/scheduler.EpWGcs72.js","_app/immutable/chunks/index.vVMILz9O.js"],"stylesheets":[],"fonts":[],"uses_env_dynamic_public":false},
 		nodes: [
 			__memo(() => import('../output/server/nodes/0.js')),
 			__memo(() => import('../output/server/nodes/1.js')),
