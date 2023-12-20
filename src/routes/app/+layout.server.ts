@@ -1,8 +1,7 @@
 import { redirect } from "@sveltejs/kit";
 import type { LayoutServerLoad } from "./$types";
 import { get_by } from "$lib/server/db/user";
-import { Events, type UserType } from "$lib/types";
-import { ws } from "$lib/websocket";
+import type { UserType } from "$lib/types";
 
 
 export const load: LayoutServerLoad = async ({ cookies }) => {
@@ -17,11 +16,8 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 
     // If the user is not found, return to / (home)
     if (!user) {
-        cookies.delete("token", { path: "/", secure: process.env.NODE_ENV === "production" }); throw redirect(302, "/")
+        cookies.delete("token", { path: "/", secure: process.env.VERCEL_ENV === "production" }); throw redirect(302, "/")
     }
-
-    ws.emit(Events.CONNECT, user.username);
-
 
     // Otherwise, return the user data
     return {

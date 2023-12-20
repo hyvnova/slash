@@ -32,10 +32,12 @@
 {/if}
 
 {#key data.pathname}
-	<div in:fly={transitionIn} out:fly={transitionOut}>
+	<div in:fly|global={transitionIn} out:fly|global={transitionOut}>
 
 		<div
-			style="font-family:{$user_config.font} !important;"
+			style="font-family:{$user_config.font} !important; 
+					font-size:{$user_config.font_size}px !important;
+				"
 		>
 		<slot />
 		</div>

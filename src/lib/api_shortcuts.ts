@@ -71,7 +71,7 @@ export async function handle_message(params: {
 /**
  * Message attachment upload
  */
-export async function upload_attachments(files:FormData): Promise<AttachmentType[]> {
+export async function upload_attachments(files: FormData): Promise<AttachmentType[]> {
     let res = await fetch("/api/file/upload", {
         method: "POST",
         body: files 

@@ -43,7 +43,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
             // Remove token from cookies
             cookies.delete("token", {
                 path: "/",
-                secure: process.env.NODE_ENV === "production",
+                secure: process.env.VERCEL_ENV === "production",
             });
             break;
 
@@ -53,14 +53,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
             // Remove token from cookies
             cookies.delete("token", {
                 path: "/",
-                secure: process.env.NODE_ENV === "production",
+                secure: process.env.VERCEL_ENV === "production",
             });
 
             break;
 
     }
 
-    // TODO: Implement login, signup (This is here because of typescript)
     return json({
         success: true
     }, { status: 200 })

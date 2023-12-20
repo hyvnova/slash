@@ -1,26 +1,23 @@
 <script lang="ts">
 	import type { AttachmentType } from '$lib/types';
 	import Image from '$lib/components/attachments/Image.svelte';
-	import { faCircle, faFile } from '@fortawesome/free-solid-svg-icons';
+	import { faFile } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
+	import Txt from './attachments/Txt.svelte';
+	import { bytes_to_size } from '$lib';
 
 	export let attachment: AttachmentType;
 
 	const type = attachment.type.split('/')[0];
 
 	// Convert bytes to human readable format
-	const calc_size = (bytes: number) => {
-		const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-		if (bytes == 0) return '0 Byte';
-		const i = Math.floor(Math.log(bytes) / Math.log(1024));
-		return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
-	};
-
-	const size = calc_size(attachment.size);
+	const size = bytes_to_size(attachment.size);
 </script>
-
 {#if type == 'image'}
 	<Image {attachment} />
+{:else if type == 'text'}
+	<Txt {attachment} />
+
 	<!-- Unknown type or just some document -->
 {:else}
 	<!-- Document Icon with attachment metadata -->

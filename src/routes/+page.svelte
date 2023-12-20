@@ -1,9 +1,6 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
 	import Notification from '$lib/components/Notification.svelte';
-	import { writable } from 'svelte/store';
 	import type { ActionData, PageServerData } from './$types';
-	import type { NotificationType } from '$lib/types';
 	import notification from '$lib/stores/notification';
 
 	let username: string = '';
@@ -27,7 +24,6 @@
 		}
 	}
 
-
 	/**
 	 * If form submission was successful -> redirect to /me
 	 * ... unsuccessful -> display error
@@ -39,19 +35,16 @@
 			message: form.error,
 			type: 'error',
 			duration: 5000
-		})
+		});
 	}
-
 </script>
 
 <main
 	class="container h-screen flex flex-col justify-center items-center"
 	title="Login or sing up page"
 >
-
 	<!-- Notification card to show form error -->
 	<Notification />
-
 
 	<header class="mb-4">
 		<h1 class="text-4xl">Join</h1>
@@ -106,7 +99,6 @@
 				</button>
 			</form>
 		</section>
-
 	</div>
 </main>
 

@@ -7,12 +7,9 @@ try {
     process.env.DEV = "true";
 }
 
-
 // Database URI and name
 const DB_URI = process.env.DB_URI;
 const DB_NAME = process.env.DEV === "true" ? "dev" : "prod";
-
-console.log("Using DB:", DB_NAME);
 
 if (!DB_URI) {
     throw new Error("Database URI is not set");

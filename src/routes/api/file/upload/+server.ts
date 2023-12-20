@@ -22,6 +22,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
     }
 
     const files = formData.getAll("files") as File[];
+    console.log("Files", files);
 
     if (!files || files.length === 0) {
         return json({

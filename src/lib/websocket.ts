@@ -1,4 +1,3 @@
-import { get } from "svelte/store";
-import { socket } from "./stores/websocket";
+import client from 'socket.io-client';
 
-export const ws = get(socket);
+export const ws = client();
