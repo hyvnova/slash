@@ -82,6 +82,12 @@ export async function add_message(chat_id: string, message: Partial<MessageType>
     message.id = randomUUID();
     message.attachments ||= [];
 
+    // If there's 100 or more messages, remove the extra ones
+    const chat = await db.collection<ChatType>("chats").findOne({ id: chat_id }, { projection: { messages: { $slice: -100 } } });
+    if (chat && chat.messages.length >= 100) {
+        await db.collection<ChatType>("chats").updateOne({ id: chat_id }, { $pop: { messages: -1 } });
+    }
+
     await db.collection<ChatType>("chats").updateOne({ id: chat_id }, { $push: { messages: message as MessageType } });
 }
 

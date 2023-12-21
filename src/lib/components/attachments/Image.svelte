@@ -4,7 +4,7 @@
 	import { FileLoadState, type AttachmentType } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
-	import FileLoadStates from '../FileLoadStates.svelte';
+	import FileLoadStates from '$lib/components/FileLoadStates.svelte';
 
 	export let attachment: AttachmentType;
 	export let use_cache: boolean = false;
@@ -23,7 +23,6 @@
 				// Otherwise, fetch the image and cache it
 			} else {
 				let res = await fetch(`/file/${attachment.id}`);
-
 				if (res.ok) {
 					const blob = await res.blob();
 					url = URL.createObjectURL(blob);
