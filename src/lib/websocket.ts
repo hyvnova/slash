@@ -1,3 +1,3 @@
 import client from 'socket.io-client';
 
-export const ws = process.env.NODE_ENV === "production" ? client("http://localhost:3001") : client();
+export const ws = process.env.NODE_ENV === "production" ? client() : client("http://localhost:3001") 
