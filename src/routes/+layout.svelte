@@ -35,8 +35,11 @@
 	<div in:fly|global={transitionIn} out:fly|global={transitionOut}>
 
 		<div
-			style="font-family:{$user_config.font} !important; 
-					font-size:{$user_config.font_size}px !important;
+			style="
+				font-family:{$user_config.font} !important; 
+				font-size:{$user_config.font_size}px !important;
+				background:{$user_config.background};
+				color:{$user_config.color};
 				"
 		>
 		<slot />
