@@ -12,18 +12,19 @@ export default function injectSocketIO(server) {
         }
     });
     io.on('connection', (socket) => {
-        socket.on("user connect" /* Events.CONNECT */, async (username) => {
+        socket.on("user connect" /* Events.CONNECT */, (username) => {
+            console.log("connect ", username);
             socket.join(username);
             connect(socket.id, username);
         });
         socket.on("handshake" /* Events.HANDSHAKE */, (callback) => { callback(true); });
-        socket.on('disconnect', async () => {
+        socket.on('disconnect', () => {
             disconnect(socket.id);
         });
         /**
          * Join Chat
          */
-        socket.on("join chat" /* Events.JOIN_CHAT */, async (chat_id, chat_members, username) => {
+        socket.on("join chat" /* Events.JOIN_CHAT */, (chat_id, chat_members, username) => {
             if (!get_username(socket.id)) {
                 connect(socket.id, username);
             }
@@ -47,7 +48,7 @@ export default function injectSocketIO(server) {
          * username - user who sent the status
          * status - status of the user
          */
-        socket.on("status" /* Events.STATUS */, async (username, status) => {
+        socket.on("status" /* Events.STATUS */, (username, status) => {
             console.log("status", username, status);
             if (is_online(socket.id)) {
                 console.log("status", username, status);
@@ -57,14 +58,14 @@ export default function injectSocketIO(server) {
         /**
          * Set Status
          */
-        socket.on("set status" /* Events.SET_STATUS */, async (status, friends) => {
+        socket.on("set status" /* Events.SET_STATUS */, (status, friends) => {
             let username = get_username(socket.id);
             if (!username) {
                 return;
             }
             // Set status
             set_status(username, status);
-            friends.forEach(async (friend) => {
+            friends.forEach((friend) => {
                 if (is_online(friend)) {
                     io.to(friend).emit("status" /* Events.STATUS */, username, status);
                 }
@@ -73,8 +74,8 @@ export default function injectSocketIO(server) {
         /**
          * Get status of friends
          */
-        socket.on("get friends status" /* Events.GET_FRIENDS_STATUS */, async (friends) => {
-            friends.forEach(async (friend) => {
+        socket.on("get friends status" /* Events.GET_FRIENDS_STATUS */, (friends) => {
+            friends.forEach((friend) => {
                 io.to(socket.id).emit("status" /* Events.STATUS */, friend, get_status(friend));
             });
         });
@@ -89,14 +90,16 @@ export default function injectSocketIO(server) {
             "reject friend request" /* Events.REJECT_FRIEND_REQUEST */,
         ];
         for (const state of friend_requests_states) {
-            socket.on(state, async (friend) => {
+            socket.on(state, (friend) => {
                 let username = get_username(socket.id);
+                console.log(username, "send a ", state, " to ", friend);
+                console.log("is online", is_online(friend));
                 if (is_online(friend)) {
                     io.to(friend).emit(state, username);
                 }
             });
         }
-        socket.on("unfriend" /* Events.UNFRIEND */, async (friend) => {
+        socket.on("unfriend" /* Events.UNFRIEND */, (friend) => {
             if (is_online(friend)) {
                 io.to(friend).emit("unfriend" /* Events.UNFRIEND */, get_username(socket.id));
             }
@@ -104,13 +107,13 @@ export default function injectSocketIO(server) {
         /**
          * Messages: send, delete, edit
          */
-        socket.on("new message" /* Events.NEW_MESSAGE */, async (chat_id, message) => {
+        socket.on("new message" /* Events.NEW_MESSAGE */, (chat_id, message) => {
             io.to(chat_id).emit("new message" /* Events.NEW_MESSAGE */, message);
         });
-        socket.on("delete message" /* Events.DELETE_MESSAGE */, async (chat_id, message_id) => {
+        socket.on("delete message" /* Events.DELETE_MESSAGE */, (chat_id, message_id) => {
             io.to(chat_id).emit("delete message" /* Events.DELETE_MESSAGE */, message_id);
         });
-        socket.on("edit message" /* Events.EDIT_MESSAGE */, async (chat_id, message) => {
+        socket.on("edit message" /* Events.EDIT_MESSAGE */, (chat_id, message) => {
             io.to(chat_id).emit("edit message" /* Events.EDIT_MESSAGE */, message);
         });
     });
