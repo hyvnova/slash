@@ -40,7 +40,7 @@
 </script>
 
 <main
-	class="container h-screen flex flex-col justify-center items-center"
+	class="container h-screen flex flex-col justify-center items-center bg-inherit"
 	title="Login or sing up page"
 >
 	<!-- Notification card to show form error -->

@@ -96,7 +96,7 @@
 
 <Notification />
 
-<main class="max-w-3xl mx-auto layout" bind:this={container}>
+<main class="max-w-3xl mx-auto layout bg-inherit" bind:this={container}>
 	<!-- Top-->
 	<nav class="my-1 flex justify-between items-center w-full p-1 border-b border-gray-700">
 		<a href={Routes.HOME} class="ml-1 rotate text-gray-400 hover:text-gray-100">
