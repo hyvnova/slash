@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { AttachmentType } from '$lib/types';
+	import { Routes, type AttachmentType } from '$lib/types';
 	import Image from '$lib/components/attachments/Image.svelte';
 	import { faFile } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
@@ -21,7 +21,7 @@
 	<!-- Unknown type or just some document -->
 {:else}
 	<!-- Document Icon with attachment metadata -->
-	<a href="/file/{attachment.id}" target="_blank">
+	<a href="{Routes.FILE}/{attachment.id}" target="_blank">
 		<div class="flex items-center space-x-2 border border-gray-500 rounded-md p-1 m-1">
 			<Fa icon={faFile} class="text-gray-400 text-3xl mx-1" />
 

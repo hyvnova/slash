@@ -16,6 +16,7 @@ export const enum Routes {
     CHAT = BASE + "/chat", // Follwed /[chat_id]
     CHAT_REDIRECT = BASE + "/me/chat", // Used to redirect to the chat page. Followed by /[meembers]
     PROFILE = BASE + "/profile",
+    FILE = "/file", // Followed by /[file_id]
 }
 
 

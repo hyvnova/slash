@@ -20,7 +20,7 @@
 		if (form) {
 			notification.set({
 				type: 'error',
-				title: 'Invalid credentials',
+				title: 'Something went wrong while updating your profile',
 				message: form.error as string,
 				duration: 5000
 			});
@@ -81,7 +81,7 @@
 					<form
 						class="m-0 flex flex-col justify-center items-center"
 						method="post"
-						action="/profile/{data.username}?/update_avatar"
+						action="{Routes.PROFILE}/{data.username}?/update_avatar"
 					>
 						<input
 							type="url"

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { bytes_to_size } from '$lib';
 	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
-	import { FileLoadState, type AttachmentType } from '$lib/types';
+	import { FileLoadState, type AttachmentType, Routes } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 	import CodeBlock from '../CodeBlock.svelte';
@@ -20,7 +20,7 @@
 
 
 	const get_file_content = async () => {
-		let res = await fetch(`/file/${attachment.id}`);
+		let res = await fetch(`${Routes.FILE}/${attachment.id}`);
 		if (res.ok) {
 			let text = await res.text();
 			content = text || 'Empty file';
@@ -73,7 +73,7 @@
 
 		<!-- Download button -->
 		<a
-			href="/file/${attachment.id}"
+			href="${Routes.FILE}/${attachment.id}"
 			target="_blank"
 			class="border border-gray-500 rounded-md p-1 m-1 w-auto"
 			title="Download"

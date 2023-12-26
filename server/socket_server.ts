@@ -1,9 +1,10 @@
 import { Server, type ServerOptions } from 'socket.io';
-import { connect, disconnect, get_online_from, get_status, get_username, is_online, set_status } from './socket.js';
+import { connect, disconnect, get_online_from, get_status, is_online, set_status } from './socket_db.js';
 import { Events, type MessageType, Status } from './types.js';
 
 
 type HandshakeCallback = (success: boolean) => void;
+let username = "";
 
 export default function injectSocketIO(server: ServerOptions) {
     server.maxHttpBufferSize = 1e6 // 10MB 
@@ -19,8 +20,8 @@ export default function injectSocketIO(server: ServerOptions) {
     });
 
     io.on('connection', (socket) => {
-        socket.on(Events.CONNECT, (username: string) => {
-            console.log("connect ", username)
+        socket.on(Events.CONNECT, (_username: string) => {
+            username = _username;
             socket.join(username);
             connect(socket.id, username);
         });
@@ -35,9 +36,7 @@ export default function injectSocketIO(server: ServerOptions) {
          * Join Chat
          */
         socket.on(Events.JOIN_CHAT, (chat_id: string, chat_members: string[], username: string) => {
-            if (!get_username(socket.id)) {
-                connect(socket.id, username);
-            }
+            connect(socket.id, username);
 
             // Leave all other rooms
             Object.keys(socket.rooms).forEach((room) => {
@@ -48,7 +47,7 @@ export default function injectSocketIO(server: ServerOptions) {
             socket.join(chat_id);
 
             // Emit online status to all members of the chat
-            io.to(chat_id).emit(Events.STATUS, get_username(socket.id), Status.ONLINE);
+            io.to(chat_id).emit(Events.STATUS, username, Status.ONLINE);
 
             // Get others' online status
             const members = get_online_from(chat_members)
@@ -76,8 +75,6 @@ export default function injectSocketIO(server: ServerOptions) {
          * Set Status
          */
         socket.on(Events.SET_STATUS, (status: Status, friends: string[]) => {
-
-            let username = get_username(socket.id);
             if (!username) { return; }
 
             // Set status
@@ -113,9 +110,9 @@ export default function injectSocketIO(server: ServerOptions) {
         for (const state of friend_requests_states) {
             socket.on(state, (friend: string) => {
 
-                let username = get_username(socket.id);
-                console.log(username, "send a ", state, " to ", friend)
+                console.log(username, "send a", state, "to", friend)
                 console.log("is online", is_online(friend))
+
                 if (is_online(friend)) {
                     io.to(friend).emit(state, username);
                 }
@@ -124,7 +121,7 @@ export default function injectSocketIO(server: ServerOptions) {
 
         socket.on(Events.UNFRIEND, (friend: string) => {
             if (is_online(friend)) {
-                io.to(friend).emit(Events.UNFRIEND, get_username(socket.id));
+                io.to(friend).emit(Events.UNFRIEND, username);
             }
         });
 

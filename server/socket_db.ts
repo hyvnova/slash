@@ -14,9 +14,9 @@ const onlineUsers = new Map<string, User>();
  * Create a user online record
  * @param username 
  */
-export function create_user(username: string) {
+export function create_user(socketId: string, username: string) {
   onlineUsers.set(username, {
-    socketId: "",
+    socketId: socketId,
     status: Status.OFFLINE
   });
 
@@ -37,9 +37,10 @@ export function exists(username: string): boolean {
  * @returns status or "offline" if doesn't exist
  */
 export function get_status(username: string): Status {
-  const user = onlineUsers.get(username);
+  let user = onlineUsers.get(username);
   if (!user) {
-    create_user(username);
+    // Don't know how you can reach this point, but just in case
+    return Status.OFFLINE;
   }
   return user?.status ?? Status.OFFLINE
 }
@@ -52,9 +53,13 @@ export function get_status(username: string): Status {
 export function set_status(username: string, status: Status) {
     let user = onlineUsers.get(username);
     if (!user) {
-        user = create_user(username);
+        // Another case where you shouldn't reach this point
+        return;
     }
-    user.status = status;
+    onlineUsers.set(username, {
+        socketId: user.socketId,
+        status
+    });
 }
 
 /**
@@ -63,25 +68,21 @@ export function set_status(username: string, status: Status) {
  * @param username
  */ 
 export function connect(socketId: string, username: string) {
-    let user = onlineUsers.get(username);
-    if (!user) {
-        user = create_user(username);
-    }
-    user.socketId = socketId;  
-    user.status = Status.ONLINE;
-}
+    onlineUsers.set(username, {
+        socketId,
+        status: Status.ONLINE
+    });
+}   
 
 /**
  * Log user disconnection
  * @param socketId 
  */
 export function disconnect(username: string) {
-    const user = onlineUsers.get(username);
-    if (!user) {
-        return;
-    }
-    user.status = Status.OFFLINE;
-    user.socketId = "";
+    onlineUsers.set(username, {
+        socketId: "",
+        status: Status.OFFLINE
+    });
 }
 
 /**
@@ -90,7 +91,7 @@ export function disconnect(username: string) {
  * @returns true if online, false otherwise
  */
 export function is_online(username: string): boolean {
-    return get_status(username) === "online";
+    return get_status(username) === Status.ONLINE;
 }
 
 /**
@@ -119,11 +120,12 @@ export function get_online_from(usernames: string[]){
             let user = onlineUsers.get(username);
 
             if (!user) {
-                user = create_user(username);
+                // Another case where you shouldn't reach this point
+                continue;
             }
 
             user.username = username;
-            online.push(onlineUsers.get(username)!);
+            online.push(user);
         }
     }
     return online;

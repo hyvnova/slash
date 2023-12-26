@@ -51,5 +51,7 @@
 <style>
 	* {
 		font-family:'Noto Color Emoji', Arial, Helvetica, sans-serif;
+		background:inherit;
+		color:inherit;
 	}
 </style>

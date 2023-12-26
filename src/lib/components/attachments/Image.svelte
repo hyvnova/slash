@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { cached_images } from '$lib/stores/cached_images';
 	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
-	import { FileLoadState, type AttachmentType } from '$lib/types';
+	import { FileLoadState, type AttachmentType, Routes } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 	import FileLoadStates from '$lib/components/FileLoadStates.svelte';
-
 	export let attachment: AttachmentType;
 	export let use_cache: boolean = false;
 
-	let url = `/file/${attachment.id}`;
+	let url = `${Routes.FILE}/${attachment.id}`;
 
 	const state = writable<FileLoadState>(FileLoadState.LOADING);
 	let tries = 0;
@@ -22,7 +21,7 @@
 
 				// Otherwise, fetch the image and cache it
 			} else {
-				let res = await fetch(`/file/${attachment.id}`);
+				let res = await fetch(`${Routes.FILE}/${attachment.id}`);
 				if (res.ok) {
 					const blob = await res.blob();
 					url = URL.createObjectURL(blob);

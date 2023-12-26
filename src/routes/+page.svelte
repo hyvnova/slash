@@ -41,7 +41,6 @@
 
 <main
 	class="container h-screen flex flex-col justify-center items-center bg-inherit"
-	title="Login or sing up page"
 >
 	<!-- Notification card to show form error -->
 	<Notification />
@@ -55,7 +54,6 @@
 	<div class="flex flex-row w-10/12 justify-center items-center">
 		<section class="w-max">
 			<form
-				title="Login or sing up form"
 				class="m-2 flex flex-col justify-center items-center"
 				action="/"
 				method="POST"
@@ -64,7 +62,7 @@
 				<input
 					class="hover:border-blue-700"
 					type="text"
-					title="username"
+					title="Username is your unique identifier, it is case insensitive and can only contain letters, numbers, and underscores."
 					placeholder="some_username78"
 					minlength="1"
 					maxlength="16"
@@ -75,12 +73,20 @@
 					bind:value={username}
 					on:keydown={goto_next_sibling}
 					pattern="[a-z0-9_]+"
+
+					on:input={() => {
+						// If contains invalid characters, remove them
+						if (!/^[a-z0-9_]+$/i.test(username)) {
+							username = username.replace(/[^a-z0-9_]+/gi, '');
+						}
+
+					}}
 				/>
 
 				<input
 					class="hover:border-blue-700"
 					type="password"
-					title="password"
+					title="Password can be anything you want from 4 to 128 characters, we recommend at least 8 characters, numbers, and special characters."
 					placeholder="password"
 					minlength="4"
 					maxlength="128"

@@ -1,5 +1,6 @@
 import { Server } from 'socket.io';
-import { connect, disconnect, get_online_from, get_status, get_username, is_online, set_status } from './socket.js';
+import { connect, disconnect, get_online_from, get_status, is_online, set_status } from './socket_db.js';
+let username = "";
 export default function injectSocketIO(server) {
     server.maxHttpBufferSize = 1e6; // 10MB 
     const io = new Server(server, {
@@ -12,10 +13,11 @@ export default function injectSocketIO(server) {
         }
     });
     io.on('connection', (socket) => {
-        socket.on("user connect" /* Events.CONNECT */, (username) => {
-            console.log("connect ", username);
+        socket.on("user connect" /* Events.CONNECT */, (_username) => {
+            username = _username;
             socket.join(username);
             connect(socket.id, username);
+            console.log("connected", username, socket.id);
         });
         socket.on("handshake" /* Events.HANDSHAKE */, (callback) => { callback(true); });
         socket.on('disconnect', () => {
@@ -25,9 +27,7 @@ export default function injectSocketIO(server) {
          * Join Chat
          */
         socket.on("join chat" /* Events.JOIN_CHAT */, (chat_id, chat_members, username) => {
-            if (!get_username(socket.id)) {
-                connect(socket.id, username);
-            }
+            connect(socket.id, username);
             // Leave all other rooms
             Object.keys(socket.rooms).forEach((room) => {
                 if (room !== socket.id && room !== chat_id && room !== username) {
@@ -36,7 +36,7 @@ export default function injectSocketIO(server) {
             });
             socket.join(chat_id);
             // Emit online status to all members of the chat
-            io.to(chat_id).emit("status" /* Events.STATUS */, get_username(socket.id), "online" /* Status.ONLINE */);
+            io.to(chat_id).emit("status" /* Events.STATUS */, username, "online" /* Status.ONLINE */);
             // Get others' online status
             const members = get_online_from(chat_members);
             members.forEach((member) => {
@@ -59,7 +59,6 @@ export default function injectSocketIO(server) {
          * Set Status
          */
         socket.on("set status" /* Events.SET_STATUS */, (status, friends) => {
-            let username = get_username(socket.id);
             if (!username) {
                 return;
             }
@@ -91,8 +90,7 @@ export default function injectSocketIO(server) {
         ];
         for (const state of friend_requests_states) {
             socket.on(state, (friend) => {
-                let username = get_username(socket.id);
-                console.log(username, "send a ", state, " to ", friend);
+                console.log(username, "send a", state, "to", friend);
                 console.log("is online", is_online(friend));
                 if (is_online(friend)) {
                     io.to(friend).emit(state, username);
@@ -101,7 +99,7 @@ export default function injectSocketIO(server) {
         }
         socket.on("unfriend" /* Events.UNFRIEND */, (friend) => {
             if (is_online(friend)) {
-                io.to(friend).emit("unfriend" /* Events.UNFRIEND */, get_username(socket.id));
+                io.to(friend).emit("unfriend" /* Events.UNFRIEND */, username);
             }
         });
         /**

@@ -2,6 +2,8 @@ import type { PageServerLoad, Actions } from "./$types"
 import { get_by, update_user } from "$lib/server/db/user"
 import { error, redirect } from "@sveltejs/kit";
 import { REGEX_IMAGE_URL, REGEX_USERNAME } from "$lib";
+import { upload_file } from "$lib/server/db/files";
+
 
 export const load: PageServerLoad = async ({ cookies, params, url }) => {
     // Get the prfile username from the params (It's a valid username)
@@ -74,14 +76,14 @@ export const actions = {
 
         // Validate avatar
         if (!new_avatar || !REGEX_IMAGE_URL.test(new_avatar)) {
-            return { success: false, error: "Invalid avatar" };
+            return { success: false, error: "Invalid avatar URL, make sure it ends with an image extension" };
         }
 
         // Make sure the avatar is a valid URL
         try {
             new URL(new_avatar);
         } catch (e) {
-            return { success: false, error: "Invalid avatar" };
+            return { success: false, error: "Avatar URL, doesn't seem to be valid" };
         }
 
         // Get the token from the cookies
