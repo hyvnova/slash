@@ -9,9 +9,11 @@
 	export let username: string;
 	let container: HTMLDivElement;
 
+	let chat_page_scroll_to_bottom = $scroll_to_bottom;
 
 	scroll_to_bottom.set(() => {
 		container.scrollTo(0, container.scrollHeight + 200);
+		chat_page_scroll_to_bottom();
 	});
 
 	afterUpdate(async () => {
@@ -21,7 +23,7 @@
 </script>
 
 <div
-	class="flex flex-col overflow-y-auto w-full min-h-full
+	class="flex flex-col overflow-y-auto w-full min-h-full max-h-full
     px-2 scroll-smooth transition-all duration-300
     "
 	bind:this={container}
