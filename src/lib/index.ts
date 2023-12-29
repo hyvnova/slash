@@ -15,3 +15,7 @@ export const bytes_to_size = (bytes: number): string => {
     const i = Math.floor(Math.log(bytes) / Math.log(1024));
     return Math.round(bytes / Math.pow(1024, i)) + ' ' + sizes[i];
 };
+
+
+
+export const MAX_FILE_LOAD_TRIES = 5; // 5! worth of seconds 

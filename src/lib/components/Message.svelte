@@ -47,7 +47,7 @@
 	</div>
 
 	<!-- Attachments -->
-	<class class="flex flex-col items-center justify-center w-full h-full">
+	<class class="flex flex-col items-center justify-center w-auto h-full {owned ? 'right' : 'left'}">
 		{#each message.attachments as attachment}
 			<Attachment {attachment} />
 		{/each}
