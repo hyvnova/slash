@@ -3,6 +3,7 @@
 	import Markdown from '@magidoc/plugin-svelte-marked';
 	import Attachment from './Attachment.svelte';
 	import MessageTimestamp from './MessageTimestamp.svelte';
+	import message_context_menu from '$lib/stores/message_context_menu';
 
 	export let username: string;
 	export let message: MessageType;
@@ -10,6 +11,8 @@
 	const owned = username === message.author; // Person who sent the message -> perspective of massage bubble
 </script>
 
+<!-- svelte-ignore a11y-no-static-element-interactions -->
+<!-- svelte-ignore a11y-click-events-have-key-events -->
 <div
 	class="flex flex-col {owned ? 'right' : 'left'}
 		w-full
@@ -33,7 +36,6 @@
 					h-auto
 					"
 			>
-
 				<Markdown source={message.content} />
 			</div>
 		{/if}
@@ -53,7 +55,6 @@
 </div>
 
 <!-- TODO: Message context menu -->
-<!-- <svelte:component this={MessageContextMenu} bind:is_open={is_context_open} pos={context_pos} owned={owned}/> -->
 
 <style lang="postcss">
 	.left {

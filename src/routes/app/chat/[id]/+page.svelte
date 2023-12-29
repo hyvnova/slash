@@ -11,7 +11,6 @@
 	import ChatInput from '$lib/components/ChatInput.svelte';
 	import Notification from '$lib/components/Notification.svelte';
 	import notification from '$lib/stores/notification';
-	import NewChatInput from '$lib/components/ChatInput.svelte';
 	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
 
 	export let data: PageServerData;
@@ -19,7 +18,6 @@
 
 	let messages = writable(data.chat.messages);
 	let friend_status = writable<Status>(Status.OFFLINE);
-
 
 	scroll_to_bottom.set(() => {
 		container.scrollTop = container.scrollHeight;
@@ -85,11 +83,11 @@
 		ws.emit(Events.CONNECT, data.user.username);
 		ws.emit(Events.JOIN_CHAT, data.chat.id, data.user.username);
 		ws.emit(Events.SET_STATUS, Status.ONLINE, data.chat.members);
-		ws.emit(Events.GET_FRIENDS_STATUS, data.chat.members)
+		ws.emit(Events.GET_FRIENDS_STATUS, data.chat.members);
 
 		$scroll_to_bottom();
-	});
 
+	});
 </script>
 
 <svelte:head>
@@ -130,7 +128,7 @@
 	</nav>
 
 	<!-- Chat container -->
-	<ChatContainer username={data.user.username} {messages}  />
+	<ChatContainer username={data.user.username} {messages} />
 
 	<!-- Input-->
 	<ChatInput username={data.user.username} chat_id={data.chat.id} />
@@ -138,7 +136,7 @@
 
 <style lang="postcss">
 	.layout {
-		display: grid;		
+		display: grid;
 		grid-template-columns: 1;
 		grid-template-rows: auto 1fr auto;
 		min-height: 100vh;
