@@ -3,7 +3,7 @@
 	 * TODO: Implement an actual cache
 	*/
 
-	import { cached_images } from '$lib/stores/cached_images';
+	import { cached } from '$lib/stores/cached';
 	import { onMount } from 'svelte';
 
 	export let username: string;
@@ -14,8 +14,8 @@
 	onMount(async () => {
 		if (use_cache) {
 			// If cache exists, use it
-			if ($cached_images[username]) {
-				url = $cached_images[username];
+			if ($cached[username]) {
+				url = $cached[username];
 
 				// Otherwise, fetch the image and cache it
 			} else {
@@ -24,7 +24,7 @@
 				if (res.ok) {
 					const blob = await res.blob();
 					url = URL.createObjectURL(blob);
-					cached_images.update((c) => ({ ...c, [username]: url }));
+					cached.update((c) => ({ ...c, [username]: url }));
 				}
 			}
 		}

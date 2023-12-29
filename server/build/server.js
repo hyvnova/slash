@@ -15,6 +15,6 @@ const server = http.createServer(app);
 // Inject SocketIO
 // @ts-ignore
 injectSocketIO(server);
-server.listen(3001, () => {
-    console.log('listening on http://localhost:3001');
+server.listen(3001, "192.168.1.229", () => {
+    console.log('listening on http://192.168.1.229:3001');
 });

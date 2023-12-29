@@ -83,11 +83,9 @@ export function is_online(username) {
 export function get_username(socketId) {
     onlineUsers.forEach((user, username) => {
         if (user.socketId === socketId) {
-            console.log("Found username:", username);
             return username;
         }
     });
-    console.log("Didn't find username for socketId:", socketId);
     return null;
 }
 /**

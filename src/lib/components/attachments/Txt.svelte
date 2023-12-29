@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { bytes_to_size } from '$lib';
+	import { MAX_FILE_LOAD_TRIES, bytes_to_size } from '$lib';
 	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
 	import { FileLoadState, type AttachmentType, Routes } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
 	import CodeBlock from '../CodeBlock.svelte';
 	import Fa from 'svelte-fa';
-	import { faCopy, faDownload, faExclamationTriangle, faSpinner } from '@fortawesome/free-solid-svg-icons';
+	import { faCopy, faDownload } from '@fortawesome/free-solid-svg-icons';
 	import FileLoadStates from '../FileLoadStates.svelte';
 
 	export let attachment: AttachmentType;
@@ -26,7 +26,7 @@
 			content = text || 'Empty file';
 			state.set(FileLoadState.LOADED);
 		} else {
-			if (tries < 3) {
+			if (tries < MAX_FILE_LOAD_TRIES) {
 				tries++;
 				setTimeout(get_file_content, 1000 * tries);
 			} else {

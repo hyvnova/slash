@@ -8,7 +8,7 @@ try {
     ws = process.env.NODE_ENV === "production" ? 
         client("https://slash-socket-server.ezsnova.repl.co/") 
         : 
-        client("http://localhost:3001")
+        client("http://192.168.1.229:3001")
 }
 catch(err) {
     console.error("Failed to connect to the socket server.");

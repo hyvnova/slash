@@ -17,7 +17,6 @@ export default function injectSocketIO(server) {
             username = _username;
             socket.join(username);
             connect(socket.id, username);
-            console.log("connected", username, socket.id);
         });
         socket.on("handshake" /* Events.HANDSHAKE */, (callback) => { callback(true); });
         socket.on('disconnect', () => {

@@ -13,6 +13,7 @@
 	let message = writable($messsage_drafts[chat_id] || '');
 	let files = writable<FileList | null>(null);
 	let file_input: HTMLInputElement;
+	let message_input: HTMLTextAreaElement;
 
 	// Update drafts
 	message.subscribe((val) => {
@@ -23,12 +24,15 @@
 	});
 
 	async function send_message() {
-		$message = $message.trim();
+		let content = $message;
+		message.set(''); // Intantly set message empty to avoid being able to send same message twice
+
 		let attachment_files = $files;
 
-		if (!$message && !attachment_files) {
+		if (!content.trim() && !attachment_files) {
 			return;
 		}
+
 		let attachments: AttachmentType[] = [];
 
 		if (attachment_files) {
@@ -37,28 +41,26 @@
 				formData.append('files', file);
 			}
 			attachments = await upload_attachments(formData);
-			console.log("Files length: ", attachments.length, "Attachment length: ", attachments.length);
+			console.log('Files length: ', attachments.length, 'Attachment length: ', attachments.length);
+
+			file_input.files = null;
+			files.set(null);
 		}
 
-		file_input.files = null;
-		files.set(null);
-
-		let msg: Partial<MessageType> = {
-			content: $message,
+		let message_obj: Partial<MessageType> = {
+			content,
 			author: username,
 			timestamp: new Date().toLocaleString(undefined, { second: undefined }),
 			attachments
 		};
 
-		message.set('');
-
 		await handle_message({
 			action: 'send',
 			chat_id: chat_id,
-			message: msg
+			message: message_obj
 		});
 
-		ws.emit(Events.NEW_MESSAGE, chat_id, msg);
+		ws.emit(Events.NEW_MESSAGE, chat_id, message_obj);
 	}
 </script>
 
@@ -85,10 +87,10 @@
 		<Fa icon={faPaperclip} class="mb-1" />
 
 		<!-- Show number of files-->
-		<span 
+		<span
 			class="
 				{$files ? 'opacity-100 ml-1 mt-2' : 'opacity-0'}
-				" 
+				"
 			title=" files selected"
 		>
 			{$files ? $files.length : ''}
@@ -96,7 +98,7 @@
 	</button>
 
 	<form
-		on:submit|preventDefault={send_message}
+		on:submit|preventDefault
 		class="m-0 p-0 h-full w-10/12 max-h-full
 				flex justify-between items-center outline-none
 				bg-gray-800
@@ -124,24 +126,18 @@
 					bg-transparent text-gray-100
 					"
 			placeholder="Type a message..."
+			bind:this={message_input}
 			bind:value={$message}
-			on:keydown={(e) => {
+			on:keydown={async (e) => {
 				// Send message on enter, but not if ctrl or shift is pressed
 				if (e.key === 'Enter') {
 					if (!e.ctrlKey && !e.shiftKey) {
 						e.preventDefault();
-						send_message();
+						await send_message();
 					} else {
 						$message += '\n';
 					}
 				}
-
-				// Silly thing - send empty message on ctrl + shift + down
-				if (e.key === 'ArrowDown' && e.ctrlKey && e.shiftKey) {
-					$message = '';
-					send_message();
-				}
-
 				// Tab to insert tab
 				if (e.key === 'Tab') {
 					e.preventDefault();
@@ -158,7 +154,8 @@
 					text-gray-200 hover:text-black
 					transition-all duration-300
 					"
-			on:click={send_message}
+			on:mousedown|preventDefault
+			on:click|preventDefault={async () => await send_message()}
 		>
 			<Fa icon={faPaperPlane} />
 		</button>
@@ -178,5 +175,4 @@
 			filter: brightness(1.25);
 		}
 	}
-
 </style>
