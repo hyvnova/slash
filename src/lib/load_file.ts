@@ -15,7 +15,6 @@ export async function load_file(state: Writable<FileLoadState>,  id: string, use
             // Otherwise, fetch the image and cache it
         } else {
             let res = await fetch(`${Routes.FILE}/${id}`);
-            console.log("Loading", `${Routes.FILE}/${id}`)
             if (res.ok) {
                 const blob = await res.blob();
                 url = URL.createObjectURL(blob);

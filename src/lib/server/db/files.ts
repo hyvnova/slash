@@ -30,7 +30,7 @@ async function upload_gridfs(file: File): Promise<string> {
     });
 
     uploadStream.on('finish', () => {
-        console.log('File uploaded successfully');
+        console.log('File uploaded:', file.name, file.type, file.size);
     });
 
     const buffer = Buffer.from(await file.arrayBuffer());

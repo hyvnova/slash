@@ -110,7 +110,7 @@
 			multiple
 			class="hidden"
 			bind:files={$files}
-			accept="image/*, video/*, audio/*, .pdf, .doc, .docx, .ppt, .pptx, .xls, .xlsx, .txt"
+			accept="*"
 			name="file"
 			bind:this={file_input}
 		/>

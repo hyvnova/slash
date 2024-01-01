@@ -24,7 +24,8 @@
 
 <div
 	class="flex flex-col overflow-y-auto w-full min-h-full max-h-full
-    px-2 scroll-smooth transition-all duration-300
+	max-w-screen
+	px-2 scroll-smooth transition-all duration-300
     "
 	bind:this={container}
 	on:load={$scroll_to_bottom}

@@ -5,6 +5,8 @@
 	import Fa from 'svelte-fa';
 	import Txt from './attachments/Txt.svelte';
 	import { bytes_to_size } from '$lib';
+	import Video from './attachments/Video.svelte';
+	import Audio from './attachments/Audio.svelte';
 
 	export let attachment: AttachmentType;
 
@@ -15,8 +17,15 @@
 </script>
 {#if type == 'image'}
 	<Image {attachment} />
+
+{:else if type == 'video'}
+	<Video {attachment} />
+
+{:else if type == 'audio'}
+	<Audio {attachment} />
+
 {:else if type == 'text'}
-	<Txt {attachment} />
+	<Txt {attachment} />  
 
 	<!-- Unknown type or just some document -->
 {:else}

@@ -16,6 +16,7 @@
 <div
 	class="flex flex-col {owned ? 'right' : 'left'}
 		w-full
+		max-w-full
 		mb-2
 		"
 >
@@ -53,8 +54,6 @@
 		{/each}
 	</class>
 </div>
-
-<!-- TODO: Message context menu -->
 
 <style lang="postcss">
 	.left {
