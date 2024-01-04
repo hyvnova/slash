@@ -16,7 +16,7 @@ export const FONTS = [
 type NotificationConfigType = {
     enabled: boolean,
     sound: boolean,
-    volume: number, // 0 - 100
+    vibrate: boolean,
 };
 
 type UserConfig = {
@@ -26,9 +26,9 @@ type UserConfig = {
     color: string // CSS valid color property ,
 
     // Notication config - if null no notifications will be sent, otherwise it will be an array of notification configs. 
-    notifications: null | {
+    notifications: {
         general: NotificationConfigType,
-        custom_notifications: Record<string, NotificationConfigType>
+        custom: Record<string, NotificationConfigType> // {channel_id: notification_config}
     }
 }
 
@@ -42,10 +42,9 @@ const default_value: UserConfig = {
         general: {
             enabled: true,
             sound: true,
-            volume: 50
+            vibrate: false,
         },
-        custom_notifications: {}
-    
+        custom: {}
     }
 }
 

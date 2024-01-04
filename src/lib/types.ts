@@ -11,11 +11,17 @@ const BASE = "/app"; /* Base route, where the app is hosted. Accessed after logi
  * Used to avoid typos and to have a single source of truth
  */
 export const enum Routes {
-    HOME = BASE + "/me",
+    HOME =     BASE + "/me",
     SETTINGS = BASE + "/me/settings",
-    CHAT = BASE + "/chat", // Follwed /[chat_id]
+
+    PROFILE =  BASE + "/profile",
+
+
+    // Chat
+    CHAT_SETTINGS = BASE + "/chat/settings", // Followed by /[chat_id]
+    CHAT =          BASE + "/chat", // Followed /[chat_id]
     CHAT_REDIRECT = BASE + "/me/chat", // Used to redirect to the chat page. Followed by /[meembers]
-    PROFILE = BASE + "/profile",
+
     FILE = "/file", // Followed by /[file_id]
 }
 

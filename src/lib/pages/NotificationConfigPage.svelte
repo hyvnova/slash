@@ -7,11 +7,11 @@
 				// Save the permission
 				user_config.update((config) => {
 					config.notifications = {
-						custom_notifications: {},
+						custom: {},
 						general: {
 							sound: true,
-							volume: 1,
-							enabled: false
+							enabled: false,
+							vibrate: false
 						}
 					};
 					return config;
@@ -31,13 +31,14 @@
 
 	function disable_notifications() {
 		user_config.update((config) => {
-			config.notifications = null;
+			config.notifications.general.enabled = false;
 			return config;
 		});
 	}
 
 
-	let notification_sound = $user_config.notifications? $user_config.notifications.general.sound : false;
+	let sound = $user_config.notifications? $user_config.notifications.general.sound : false;
+	let vibrate = $user_config.notifications? $user_config.notifications.general.vibrate : false;
 </script>
 
 <section
@@ -47,7 +48,7 @@
 	<h2 class="text-2xl text-gray-200 m-1">Notifications</h2>
 
 	<!-- Enabled notifications (if not enabled)-->
-	{#if $user_config.notifications === null}
+	{#if $user_config.notifications.general.enabled === false}
 		<p class="text-gray-300 m-1">
 			Enable notifications to get notified when someone sends a message.
 		</p>
@@ -74,44 +75,43 @@
 				type="checkbox" 
 				id="sound" 
 				name="sound" 
-				bind:checked={notification_sound}
+				bind:checked={sound}
 				class="p-3 border-gray-700 rounded-md text-gray-200 m-1"
 
 				on:change={(e) => {
 					user_config.update((config) => {
 						// @ts-ignore
-						config.notifications.general.sound = notification_sound;
+						config.notifications.general.sound = sound;
 						return config;
 					});
 				}}
 			/>
 		</div>
 
-		<label for="volume" class="text-gray-300 m-1">Volume: {$user_config.notifications.general.volume}</label>
-		<input 
-			type="range" 
-			id="volume" 
-			name="volume" 
-			min="0" 
-			max="100" 
-			step="1" 
-			bind:value={$user_config.notifications.general.volume}
-			class="p-3 border-gray-700 rounded-md text-gray-200 m-1"
+		<div class="flex flex-row justify-between items-center w-auto p-1 mt-2">
+			<label for="sound">Vibrate</label>
+			<input 
+				type="checkbox" 
+				id="vibrate" 
+				name="vibrate" 
+				bind:checked={vibrate}
+				class="p-3 border-gray-700 rounded-md text-gray-200 m-1"
 
-			on:change={(e) => {
-				user_config.update((config) => {
-					// @ts-ignore
-					config.notifications.general.volume = e.target.value;
-					return config;
-				});
-			}}
-		/>
+				on:change={(e) => {
+					user_config.update((config) => {
+						// @ts-ignore
+						config.notifications.general.vibrate = vibrate;
+						return config;
+					});
+				}}
+			/>
+		</div>
 
 		<hr />
 
 		<!-- Disable notifications -->
 		<button
-			class="p-2 border-yellow-500 hover:bg-yellow-500 rounded-md text-white w-32 m-1"
+			class="p-2 border-yellow-500 hover:bg-yellow-500 rounded-md text-white w-32 m-1 mt-2"
 			on:click={disable_notifications}
 		>
 			Disable

@@ -73,6 +73,8 @@
 </script>
 
 <div class="container">
+
+	<!-- Navbar -->
 	<nav class="mt-2 flex justify-between items-center w-full p-2 border-b border-gray-700">
 		{#if $requests.length > 0}
 			<PendingRequests username={user.username} {requests} {friends} />

@@ -2,7 +2,7 @@
 	import NotificationConfigPage from '$lib/pages/NotificationConfigPage.svelte';
 import user_config, { FONTS } from '$lib/stores/user_config';
 	import { Routes } from '$lib/types';
-	import { faHome } from '@fortawesome/free-solid-svg-icons';
+	import { faArrowLeft, faHome } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 
 	function handleSession(action: string) {
@@ -22,8 +22,8 @@ import user_config, { FONTS } from '$lib/stores/user_config';
 
 <div class="container">
 	<nav class="mt-2 flex justify-between items-center w-full p-2 border-b border-gray-700">
-		<a href={Routes.HOME} class="rotate text-gray-400 hover:text-gray-100">
-			<Fa icon={faHome} class="text-2xl" />
+		<a href={Routes.HOME} class="ml-1 rotate text-gray-400 hover:text-gray-100">
+			<Fa icon={faArrowLeft} class="text-2xl" />
 		</a>
 	</nav>
 </div>

@@ -2,16 +2,17 @@
 	import { Routes, type MessageType, Events, Status } from '$lib/types';
 	import Fa from 'svelte-fa';
 	import type { PageServerData } from './$types';
-	import { faArrowLeft, faCertificate } from '@fortawesome/free-solid-svg-icons';
+	import { faArrowLeft, faCertificate, faCog } from '@fortawesome/free-solid-svg-icons';
 	import AvatarImage from '$lib/components/AvatarImage.svelte';
-	import { get, writable } from 'svelte/store';
+	import { writable } from 'svelte/store';
 	import { ws } from '$lib/websocket';
-	import { afterUpdate, onMount, tick } from 'svelte';
+	import {  onMount, tick } from 'svelte';
 	import ChatContainer from '$lib/components/ChatContainer.svelte';
 	import ChatInput from '$lib/components/ChatInput.svelte';
-	import Notification from '$lib/components/Toast.svelte';
+	import Toast from '$lib/components/Toast.svelte';
 	import toast from '$lib/stores/toast';
 	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
+	import user_config from '$lib/stores/user_config';
 
 	export let data: PageServerData;
 	export let container: HTMLElement;
@@ -24,6 +25,7 @@
 	});
 
 	let other_typing_timeout: string | number | NodeJS.Timeout | undefined;
+	let notification_config = $user_config.notifications.custom[data.chat.id] || $user_config.notifications.general;
 
 	onMount(async () => {
 		await tick();
@@ -39,6 +41,17 @@
 		});
 
 		ws.on(Events.NEW_MESSAGE, (msg: MessageType) => {
+			// Notify
+			if (notification_config.enabled && msg.author !== data.user.username) {
+				new Notification(msg.author, {
+					body: msg.content || "New message",
+					icon: '/avatar/' + msg.author,
+					timestamp: Date.now(),
+					silent: !notification_config.sound,
+					vibrate: notification_config.vibrate ? [200, 100, 200] : undefined
+				});
+			}
+
 			messages.update((old) => [...old, msg]);
 			$scroll_to_bottom();
 		});
@@ -96,7 +109,7 @@
 	<meta name="keywords" content="slash, chat, slashchat, slash chat" />
 </svelte:head>
 
-<Notification />
+<Toast />
 
 <main class="max-w-3xl mx-auto layout bg-inherit" bind:this={container}>
 	<!-- Top-->
@@ -123,8 +136,9 @@
 			</div>
 		</a>
 
-		<!-- Element to fill up and get proper aligment-->
-		<div />
+		<a href="{Routes.CHAT}/{data.chat.id}/settings" class="rotate text-gray-400 hover:text-gray-100 m-1" title="Chat settings">
+			<Fa icon={faCog} class="text-2xl" />
+		</a>
 	</nav>
 
 	<!-- Chat container -->
