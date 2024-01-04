@@ -1,5 +1,5 @@
 <script lang="ts">
-	import notification from '$lib/stores/notification';
+	import toast from '$lib/stores/toast';
 
 	/**
 	 * A general porpuse notification.
@@ -11,20 +11,20 @@
 		info: 'bg-black border border-blue-400 text-blue-700'
 	};
 
-	$: if ($notification?.duration) {
+	$: if ($toast?.duration) {
 		setTimeout(() => {
-			notification.set(null);
-		}, $notification.duration);
+			toast.set(null);
+		}, $toast.duration);
 	}
 </script>
 
-{#if $notification}
+{#if $toast}
 	<div
 		class="w-10/12 relative top-0 left-0 flex flex-col justify-center items-center p-2 m-4 rounded-lg z-50 mx-auto {card_styles[
-			$notification.type
+			$toast.type
 		]}"
 	>
-		<h3>{$notification.title}</h3>
-		<p>{$notification.message}</p>
+		<h3>{$toast.title}</h3>
+		<p>{$toast.message}</p>
 	</div>
 {/if}

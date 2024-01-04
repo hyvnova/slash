@@ -9,8 +9,8 @@
 	import { afterUpdate, onMount, tick } from 'svelte';
 	import ChatContainer from '$lib/components/ChatContainer.svelte';
 	import ChatInput from '$lib/components/ChatInput.svelte';
-	import Notification from '$lib/components/Notification.svelte';
-	import notification from '$lib/stores/notification';
+	import Notification from '$lib/components/Toast.svelte';
+	import toast from '$lib/stores/toast';
 	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
 
 	export let data: PageServerData;
@@ -30,7 +30,7 @@
 
 		ws.emit(Events.HANDSHAKE, (success: boolean) => {
 			if (!success) {
-				notification.set({
+				toast.set({
 					type: 'error',
 					title: 'Offline - Connection lost',
 					message: 'Try reloading the page. Some features may not work.'

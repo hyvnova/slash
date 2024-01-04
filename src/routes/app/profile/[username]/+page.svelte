@@ -11,14 +11,14 @@
 	let username = '';
 
 	import { onMount } from 'svelte';
-	import notification from '$lib/stores/notification';
-	import Notification from '$lib/components/Notification.svelte';
+	import toast from '$lib/stores/toast';
+	import Notification from '$lib/components/Toast.svelte';
 	import { Routes } from '$lib/types';
 	export let form: ActionData;
 
 	$: {
 		if (form) {
-			notification.set({
+			toast.set({
 				type: 'error',
 				title: 'Something went wrong while updating your profile',
 				message: form.error as string,

@@ -1,15 +1,14 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import type { LayoutServerData } from './$types';
 	import { ws } from '$lib/websocket';
-	import { Events, Status } from '$lib/types';
-	import notification from '$lib/stores/notification';
-	import Notification from '$lib/components/Notification.svelte';
+	import { Events } from '$lib/types';
+	import toast from '$lib/stores/toast';
+	import Toast from '$lib/components/Toast.svelte';
 
 	onMount(() => {	// handshake
 		ws.emit(Events.HANDSHAKE, (success: boolean) => {
 			if (!success) {
-				notification.set({
+				toast.set({
 					type: 'error',
 					title: 'Offline - Connection lost',
 					message: 'Try reloading the page. Some features may not work.'
@@ -26,6 +25,6 @@
 </svelte:head>
 
 <main class="w-screen bg-inherit">
-	<Notification />
+	<Toast />
 	<slot />
 </main>

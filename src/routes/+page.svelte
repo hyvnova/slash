@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Notification from '$lib/components/Notification.svelte';
+	import Notification from '$lib/components/Toast.svelte';
 	import type { ActionData, PageServerData } from './$types';
-	import notification from '$lib/stores/notification';
+	import toast from '$lib/stores/toast';
 
 	let username: string = '';
 	let password: string = '';
@@ -30,7 +30,7 @@
 	 */
 	export let form: ActionData;
 	$: if (form) {
-		notification.set({
+		toast.set({
 			title: "Couldn't log in",
 			message: form.error,
 			type: 'error',

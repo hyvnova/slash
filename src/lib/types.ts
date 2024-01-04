@@ -98,7 +98,7 @@ export type ChatType = {
     attachments: string[]; // Attachment ids
 }
 
-export type NotificationType = Writable<{
+export type ToastType = Writable<{
     type: "error" | "info";
     title: string;
     message: string;
