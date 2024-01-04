@@ -1,5 +1,6 @@
 <script lang="ts">
-	import user_config, { FONTS } from '$lib/stores/user_config';
+	import NotificationConfigPage from '$lib/pages/NotificationConfigPage.svelte';
+import user_config, { FONTS } from '$lib/stores/user_config';
 	import { Routes } from '$lib/types';
 	import { faHome } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
@@ -27,15 +28,14 @@
 	</nav>
 </div>
 
-<main class="container flex flex-col justify-center items-center w-full h-full mt-6">
+<main class="container flex flex-col justify-center items-center w-screen h-full mt-4">
 	<h1 class="text-4xl text-gray-200 mb-4">Settings</h1>
-
 	<hr />
 
 	<!-- Appareance -->
 	<section
 		class="container flex flex-col justify-center items-center w-full
-			bg-gray-800 rounded-md p-4 mt-4"
+			bg-gray-800 rounded-md p-2 mt-2"
 	>
 		<h2 class="text-2xl text-gray-200 m-1">Appearance</h2>
 
@@ -63,18 +63,23 @@
 		<!-- Backgrouund  -->
 	</section>
 
+	<!-- Notifications -->
+	<NotificationConfigPage />
+
+
 	<!-- Account -->
 	<section
 		class="container flex flex-col justify-center items-center w-full
-			bg-gray-800 rounded-md p-4 mt-4"
+			bg-gray-800 rounded-md p-2 mt-2"
 
 	>
 		<h2 class="text-2xl text-gray-200 m-1">Account</h2>
-		<p class="text-gray-300 m-1">
+		<p class="text-gray-300 m-1 text-pretty">
 			Manage your account settings. Be careful some of these actions are <strong
 				>irreversible.</strong
 			>
 		</p>
+
 
 		<div class="container flex flex-row justify-center items-center flex-wrap w-full">
 			<button

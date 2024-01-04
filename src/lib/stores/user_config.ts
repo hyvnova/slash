@@ -11,11 +11,25 @@ export const FONTS = [
     'Fira Sans'
 ]
 
+
+// channel_id : notification_config
+type NotificationConfigType = {
+    enabled: boolean,
+    sound: boolean,
+    volume: number, // 0 - 100
+};
+
 type UserConfig = {
-    font: 'Ubuntu' | 'Roboto' | 'Open Sans' | 'Writer' | 'Fira Code' | 'Fira Sans',
+    font: typeof FONTS[number],
     font_size: number, // 12 - 24
     background: string // CSS valid background property
-    color: string // CSS valid color property 
+    color: string // CSS valid color property ,
+
+    // Notication config - if null no notifications will be sent, otherwise it will be an array of notification configs. 
+    notifications: null | {
+        general: NotificationConfigType,
+        custom_notifications: Record<string, NotificationConfigType>
+    }
 }
 
 
@@ -23,10 +37,38 @@ const default_value: UserConfig = {
     font: 'Ubuntu',
     font_size: 16,
     background: "#11191f",
-    color: "whitesmoke"
+    color: "whitesmoke",
+    notifications: {
+        general: {
+            enabled: true,
+            sound: true,
+            volume: 50
+        },
+        custom_notifications: {}
+    
+    }
 }
 
-const initial_value: UserConfig = browser ? JSON.parse(localStorage.getItem('user_config') || JSON.stringify(default_value))  : default_value;
+function load_config() {
+    let config = default_value;
+    if (browser && localStorage.getItem('user_config')) {
+        config = JSON.parse(localStorage.getItem('user_config') || '') as UserConfig;
+    }
+
+    // Check for missing keys
+    for (const key in default_value) {
+        if (!(key in config)) {
+            // @ts-ignore
+            config[key] = default_value[key];
+        }
+    }
+
+    return config;
+
+}
+
+
+const initial_value: UserConfig = load_config();
 const user_config = writable(initial_value);
 
 user_config.subscribe((value) => {
