@@ -7,6 +7,8 @@
 	import { onMount } from 'svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import toast from '$lib/stores/toast';
+	import SettingsLayout from '$lib/components/SettingsLayout.svelte';
+	import SettingSection from '$lib/components/SettingSection.svelte';
 
 	export let data: PageData;
 
@@ -34,7 +36,8 @@
 					type: 'info',
 					title: "Can't enable notifications",
 					duration: 5000,
-					message: 'Allow notification permission in your browser settings in order to enable notifications.'
+					message:
+						'Allow notification permission in your browser settings in order to enable notifications.'
 				});
 			}
 		});
@@ -69,29 +72,15 @@
 
 <Toast />
 
-<main class="container flex flex-col justify-center items-center w-screen h-full mt-4">
-	<h1 class="text-4xl text-gray-200 mb-4">Settings</h1>
-	<hr />
-
-	<!-- Notifications -->
-	<section
-		class="container flex flex-col justify-center items-center w-full
-			bg-gray-800 rounded-md p-2 mt-2"
-	>
-		<h2 class="text-2xl text-gray-200 m-1">Notifications</h2>
-
+<SettingsLayout title="Chat Settings">
+	<SettingSection title="Notifications" description="Configure notifications for this chat.">
 		<!-- Enabled notifications (if not enabled)-->
 		{#if $user_config.notifications.custom[chat_id] === null || $user_config.notifications.custom[chat_id].enabled === false}
 			<p class="text-gray-300 m-1">
 				Enable notifications to get notified when someone sends a message.
 			</p>
 
-			<button
-				class="p-2 border-green-500 hover:bg-green-500 rounded-md text-white w-32 m-2"
-				on:click={request_notification_permission}
-			>
-				Enable
-			</button>
+			<button class="btn btn-green" on:click={request_notification_permission}> Enable </button>
 
 			<!-- Manage notificaions (sound, if sound which sound, volume)-->
 		{:else}
@@ -141,12 +130,12 @@
 
 			<!-- Disable notifications -->
 			<button
-				class="p-2 border-yellow-500 hover:bg-yellow-500 rounded-md text-white w-32 m-1 mt-2"
+				class="btn btn-yellow"
 				on:click={disable_notifications}
 				title="Disable notifications for this chat"
 			>
 				Disable
 			</button>
 		{/if}
-	</section>
-</main>
+	</SettingSection>
+</SettingsLayout>

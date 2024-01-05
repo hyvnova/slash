@@ -33,3 +33,37 @@
 .typing {
     color: #3498DB;
 }
+
+
+
+/* Element Styling */
+
+/* Buttons (Green, Yellow, Red) */
+.btn {
+    padding: theme('spacing.2');
+    border-radius: theme('borderRadius.md');
+    color: theme('colors.white');
+    width: theme('spacing.32');
+    margin: theme('spacing.2');
+}
+
+.btn-green {
+    border: 1px solid theme('colors.green.500');
+}
+.btn-green:hover {
+    background-color: theme('colors.green.600');
+}
+
+.btn-yellow {
+    border: 1px solid theme('colors.yellow.500');
+}
+.btn-yellow:hover {
+    background-color: theme('colors.yellow.600');
+}
+
+.btn-red {
+    border: 1px solid theme('colors.red.500');
+}
+.btn-red:hover {
+    background-color: theme('colors.red.600');
+}

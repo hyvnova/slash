@@ -1,7 +1,9 @@
 <script lang="ts">
+	import SettingSection from '$lib/components/SettingSection.svelte';
+	import SettingsLayout from '$lib/components/SettingsLayout.svelte';
 	import Toast from '$lib/components/Toast.svelte';
-import NotificationConfigPage from '$lib/pages/NotificationConfigPage.svelte';
-import user_config, { FONTS } from '$lib/stores/user_config';
+	import NotificationConfigPage from '$lib/pages/NotificationConfigPage.svelte';
+	import user_config, { FONTS } from '$lib/stores/user_config';
 	import { Routes } from '$lib/types';
 	import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
@@ -31,17 +33,9 @@ import user_config, { FONTS } from '$lib/stores/user_config';
 
 <Toast />
 
-<main class="container flex flex-col justify-center items-center w-screen h-full mt-4">
-	<h1 class="text-4xl text-gray-200 mb-4">Settings</h1>
-	<hr />
-
+<SettingsLayout>
 	<!-- Appareance -->
-	<section
-		class="container flex flex-col justify-center items-center w-full
-			bg-gray-800 rounded-md p-2 mt-2"
-	>
-		<h2 class="text-2xl text-gray-200 m-1">Appearance</h2>
-
+	<SettingSection title="Appearance" description="Change the way the app looks">
 		<!-- Font family select -->
 		<label for="font-family" class="text-gray-300 m-1">Font family</label>
 		<select
@@ -62,41 +56,29 @@ import user_config, { FONTS } from '$lib/stores/user_config';
 			class="p-2 border-gray-700 rounded-md text-gray-200 m-1 max-w-[5em]"
 			bind:value={$user_config.font_size}
 		/>
-
-		<!-- Backgrouund  -->
-	</section>
+	</SettingSection>
 
 	<!-- Notifications -->
 	<NotificationConfigPage />
 
-
 	<!-- Account -->
-	<section
-		class="container flex flex-col justify-center items-center w-full
-			bg-gray-800 rounded-md p-2 mt-2"
-
+	<SettingSection
+		title="Account"
+		description="Manage your account settings. Be careful some of these actions are irreversible."
 	>
-		<h2 class="text-2xl text-gray-200 m-1">Account</h2>
-		<p class="text-gray-300 m-1 text-pretty">
-			Manage your account settings. Be careful some of these actions are <strong
-				>irreversible.</strong
-			>
-		</p>
-
-
 		<div class="container flex flex-row justify-center items-center flex-wrap w-full">
 			<button
-				class="p-2 border-yellow-500 hover:bg-yellow-500 rounded-md text-white w-32 m-1"
+				class="btn btn-yellow"
 				on:click={() => {
 					handleSession('logout');
 				}}>Logout</button
 			>
 			<button
-				class="p-2 border-red-500 hover:bg-red-500 rounded-md text-white w-32 m-1"
+				class="btn btn-red"
 				on:click={() => {
 					handleSession('delete');
 				}}>Delete</button
 			>
 		</div>
-	</section>
-</main>
+	</SettingSection>
+</SettingsLayout>
