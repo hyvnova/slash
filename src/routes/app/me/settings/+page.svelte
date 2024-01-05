@@ -3,7 +3,7 @@
 import NotificationConfigPage from '$lib/pages/NotificationConfigPage.svelte';
 import user_config, { FONTS } from '$lib/stores/user_config';
 	import { Routes } from '$lib/types';
-	import { faArrowLeft, faHome } from '@fortawesome/free-solid-svg-icons';
+	import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 	import Fa from 'svelte-fa';
 
 	function handleSession(action: string) {

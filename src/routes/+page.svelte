@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Notification from '$lib/components/Toast.svelte';
-	import type { ActionData, PageServerData } from './$types';
+	import Toast from '$lib/components/Toast.svelte';
+	import type { ActionData } from './$types';
 	import toast from '$lib/stores/toast';
 
 	let username: string = '';
@@ -43,7 +43,7 @@
 	class="container h-screen flex flex-col justify-center items-center bg-inherit"
 >
 	<!-- Notification card to show form error -->
-	<Notification />
+	<Toast />
 
 	<header class="mb-4">
 		<h1 class="text-4xl">Join</h1>
@@ -75,11 +75,14 @@
 					pattern="[a-z0-9_]+"
 
 					on:input={() => {
-						// If contains invalid characters, remove them
-						if (!/^[a-z0-9_]+$/i.test(username)) {
-							username = username.replace(/[^a-z0-9_]+/gi, '');
-						}
+						// to lowercase
+						username = username.toLowerCase();
 
+						// Replace spaces with underscores
+						username = username.replace(/ /g, '_');
+
+						// Delete special characters
+						username = username.replace(/[^a-z0-9_]/g, '');
 					}}
 				/>
 

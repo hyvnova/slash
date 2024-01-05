@@ -11,6 +11,7 @@
 	import BottomBar from '$lib/components/BottomBar.svelte';
 	import { Events, Routes, Status } from '$lib/types';
 	import FriendListItem from '$lib/components/FriendListItem.svelte';
+	import Toast from '$lib/components/Toast.svelte';
 
 	export let data: LayoutServerData;
 
@@ -89,6 +90,9 @@
 		</a>
 	</nav>
 
+	<Toast />
+
+	<!-- Friend list -->
 	<div
 		class="rounded-sm w-full mt-4
 		flex flex-col justify-center

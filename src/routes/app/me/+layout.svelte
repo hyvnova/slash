@@ -3,8 +3,6 @@
 	import { ws } from '$lib/websocket';
 	import { Events } from '$lib/types';
 	import toast from '$lib/stores/toast';
-	import Toast from '$lib/components/Toast.svelte';
-
 	onMount(() => {	// handshake
 		ws.emit(Events.HANDSHAKE, (success: boolean) => {
 			if (!success) {
@@ -25,6 +23,5 @@
 </svelte:head>
 
 <main class="w-screen bg-inherit">
-	<Toast />
 	<slot />
 </main>
