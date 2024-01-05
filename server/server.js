@@ -11,6 +11,6 @@ injectSocketIO(server);
 
 const PORT = process.env.PORT || 3003;
 
-cserver.listen(PORT, () => {
+server.listen(PORT, () => {
     logger.info(`Server running on port ${PORT}`);
 });

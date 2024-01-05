@@ -5,8 +5,7 @@
   "version": "1.0",
   "private": true,
   "scripts": {
-    "build:server": "tsc ./server/server.ts --outDir ./server/build --rootDir ./server --esModuleInterop --target esnext --moduleResolution node",
-    "dev:server": "node ./server/build/server.js",
+    "dev:server": "node ./server/server.js",
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",

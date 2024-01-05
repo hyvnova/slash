@@ -97,9 +97,6 @@
 		ws.emit(Events.JOIN_CHAT, data.chat.id, data.user.username);
 		ws.emit(Events.SET_STATUS, Status.ONLINE, data.chat.members);
 		ws.emit(Events.GET_FRIENDS_STATUS, data.chat.members);
-
-		$scroll_to_bottom();
-
 	});
 </script>
 

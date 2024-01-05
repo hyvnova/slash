@@ -10,6 +10,7 @@
 	import Fa from 'svelte-fa';
 	import BottomBar from '$lib/components/BottomBar.svelte';
 	import { Events, Routes, Status } from '$lib/types';
+	import FriendListItem from '$lib/components/FriendListItem.svelte';
 
 	export let data: LayoutServerData;
 
@@ -54,26 +55,21 @@
 
 		// Handling friend status
 		ws.on(Events.STATUS, (username: string, status: Status) => {
-			if (username in friend_status) {
-				friend_status[username].set(status);
-
-			}
+			friend_status[username].set(status);
 		});
 
 		// Connect to websocket
-		ws.emit(Events.CONNECT, user.username)
+		ws.emit(Events.CONNECT, user.username);
 
 		// Emit online status
 		ws.emit(Events.SET_STATUS, Status.ONLINE, $friends);
 
 		// Request friend status
 		ws.emit(Events.GET_FRIENDS_STATUS, $friends);
-
 	});
 </script>
 
 <div class="container">
-
 	<!-- Navbar -->
 	<nav class="mt-2 flex justify-between items-center w-full p-2 border-b border-gray-700">
 		{#if $requests.length > 0}
@@ -99,25 +95,10 @@
 		items-start p-2 overflow-y-hidden overflow-x-auto
 		"
 	>
-		{#each $friends as friend}
-			<!-- svelte-ignore a11y-missing-attribute -->
-			<a class="w-full p-1" href="{Routes.CHAT_REDIRECT}/{friend}">
-				<div
-					class="flex items-center justify-start rounded-md p-2
-					transition-colors
-					hover:bg-gray-700 cursor-pointer w-full
-				"
-				>
-					<AvatarImage username={friend} />
-
-					<h4 class="ml-4 font-normal text-lg text-gray-200">{friend}</h4>
-					<span class="mx-2 text-gray-500"> - </span>
-					<p class="{get(friend_status[friend])} text-gray-400 text-sm">
-						{get(friend_status[friend])}
-					</p>
-				</div>
-			</a>
+		{#each Object.entries(friend_status) as [friend, status]}
+			<FriendListItem {friend} {status} />
 		{/each}
+
 		{#if $friends.length === 0}
 			<div class="text-gray-400 text-center w-full">
 				<h4 class="text-xl">No friends yet</h4>

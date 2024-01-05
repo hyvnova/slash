@@ -6,14 +6,7 @@
 			if (permission === 'granted') {
 				// Save the permission
 				user_config.update((config) => {
-					config.notifications = {
-						custom: {},
-						general: {
-							sound: true,
-							enabled: false,
-							vibrate: false
-						}
-					};
+					config.notifications.general.enabled = true;
 					return config;
 				});
 
@@ -36,9 +29,8 @@
 		});
 	}
 
-
-	let sound = $user_config.notifications? $user_config.notifications.general.sound : false;
-	let vibrate = $user_config.notifications? $user_config.notifications.general.vibrate : false;
+	let sound = $user_config.notifications ? $user_config.notifications.general.sound : false;
+	let vibrate = $user_config.notifications ? $user_config.notifications.general.vibrate : false;
 </script>
 
 <section
@@ -71,13 +63,12 @@
 		<!-- Manage notifications -->
 		<div class="flex flex-row justify-between items-center w-auto p-1 mt-2">
 			<label for="sound">Sound</label>
-			<input 
-				type="checkbox" 
-				id="sound" 
-				name="sound" 
+			<input
+				type="checkbox"
+				id="sound"
+				name="sound"
 				bind:checked={sound}
 				class="p-3 border-gray-700 rounded-md text-gray-200 m-1"
-
 				on:change={(e) => {
 					user_config.update((config) => {
 						// @ts-ignore
@@ -90,13 +81,12 @@
 
 		<div class="flex flex-row justify-between items-center w-auto p-1 mt-2">
 			<label for="sound">Vibrate</label>
-			<input 
-				type="checkbox" 
-				id="vibrate" 
-				name="vibrate" 
+			<input
+				type="checkbox"
+				id="vibrate"
+				name="vibrate"
 				bind:checked={vibrate}
 				class="p-3 border-gray-700 rounded-md text-gray-200 m-1"
-
 				on:change={(e) => {
 					user_config.update((config) => {
 						// @ts-ignore
