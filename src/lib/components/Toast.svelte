@@ -24,7 +24,11 @@
 			$toast.type
 		]}"
 	>
-		<h3>{$toast.title}</h3>
-		<p>{$toast.message}</p>
+		<h3
+			class="text-center text-lg text-gray-200"
+		>{$toast.title}</h3>
+		<p
+			class="text-center text-md text-gray-400"
+		>{$toast.message}</p>
 	</div>
 {/if}

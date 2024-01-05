@@ -1,5 +1,6 @@
 <script lang="ts">
-	import NotificationConfigPage from '$lib/pages/NotificationConfigPage.svelte';
+	import Toast from '$lib/components/Toast.svelte';
+import NotificationConfigPage from '$lib/pages/NotificationConfigPage.svelte';
 import user_config, { FONTS } from '$lib/stores/user_config';
 	import { Routes } from '$lib/types';
 	import { faArrowLeft, faHome } from '@fortawesome/free-solid-svg-icons';
@@ -27,6 +28,8 @@ import user_config, { FONTS } from '$lib/stores/user_config';
 		</a>
 	</nav>
 </div>
+
+<Toast />
 
 <main class="container flex flex-col justify-center items-center w-screen h-full mt-4">
 	<h1 class="text-4xl text-gray-200 mb-4">Settings</h1>

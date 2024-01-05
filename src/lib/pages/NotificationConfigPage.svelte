@@ -1,4 +1,5 @@
 <script lang="ts">
+	import toast from '$lib/stores/toast';
 	import user_config from '$lib/stores/user_config';
 
 	function request_notification_permission() {
@@ -18,6 +19,12 @@
 				});
 			} else {
 				console.log('Unable to get permission to notify.');
+				toast.set({
+					type: "info",
+					title: "Can't enable notifications",
+					message: "Allow notification permission in your browser settings in order to enable notifications.",
+					duration: 5000
+				})
 			}
 		});
 	}

@@ -5,6 +5,8 @@
 	import Fa from 'svelte-fa';
 	import type { PageData } from './$types';
 	import { onMount } from 'svelte';
+	import Toast from '$lib/components/Toast.svelte';
+	import toast from '$lib/stores/toast';
 
 	export let data: PageData;
 
@@ -28,6 +30,12 @@
 				});
 			} else {
 				console.log('Unable to get permission to notify.');
+				toast.set({
+					type: 'info',
+					title: "Can't enable notifications",
+					duration: 5000,
+					message: 'Allow notification permission in your browser settings in order to enable notifications.'
+				});
 			}
 		});
 	}
@@ -58,6 +66,8 @@
 		</a>
 	</nav>
 </div>
+
+<Toast />
 
 <main class="container flex flex-col justify-center items-center w-screen h-full mt-4">
 	<h1 class="text-4xl text-gray-200 mb-4">Settings</h1>

@@ -8,7 +8,7 @@ function create_notification_config(chat_id: string) {
             config.notifications = {
                 general: {
                     sound: false,
-                    volume: 1,
+                    vibrate: false,
                     enabled: false
                 },
                 custom: {}
@@ -18,7 +18,7 @@ function create_notification_config(chat_id: string) {
         if (config.notifications.custom[chat_id] === undefined) {
             config.notifications.custom[chat_id] = {
                 sound: true,
-                volume: 1,
+                vibrate: false,
                 enabled: true
             };
         }

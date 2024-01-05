@@ -40,7 +40,7 @@ const default_value: UserConfig = {
     color: "whitesmoke",
     notifications: {
         general: {
-            enabled: true,
+            enabled: false,
             sound: true,
             vibrate: false,
         },
