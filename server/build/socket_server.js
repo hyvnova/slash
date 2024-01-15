@@ -1,6 +1,5 @@
 import { Server } from 'socket.io';
 import { connect, disconnect, get_online_from, get_status, is_online, set_status } from './socket_db.js';
-let username = "";
 export default function injectSocketIO(server) {
     server.maxHttpBufferSize = 1e6; // 10MB 
     const io = new Server(server, {
@@ -12,21 +11,20 @@ export default function injectSocketIO(server) {
             optionsSuccessStatus: 204,
         }
     });
+    let username;
     io.on('connection', (socket) => {
-        socket.on("user connect" /* Events.CONNECT */, (_username) => {
+        socket.on("user connect" /* Events.CONNECT */, async (_username) => {
             username = _username;
             socket.join(username);
-            connect(socket.id, username);
+            await connect(socket.id, username);
         });
         socket.on("handshake" /* Events.HANDSHAKE */, (callback) => { callback(true); });
-        socket.on('disconnect', () => {
-            disconnect(socket.id);
-        });
+        socket.on('disconnect', async () => { await disconnect(socket.id); });
         /**
          * Join Chat
          */
-        socket.on("join chat" /* Events.JOIN_CHAT */, (chat_id, chat_members, username) => {
-            connect(socket.id, username);
+        socket.on("join chat" /* Events.JOIN_CHAT */, async (chat_id, chat_members, username) => {
+            await connect(socket.id, username);
             // Leave all other rooms
             Object.keys(socket.rooms).forEach((room) => {
                 if (room !== socket.id && room !== chat_id && room !== username) {
@@ -37,7 +35,7 @@ export default function injectSocketIO(server) {
             // Emit online status to all members of the chat
             io.to(chat_id).emit("status" /* Events.STATUS */, username, "online" /* Status.ONLINE */);
             // Get others' online status
-            const members = get_online_from(chat_members);
+            const members = await get_online_from(chat_members);
             members.forEach((member) => {
                 io.to(socket.id).emit("status" /* Events.STATUS */, member.username, member.status);
             });
@@ -47,35 +45,35 @@ export default function injectSocketIO(server) {
          * username - user who sent the status
          * status - status of the user
          */
-        socket.on("status" /* Events.STATUS */, (username, status) => {
-            console.log("status", username, status);
-            if (is_online(socket.id)) {
-                console.log("status", username, status);
+        socket.on("status" /* Events.STATUS */, async (username, status) => {
+            if (await is_online(socket.id)) {
                 io.to(socket.id).emit("status" /* Events.STATUS */, username, status);
             }
         });
         /**
          * Set Status
          */
-        socket.on("set status" /* Events.SET_STATUS */, (status, friends) => {
+        socket.on("set status" /* Events.SET_STATUS */, async (status, friends) => {
             if (!username) {
                 return;
             }
             // Set status
-            set_status(username, status);
-            friends.forEach((friend) => {
-                if (is_online(friend)) {
-                    io.to(friend).emit("status" /* Events.STATUS */, username, status);
+            await set_status(username, status);
+            for (const friend of friends) {
+                if (await is_online(friend)) {
+                    io.to(socket.id).emit("status" /* Events.STATUS */, friend, await get_status(friend));
                 }
-            });
+            }
         });
         /**
          * Get status of friends
          */
-        socket.on("get friends status" /* Events.GET_FRIENDS_STATUS */, (friends) => {
-            friends.forEach((friend) => {
-                io.to(socket.id).emit("status" /* Events.STATUS */, friend, get_status(friend));
-            });
+        socket.on("get friends status" /* Events.GET_FRIENDS_STATUS */, async (friends) => {
+            for (const friend of friends) {
+                if (await is_online(friend)) {
+                    io.to(socket.id).emit("status" /* Events.STATUS */, friend, await get_status(friend));
+                }
+            }
         });
         /**
          * Friend Requests
@@ -88,16 +86,14 @@ export default function injectSocketIO(server) {
             "reject friend request" /* Events.REJECT_FRIEND_REQUEST */,
         ];
         for (const state of friend_requests_states) {
-            socket.on(state, (friend) => {
-                console.log(username, "send a", state, "to", friend);
-                console.log("is online", is_online(friend));
-                if (is_online(friend)) {
+            socket.on(state, async (friend) => {
+                if (await is_online(friend)) {
                     io.to(friend).emit(state, username);
                 }
             });
         }
-        socket.on("unfriend" /* Events.UNFRIEND */, (friend) => {
-            if (is_online(friend)) {
+        socket.on("unfriend" /* Events.UNFRIEND */, async (friend) => {
+            if (await is_online(friend)) {
                 io.to(friend).emit("unfriend" /* Events.UNFRIEND */, username);
             }
         });
@@ -112,6 +108,13 @@ export default function injectSocketIO(server) {
         });
         socket.on("edit message" /* Events.EDIT_MESSAGE */, (chat_id, message) => {
             io.to(chat_id).emit("edit message" /* Events.EDIT_MESSAGE */, message);
+        });
+        /**
+         * Only string message
+         * Used to save resources by only sending a string
+         */
+        socket.on("new str message" /* Events.NEW_STR_MESSAGE */, (chat_id, content) => {
+            io.to(chat_id).emit("new str message" /* Events.NEW_STR_MESSAGE */, content);
         });
     });
 }
