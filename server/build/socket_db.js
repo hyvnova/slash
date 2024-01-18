@@ -72,6 +72,7 @@ export async function get_username(socketId) {
 }
 // Get online users from a list of usernames
 export async function get_online_from(usernames) {
+    console.log("get_online_from", usernames);
     const onlineUsers = await collection.find({ username: { $in: usernames }, status: "online" /* Status.ONLINE */ }).toArray();
     return onlineUsers;
 }

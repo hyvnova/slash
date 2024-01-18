@@ -100,7 +100,7 @@
 
 		// Connect to the chat
 		ws.emit(Events.CONNECT, data.user.username);
-		ws.emit(Events.JOIN_CHAT, data.chat.id, data.user.username);
+		ws.emit(Events.JOIN_CHAT, data.user.username, data.chat.id, data.chat.members);
 		ws.emit(Events.SET_STATUS, Status.ONLINE, data.chat.members);
 		ws.emit(Events.GET_FRIENDS_STATUS, data.chat.members);
 	});

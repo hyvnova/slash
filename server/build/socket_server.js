@@ -7,7 +7,7 @@ export default function injectSocketIO(server) {
             origin: '*',
             methods: ['GET', 'POST', 'PUT', 'DELETE'],
             allowedHeaders: '*',
-            credentials: true,
+            credentials: false,
             optionsSuccessStatus: 204,
         }
     });
@@ -23,7 +23,7 @@ export default function injectSocketIO(server) {
         /**
          * Join Chat
          */
-        socket.on("join chat" /* Events.JOIN_CHAT */, async (chat_id, chat_members, username) => {
+        socket.on("join chat" /* Events.JOIN_CHAT */, async (username, chat_id, chat_members) => {
             await connect(socket.id, username);
             // Leave all other rooms
             Object.keys(socket.rooms).forEach((room) => {
@@ -34,11 +34,10 @@ export default function injectSocketIO(server) {
             socket.join(chat_id);
             // Emit online status to all members of the chat
             io.to(chat_id).emit("status" /* Events.STATUS */, username, "online" /* Status.ONLINE */);
-            // Get others' online status
-            const members = await get_online_from(chat_members);
-            members.forEach((member) => {
+            // Get others online status
+            for (const member of await get_online_from(chat_members)) {
                 io.to(socket.id).emit("status" /* Events.STATUS */, member.username, member.status);
-            });
+            }
         });
         /**
          * Receive Status

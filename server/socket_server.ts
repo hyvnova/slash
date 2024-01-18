@@ -1,5 +1,5 @@
 import { Server, type ServerOptions } from 'socket.io';
-import { connect, disconnect, get_online_from, get_status, get_username, is_online, set_status } from './socket_db.js';
+import { connect, disconnect, get_online_from, get_status, is_online, set_status } from './socket_db.js';
 import { Events, type MessageType, Status } from './types.js';
 
 
@@ -13,7 +13,7 @@ export default function injectSocketIO(server: ServerOptions) {
             origin: '*',
             methods: ['GET', 'POST', 'PUT', 'DELETE'],
             allowedHeaders: '*',
-            credentials: true,
+            credentials: false,
             optionsSuccessStatus: 204,
         }
     });
@@ -34,7 +34,7 @@ export default function injectSocketIO(server: ServerOptions) {
         /** 
          * Join Chat
          */
-        socket.on(Events.JOIN_CHAT, async (chat_id: string, chat_members: string[], username: string) => {
+        socket.on(Events.JOIN_CHAT, async (username: string, chat_id: string, chat_members: string[]) => {
             await connect(socket.id, username);
 
             // Leave all other rooms
@@ -48,11 +48,10 @@ export default function injectSocketIO(server: ServerOptions) {
             // Emit online status to all members of the chat
             io.to(chat_id).emit(Events.STATUS, username, Status.ONLINE);
 
-            // Get others' online status
-            const members = await get_online_from(chat_members)
-            members.forEach((member) => {
+            // Get others online status
+            for (const member of await get_online_from(chat_members)) {
                 io.to(socket.id).emit(Events.STATUS, member.username, member.status);
-            });
+            }
         });
 
 
