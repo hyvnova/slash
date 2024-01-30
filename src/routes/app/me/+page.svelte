@@ -70,7 +70,7 @@
 	});
 </script>
 
-<div class="container">
+<div class="container max-w-3xl">
 	<!-- Navbar -->
 	<nav class="mt-2 flex justify-between items-center w-full p-2 border-b border-gray-700">
 		{#if $requests.length > 0}
@@ -95,8 +95,8 @@
 	<!-- Friend list -->
 	<div
 		class="rounded-sm w-full mt-4
-		flex flex-col justify-center
-		items-start p-2 overflow-y-hidden overflow-x-auto
+		flex flex-col justify-center items-center 
+		p-2 overflow-y-hidden overflow-x-auto
 		"
 	>
 		{#each Object.entries(friend_status) as [friend, status]}

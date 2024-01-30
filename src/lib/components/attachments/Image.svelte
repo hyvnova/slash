@@ -16,13 +16,12 @@
 	});
 </script>
 
-<div class="container h-auto max-w-[50vw] border border-gray-500 rounded-md m-1 p-1">
-
+<div class="container h-auto max-w-md border border-gray-500 rounded-md m-1 p-1">
 	<FileLoadStates {state}>
 		<img
 			src={url}
 			alt="{attachment.name} - {attachment.type} - {attachment.size} bytes"
-			class="rounded-md w-autp h-auto"
+			class="rounded-md w-auto h-auto"
 			loading="lazy"
 			on:load={() => {
 				$scroll_to_bottom();

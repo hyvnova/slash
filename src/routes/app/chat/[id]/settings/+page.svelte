@@ -107,9 +107,10 @@
 						});
 					}}
 				/>
-			</div>
 
-			<div class="flex flex-row justify-between items-center w-auto p-1 mt-2">
+				<!-- Spacing-->
+				<div class="w-8" />
+
 				<label for="sound">Vibrate</label>
 				<input
 					type="checkbox"

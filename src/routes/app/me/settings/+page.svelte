@@ -34,6 +34,9 @@
 <Toast />
 
 <SettingsLayout>
+	<!-- Notifications -->
+	<NotificationConfigPage />
+
 	<!-- Appareance -->
 	<SettingSection title="Appearance" description="Change the way the app looks">
 		<!-- Font family select -->
@@ -57,9 +60,6 @@
 			bind:value={$user_config.font_size}
 		/>
 	</SettingSection>
-
-	<!-- Notifications -->
-	<NotificationConfigPage />
 
 	<!-- Account -->
 	<SettingSection

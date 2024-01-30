@@ -10,10 +10,14 @@
 </script>
 
 <div class="bottom-bar flex p-2 items-center justify-center">
-	<div class="contanier w-8/12 p-2 rounded-lg bg-gray-800">
+	<div class="contanier w-8/12 max-w-lg p-2 rounded-lg bg-gray-800">
 		<div class="flex justify-between items-center">
 			<!-- Profile icon -->
-			<a href="{Routes.PROFILE}/{username}" class="rotate text-gray-400 hover:text-gray-100" title="Profile">
+			<a
+				href="{Routes.PROFILE}/{username}"
+				class="rotate text-gray-400 hover:text-gray-100"
+				title="Profile"
+			>
 				<AvatarImage {username} />
 			</a>
 

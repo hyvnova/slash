@@ -4,7 +4,8 @@
 </script>
 
 <section
-	class="container flex flex-col justify-center items-center
+	class="container 
+			flex flex-col justify-center items-center
 			w-full p-2 mt-2
 			bg-gray-800 rounded-md
 		"

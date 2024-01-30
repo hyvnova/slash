@@ -16,7 +16,7 @@
 	});
 </script>
 
-<div class="container h-auto max-w-[50vw] border border-gray-500 rounded-md m-1 p-1">
+<div class="container h-auto max-w-xl border border-gray-500 rounded-md m-1 p-1">
 
 	<FileLoadStates {state}>
 		<video

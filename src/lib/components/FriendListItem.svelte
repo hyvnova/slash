@@ -9,7 +9,7 @@
 </script>
 
 <!-- svelte-ignore a11y-missing-attribute -->
-<a class="w-full p-1" href="{Routes.CHAT_REDIRECT}/{friend}">
+<a class="w-10/12 p-1" href="{Routes.CHAT_REDIRECT}/{friend}">
 	<div
 		class="flex items-center justify-start rounded-md p-2
 					transition-colors

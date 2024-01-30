@@ -22,6 +22,6 @@
 	<meta name="keywords" content="Slash user page, slash me" />
 </svelte:head>
 
-<main class="w-screen bg-inherit">
+<main class="bg-inherit">
 	<slot />
 </main>
