@@ -9,7 +9,7 @@ const server = http.createServer(app);
 // @ts-ignore
 injectSocketIO(server);
 
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
     logger.info(`Server running on port ${PORT}`);
