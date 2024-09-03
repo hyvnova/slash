@@ -5,7 +5,7 @@ import toast from './stores/toast';
 export let ws: Socket<DefaultEventsMap, DefaultEventsMap>;
 
 ws = process.env.NODE_ENV === "production" ?
-    client("https://server-proud-pond-5804.fly.dev/")
+    client("https://server-autumn-water-8460.fly.dev/")
     :
     client("http://localhost:3003")
 
