@@ -5,9 +5,9 @@ import toast from './stores/toast';
 export let ws: Socket<DefaultEventsMap, DefaultEventsMap>;
 
 ws = process.env.NODE_ENV === "production" ?
-    client("https://server-autumn-water-8460.fly.dev/")
+    client("https://slash-socket-server.onrender.com/")
     :
-    client("http://localhost:3003")
+    client("https://slash-socket-server.onrender.com/")
 
 ws.on("connect_error", (err) => {
     if (process.env.NODE_ENV !== "production"){ console.error(err); }
