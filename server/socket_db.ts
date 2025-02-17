@@ -5,7 +5,7 @@ import "dotenv/config";
 
 
 // Database URI and name
-const DB_URI = process.env.DB_URI;
+const DB_URI = process.env.MONGODB_URI;
 const DB_NAME = "socket-users"
 
 if (!DB_URI) {
