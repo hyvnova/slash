@@ -23,7 +23,7 @@ const client = new MongoClient(DB_URI, {
 });
 
 // Connect the client to the server (optional starting in v4.7)
-await client.connect();
+client.connect();
 
 const db = client.db(DB_NAME);
 const collection = db.collection<SocketUser>("users");
