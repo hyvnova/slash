@@ -8,7 +8,7 @@ try {
 }
 
 // Database URI and name
-const DB_URI = process.env.DB_URI;
+const DB_URI = process.env.MONGODB_URI;
 const DB_NAME = process.env.DEV === "true" ? "dev" : "prod";
 
 if (!DB_URI) {
