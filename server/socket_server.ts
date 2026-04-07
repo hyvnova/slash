@@ -1,14 +1,23 @@
-import { Server, type ServerOptions } from 'socket.io';
-import { connect, disconnect, get_online_from, get_status, is_online, set_status } from './socket_db.js';
+import { Server } from 'socket.io';
+import type { Server as HTTPServer } from 'http';
+import { connect, disconnect, get_online_from, get_status, is_online, set_status, close_client } from './socket_db.js';
 import { Events, type MessageType, Status } from './types.js';
 
 
 type HandshakeCallback = (success: boolean) => void;
 
-export default function injectSocketIO(server: ServerOptions) {
-    server.maxHttpBufferSize = 1e6 // 10MB 
+const DEFAULT_IDLE_SHUTDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+export default function injectSocketIO(server: HTTPServer) {
+    console.log("Injecting SocketIO and configuring server");
+
+    const configuredIdleShutdownMs = Number(process.env.IDLE_SHUTDOWN_MS ?? DEFAULT_IDLE_SHUTDOWN_MS);
+    const idleShutdownMs = Number.isFinite(configuredIdleShutdownMs) && configuredIdleShutdownMs >= 0
+        ? configuredIdleShutdownMs
+        : DEFAULT_IDLE_SHUTDOWN_MS;
 
     const io = new Server(server, {
+        maxHttpBufferSize: 1e6,
         cors: {
             origin: '*',
             methods: '*',
@@ -18,9 +27,63 @@ export default function injectSocketIO(server: ServerOptions) {
         }
     });
 
+    let activeSockets = 0;
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    let shuttingDown = false;
+
+    const cancelIdleShutdown = () => {
+        if (idleTimer) {
+            clearTimeout(idleTimer);
+            idleTimer = null;
+        }
+    };
+
+    const scheduleIdleShutdown = () => {
+        if (idleShutdownMs === 0 || activeSockets > 0 || shuttingDown) {
+            return;
+        }
+
+        cancelIdleShutdown();
+
+        idleTimer = setTimeout(async () => {
+            if (shuttingDown || io.engine.clientsCount > 0) {
+                return;
+            }
+
+            shuttingDown = true;
+            console.info(`[socket] No active connections for ${idleShutdownMs}ms, shutting down to reduce cost.`);
+
+            try {
+                await close_client();
+            } catch (error) {
+                console.error('[socket] Failed to close MongoDB client cleanly during shutdown', error);
+            }
+
+            io.close();
+
+            server.close((closeError) => {
+                if (closeError) {
+                    console.error('[socket] HTTP server close error', closeError);
+                    process.exit(1);
+                } else {
+                    process.exit(0);
+                }
+            });
+
+            // Fallback exit in case close callback never fires
+            setTimeout(() => process.exit(0), 5000);
+        }, idleShutdownMs);
+    };
+
+    // Schedule shutdown in case the server starts with no clients and never gets any
+    scheduleIdleShutdown();
+
     let username: string;
 
     io.on('connection', (socket) => {
+        activeSockets += 1;
+        cancelIdleShutdown();
+
         socket.on(Events.CONNECT, async (_username: string) => {
             username = _username;
             socket.join(username);
@@ -28,8 +91,6 @@ export default function injectSocketIO(server: ServerOptions) {
         });
 
         socket.on(Events.HANDSHAKE, (callback: HandshakeCallback) => { callback(true); });
-
-        socket.on('disconnect', async () => { await disconnect(socket.id); });
 
         /** 
          * Join Chat
@@ -139,6 +200,12 @@ export default function injectSocketIO(server: ServerOptions) {
          */
         socket.on(Events.NEW_STR_MESSAGE, (chat_id: string, content: string) => {
             io.to(chat_id).emit(Events.NEW_STR_MESSAGE, content);
+        });
+
+        socket.on('disconnect', async () => {
+            await disconnect(socket.id);
+            activeSockets = Math.max(0, activeSockets - 1);
+            scheduleIdleShutdown();
         });
     });
 }

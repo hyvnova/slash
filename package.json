@@ -6,6 +6,8 @@
   "private": true,
   "scripts": {
     "dev:server": "node ./server/server.js",
+    "dev:socket-worker": "npm --prefix ./socket-worker run dev",
+    "deploy:socket-worker": "npm --prefix ./socket-worker run deploy",
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",

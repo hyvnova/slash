@@ -1,0 +1,13 @@
+name = "slash-realtime"
+main = "src/index.js"
+compatibility_date = "2025-12-01"
+
+[durable_objects]
+bindings = [
+  { name = "SLASH_REALTIME_SERVER", class_name = "SlashRealtimeServer" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SlashRealtimeServer"]
+

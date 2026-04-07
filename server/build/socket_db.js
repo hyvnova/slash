@@ -13,7 +13,7 @@ const client = new MongoClient(DB_URI, {
         strict: true,
         deprecationErrors: true,
     },
-    maxPoolSize: 100,
+    maxPoolSize: 10,
 });
 // Connect the client to the server (optional starting in v4.7)
 client.connect();
@@ -74,4 +74,12 @@ export async function get_username(socketId) {
 export async function get_online_from(usernames) {
     const onlineUsers = await collection.find({ username: { $in: usernames }, status: "online" /* Status.ONLINE */ }).toArray();
     return onlineUsers;
+}
+let shuttingDown = false;
+export async function close_client() {
+    if (shuttingDown) {
+        return;
+    }
+    shuttingDown = true;
+    await client.close();
 }
