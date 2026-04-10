@@ -4,9 +4,6 @@
   "author": "ezsnova",
   "version": "1.0",
   "private": true,
-  "engines": {
-    "node": "24.x"
-  },
   "scripts": {
     "dev:server": "node ./server/server.js",
     "dev:socket-worker": "npm --prefix ./socket-worker run dev",
