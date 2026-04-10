@@ -1,3 +1,4 @@
+import { DurableObject } from 'cloudflare:workers';
 import {
 	SOCKET_ENDPOINT_PATH,
 	parseRealtimePacket,
@@ -470,4 +471,3 @@ export class SlashRealtimeServer extends DurableObject {
 		return socket.deserializeAttachment() ?? {};
 	}
 }
-
