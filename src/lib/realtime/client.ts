@@ -122,7 +122,10 @@ export class SlashWebSocketClient {
 			return;
 		}
 
-		if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
+		if (
+			this.socket &&
+			(this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)
+		) {
 			return;
 		}
 

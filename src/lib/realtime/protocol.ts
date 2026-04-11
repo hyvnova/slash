@@ -54,4 +54,3 @@ export function isRealtimePacket(value: unknown): value is RealtimePacket {
 
 	return false;
 }
-
