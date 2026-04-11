@@ -1,69 +1,255 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@font-face {
+	font-family: 'Writer';
+	src: url('/fonts/Writer/Writer-Regular.ttf') format('truetype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
 
+:root {
+	--bg: #08090b;
+	--bg-elev: #12151a;
+	--bg-elev-soft: #0d1014;
+	--text: #f0e8da;
+	--text-soft: #d8cdb9;
+	--muted: #a79d8b;
+	--muted-strong: #938878;
+	--accent: #c79c57;
+	--accent-strong: #e2ba74;
+	--signal: #79a6a3;
+	--status-ok: #79a6a3;
+	--status-pend: #8b8476;
+	--status-warn: #c79c57;
+	--status-fail: #b66a48;
+	--line: rgba(186, 157, 108, 0.16);
+	--line-strong: rgba(198, 166, 112, 0.28);
+	--shadow-veil: 0 40px 120px rgba(0, 0, 0, 0.45);
+	--shadow-card: 0 18px 60px rgba(0, 0, 0, 0.36);
+	--focus-ring: 0 0 0 1px rgba(226, 186, 116, 0.34), 0 0 0 4px rgba(199, 156, 87, 0.1);
+	--transition-smooth: 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+	--transition-fast: 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+	--font-body: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Writer', serif;
+	--font-mono: 'IBM Plex Mono', 'Menlo', 'Consolas', monospace;
+	--radius-sm: 2px;
+	--radius-md: 4px;
+	--radius-lg: 6px;
+	--control-height: 2.75rem;
+	--shell-max: 72rem;
+	--shell-pad: clamp(1rem, 3vw, 2rem);
+	--safe-top: env(safe-area-inset-top);
+	--safe-right: env(safe-area-inset-right);
+	--safe-bottom: env(safe-area-inset-bottom);
+	--safe-left: env(safe-area-inset-left);
+	color-scheme: dark;
+}
 
-/* Minimalist, thin scrollbar */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	min-height: 100%;
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-body);
+	font-size: 16px;
+	scrollbar-gutter: stable;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	margin: 0;
+	min-height: 100dvh;
+	background: transparent;
+	color: var(--text);
+	overflow-x: hidden;
+	isolation: isolate;
+}
+
+body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	pointer-events: none;
+	background:
+		radial-gradient(circle at top, rgba(198, 166, 112, 0.08), transparent 26%),
+		radial-gradient(circle at 18% 18%, rgba(121, 166, 163, 0.06), transparent 24%),
+		linear-gradient(180deg, #090b0d 0%, #08090b 35%, #050607 100%);
+}
+
+body > div {
+	min-height: 100dvh;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+	font: inherit;
+}
+
+button {
+	color: inherit;
+}
+
+img,
+svg,
+video,
+canvas {
+	display: block;
+	max-width: 100%;
+}
+
+audio {
+	max-width: 100%;
+}
+
+::selection {
+	background: rgba(199, 156, 87, 0.28);
+	color: var(--text);
+}
+
+:focus-visible {
+	outline: none;
+	box-shadow: var(--focus-ring);
+}
+
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-    padding: 4px;
-    margin: 8px;
+	width: 0.45rem;
+	height: 0.45rem;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-    margin: 4px;
+	background: rgba(167, 157, 139, 0.42);
+	border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #555;
+	background: rgba(199, 156, 87, 0.52);
 }
 
-/* Status */
+.app-frame {
+	min-height: 100dvh;
+}
+
+.app-page {
+	width: min(100%, var(--shell-max));
+	margin: 0 auto;
+	padding: calc(var(--safe-top) + var(--shell-pad)) calc(var(--safe-right) + var(--shell-pad))
+		calc(var(--safe-bottom) + var(--shell-pad)) calc(var(--safe-left) + var(--shell-pad));
+}
+
+.app-stack {
+	display: flex;
+	flex-direction: column;
+	gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.ui-label {
+	font-family: var(--font-mono);
+	font-size: 0.68rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--muted-strong);
+	line-height: 1.2;
+}
+
+.ui-copy {
+	color: var(--text-soft);
+	line-height: 1.6;
+	margin: 0;
+	text-wrap: pretty;
+}
+
+.ui-title {
+	margin: 0;
+	color: var(--text);
+	font-size: 3.1rem;
+	font-weight: 400;
+	letter-spacing: 0;
+	line-height: 0.96;
+	text-wrap: balance;
+}
+
+.ui-page-title {
+	margin: 0;
+	color: var(--text);
+	font-size: 2.1rem;
+	font-weight: 400;
+	letter-spacing: 0;
+	line-height: 1;
+}
+
+.ui-meta {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	color: var(--muted);
+	letter-spacing: 0.04em;
+	line-height: 1.45;
+}
+
+.status-online,
 .online {
-    color: #2ECC71;
+	color: var(--status-ok);
 }
 
+.status-offline,
 .offline {
-    color: #95A5A6;
+	color: var(--status-pend);
 }
 
+.status-typing,
 .typing {
-    color: #3498DB;
+	color: var(--signal);
 }
 
-
-
-/* Element Styling */
-
-/* Buttons (Green, Yellow, Red) */
-.btn {
-    padding: theme('spacing.2');
-    border-radius: theme('borderRadius.md');
-    color: theme('colors.white');
-    width: theme('spacing.32');
-    margin: theme('spacing.2');
+@keyframes pulse-dot {
+	0%,
+	100% {
+		opacity: 0.42;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1.25);
+	}
 }
 
-.btn-green {
-    border: 1px solid theme('colors.green.500');
-}
-.btn-green:hover {
-    background-color: theme('colors.green.600');
-}
-
-.btn-yellow {
-    border: 1px solid theme('colors.yellow.500');
-}
-.btn-yellow:hover {
-    background-color: theme('colors.yellow.600');
+@keyframes route-progress {
+	from {
+		transform: translateX(-100%);
+	}
+	to {
+		transform: translateX(420%);
+	}
 }
 
-.btn-red {
-    border: 1px solid theme('colors.red.500');
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+	}
 }
-.btn-red:hover {
-    background-color: theme('colors.red.600');
+
+@media (max-width: 34rem) {
+	.ui-title {
+		font-size: 2.25rem;
+	}
+
+	.ui-page-title {
+		font-size: 1.65rem;
+	}
 }
