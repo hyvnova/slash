@@ -1,166 +1,169 @@
 <script lang="ts">
-	import { Routes, type MessageType, Events, Status } from '$lib/types';
-	import Fa from 'svelte-fa';
-	import type { PageServerData } from './$types';
-	import { faArrowLeft, faCertificate, faCog } from '@fortawesome/free-solid-svg-icons';
+	import { onMount } from 'svelte';
 	import AvatarImage from '$lib/components/AvatarImage.svelte';
-	import { writable } from 'svelte/store';
-	import { ws } from '$lib/websocket';
-	import { onMount, tick } from 'svelte';
 	import ChatContainer from '$lib/components/ChatContainer.svelte';
 	import ChatInput from '$lib/components/ChatInput.svelte';
 	import Toast from '$lib/components/Toast.svelte';
-	import toast from '$lib/stores/toast';
-	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
-	import user_config from '$lib/stores/user_config';
+	import Icon from '$lib/components/ui/Icon.svelte';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
+	import StatusDot from '$lib/components/ui/StatusDot.svelte';
+	import Topbar from '$lib/components/ui/Topbar.svelte';
 	import { handle_notication } from '$lib/notification';
+	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
+	import toast from '$lib/stores/toast';
+	import user_config from '$lib/stores/user_config';
+	import { Events, Routes, Status, type MessageType } from '$lib/types';
+	import { ws } from '$lib/websocket';
+	import type { PageServerData } from './$types';
 
-	export let data: PageServerData;
-	export let container: HTMLElement;
+	interface Props {
+		data: PageServerData;
+	}
 
-	let messages = writable(data.chat.messages);
-	let friend_status = writable<Status>(Status.OFFLINE);
+	let { data }: Props = $props();
+	// Message state is a live socket buffer seeded from the server snapshot.
+	// svelte-ignore state_referenced_locally
+	let messages = $state<MessageType[]>(data.chat.messages);
+	let friend_status = $state<Status>(Status.OFFLINE);
+	let notification_config = $derived(
+		$user_config.notifications.custom[data.chat.id] || $user_config.notifications.general
+	);
 
-	scroll_to_bottom.set(() => {
-		container.scrollTop = container.scrollHeight;
-	});
+	let other_typing_timeout: ReturnType<typeof setTimeout> | undefined;
 
-	let other_typing_timeout: string | number | NodeJS.Timeout | undefined;
-	let notification_config =
-		$user_config.notifications.custom[data.chat.id] || $user_config.notifications.general;
+	scroll_to_bottom.set(() => {});
 
-	onMount(async () => {
-		await tick();
-
+	onMount(() => {
 		ws.emit(Events.HANDSHAKE, (success: boolean) => {
 			if (!success) {
 				toast.set({
 					type: 'error',
-					title: 'Offline - Connection lost',
-					message: 'Try reloading the page. Some features may not work.'
+					title: 'signal interrupted',
+					message: 'reload when the channel clears'
 				});
 			}
 		});
 
-		ws.on(Events.NEW_MESSAGE, (msg: MessageType) => {
-			// Notify
+		const onNewMessage = (msg: MessageType) => {
 			if (notification_config.enabled && msg.author !== data.user.username) {
-				// Only notify if the user is not focused on the window
-				handle_notication(
-					() =>
-						new Notification(msg.author, {
-							body: msg.content || 'New message',
-							icon: '/avatar/' + msg.author,
-							timestamp: Date.now(),
-							silent: !notification_config.sound,
-							vibrate: notification_config.vibrate ? [200, 100, 200] : undefined
-						})
-				);
+				handle_notication(() => {
+					if (notification_config.vibrate && 'vibrate' in navigator) {
+						navigator.vibrate([200, 100, 200]);
+					}
+
+					new Notification(msg.author, {
+						body: msg.content || 'new message',
+						icon: '/avatar/' + msg.author,
+						silent: !notification_config.sound
+					});
+				});
 			}
 
-			messages.update((old) => [...old, msg]);
-			$scroll_to_bottom();
-		});
+			messages = [...messages, msg];
+		};
 
-		ws.on(Events.EDIT_MESSAGE, (msg: MessageType) => {
-			messages.update((old) => {
-				let index = old.findIndex((m) => m.id === msg.id);
-				if (index === -1) {
-					return old;
-				}
-				old[index] = msg;
-				return old;
-			});
-		});
+		const onEditMessage = (msg: MessageType) => {
+			messages = messages.map((entry) => (entry.id === msg.id ? msg : entry));
+		};
 
-		ws.on(Events.DELETE_MESSAGE, (msg: MessageType) => {
-			messages.update((old) => {
-				let index = old.findIndex((m) => m.id === msg.id);
-				if (index === -1) {
-					return old;
-				}
-				old.splice(index, 1);
-				return old;
-			});
-		});
+		const onDeleteMessage = (msg: MessageType) => {
+			messages = messages.filter((entry) => entry.id !== msg.id);
+		};
 
-		ws.on(Events.STATUS, (username: string, status: Status) => {
-			if (username === data.other) {
-				friend_status.set(status || Status.OFFLINE);
+		const onStatus = (username: string, status: Status) => {
+			if (username !== data.other) return;
+			friend_status = status || Status.OFFLINE;
 
-				// If the user is typing, set the status to online after 2 seconds
-				if (status == Status.TYPING) {
-					clearTimeout(other_typing_timeout);
-					other_typing_timeout = setTimeout(() => {
-						friend_status.set(Status.ONLINE);
-					}, 2000);
-				}
+			if (status === Status.TYPING) {
+				clearTimeout(other_typing_timeout);
+				other_typing_timeout = setTimeout(() => {
+					friend_status = Status.ONLINE;
+				}, 2000);
 			}
-		});
+		};
 
-		// Connect to the chat
+		ws.on(Events.NEW_MESSAGE, onNewMessage);
+		ws.on(Events.EDIT_MESSAGE, onEditMessage);
+		ws.on(Events.DELETE_MESSAGE, onDeleteMessage);
+		ws.on(Events.STATUS, onStatus);
 		ws.emit(Events.CONNECT, data.user.username);
 		ws.emit(Events.JOIN_CHAT, data.user.username, data.chat.id, data.chat.members);
 		ws.emit(Events.SET_STATUS, Status.ONLINE, data.chat.members);
 		ws.emit(Events.GET_FRIENDS_STATUS, data.chat.members);
+
+		return () => {
+			clearTimeout(other_typing_timeout);
+			ws.off(Events.NEW_MESSAGE, onNewMessage);
+			ws.off(Events.EDIT_MESSAGE, onEditMessage);
+			ws.off(Events.DELETE_MESSAGE, onDeleteMessage);
+			ws.off(Events.STATUS, onStatus);
+		};
 	});
 </script>
 
 <svelte:head>
-	<title>Chat</title>
+	<title>{data.other} / slash</title>
 	<meta name="description" content="Slash chat" />
-	<meta name="keywords" content="slash, chat, slashchat, slash chat" />
 </svelte:head>
 
 <Toast />
 
-<main class="max-w-3xl mx-auto layout bg-inherit" bind:this={container}>
-	<!-- Top-->
-	<nav class="my-1 flex justify-between items-center w-full p-1 border-b border-gray-700">
-		<a href={Routes.HOME} class="ml-1 rotate text-gray-400 hover:text-gray-100">
-			<Fa icon={faArrowLeft} class="text-2xl" />
-		</a>
+<main class="chat-shell">
+	<Topbar title={data.other} subtitle={friend_status} backHref={Routes.HOME}>
+		{#snippet left()}
+			<IconButton icon="arrow-left" label="back to contacts" href={Routes.HOME} />
+		{/snippet}
+		{#snippet right()}
+			<a class="chat-peer" href="{Routes.PROFILE}/{data.other}" title="view profile">
+				<AvatarImage username={data.other} size={36} />
+				<StatusDot status={friend_status} />
+			</a>
+			<a class="verified" href="{Routes.PROFILE}/{data.user.username}" title="profile">
+				{#if data.user.verified}<Icon name="shield" size={16} />{/if}
+			</a>
+			<IconButton
+				icon="settings"
+				label="chat settings"
+				href="{Routes.CHAT}/{data.chat.id}/settings"
+			/>
+		{/snippet}
+	</Topbar>
 
-		<a href="{Routes.PROFILE}/{data.other}" class="flex justify-center items-center">
-			<div class="flex justify-center items-center" title="Click to view profile">
-				<AvatarImage username={data.other} />
-
-				<div class="flex flex-col justify-center items-center">
-					<h1 class="ml-2 text-gray-100 text-xl">{data.other}</h1>
-					{#if data.user.verified}
-						<Fa icon={faCertificate} class="ml-1 text-purple-500" />
-					{/if}
-
-					<!-- Status -->
-					<p class="text-gray-400 text-sm {$friend_status}">
-						{$friend_status}
-					</p>
-				</div>
-			</div>
-		</a>
-
-		<a
-			href="{Routes.CHAT}/{data.chat.id}/settings"
-			class="rotate text-gray-400 hover:text-gray-100 m-1"
-			title="Chat settings"
-		>
-			<Fa icon={faCog} class="text-2xl" />
-		</a>
-	</nav>
-
-	<!-- Chat container -->
 	<ChatContainer username={data.user.username} {messages} />
-
-	<!-- Input-->
 	<ChatInput username={data.user.username} chat_id={data.chat.id} />
 </main>
 
-<style lang="postcss">
-	.layout {
+<style>
+	.chat-shell {
 		display: grid;
-		grid-template-columns: 1;
-		grid-template-rows: auto 1fr auto;
-		min-height: 100vh;
-		max-height: 100vh;
+		grid-template-rows: auto minmax(0, 1fr) auto;
+		width: min(100%, 56rem);
+		height: 100dvh;
+		margin: 0 auto;
+	}
+
+	.chat-peer {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.chat-peer :global(.ui-status-dot) {
+		position: absolute;
+		right: -1px;
+		bottom: -1px;
+		border: 2px solid var(--bg);
+	}
+
+	.verified {
+		display: inline-flex;
+		color: var(--signal);
+	}
+
+	@media (max-width: 34rem) {
+		.chat-shell {
+			width: 100%;
+		}
 	}
 </style>

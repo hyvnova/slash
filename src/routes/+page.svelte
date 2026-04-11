@@ -1,119 +1,149 @@
 <script lang="ts">
-	import Toast from '$lib/components/Toast.svelte';
+	import Button from '$lib/components/ui/Button.svelte';
+	import Input from '$lib/components/ui/Input.svelte';
+	import Panel from '$lib/components/ui/Panel.svelte';
 	import type { ActionData } from './$types';
-	import toast from '$lib/stores/toast';
 
-	let username: string = '';
-	let password: string = '';
-
-	function goto_next_sibling(e: KeyboardEvent) {
-		if (e.key === 'Enter') {
-			e.preventDefault();
-			if (e.target && e.target instanceof HTMLInputElement) {
-				// check if element has content
-				if (!e.target.value) {
-					return;
-				}
-
-				// Get and move to next sibling if it exists
-				let next_sibling = (e.target as HTMLInputElement).nextElementSibling;
-				if (next_sibling) {
-					(next_sibling as HTMLInputElement).focus();
-				}
-			}
-		}
+	interface Props {
+		form?: ActionData;
 	}
 
-	/**
-	 * If form submission was successful -> redirect to /me
-	 * ... unsuccessful -> display error
-	 */
-	export let form: ActionData;
-	$: if (form) {
-		toast.set({
-			title: "Couldn't log in",
-			message: form.error,
-			type: 'error',
-			duration: 5000
-		});
-	}
+	let { form }: Props = $props();
 </script>
 
-<main
-	class="container h-screen flex flex-col justify-center items-center bg-inherit"
->
-	<!-- Notification card to show form error -->
-	<Toast />
+<svelte:head>
+	<title>Slash</title>
+	<meta name="description" content="anonymous chat with a small, direct interface" />
+</svelte:head>
 
-	<header class="mb-4">
-		<h1 class="text-4xl">Join</h1>
-		<p>Enter your credentials to <strong>log in</strong> or <strong>sign up</strong>.</p>
-	</header>
+<main class="auth-shell">
+	<section class="auth-copy" aria-labelledby="auth-title">
+		<p class="ui-label">slash / gateway</p>
+		<h1 id="auth-title" class="ui-title">signal first. name second.</h1>
+		<p class="ui-copy">
+			use one form to enter. if the handle exists, it signs in. if it does not, it creates the room
+			key.
+		</p>
+	</section>
 
-	<!-- Split loging options: form (70%) nova-auth (30%)-->
-	<div class="flex flex-row w-10/12 justify-center items-center">
-		<section class="w-max">
-			<form
-				class="m-2 flex flex-col justify-center items-center"
-				action="/"
-				method="POST"
-			>
-				<!-- svelte-ignore a11y-autofocus -->
-				<input
-					class="hover:border-blue-700"
-					type="text"
-					title="Username is your unique identifier, it is case insensitive and can only contain letters, numbers, and underscores."
-					placeholder="some_username78"
-					minlength="1"
-					maxlength="16"
-					required
-					autofocus
-					name="username"
-					autocomplete="username"
-					bind:value={username}
-					on:keydown={goto_next_sibling}
-					pattern="[a-z0-9_]+"
+	<Panel label="access" title="enter" description="no email. no ceremony." inset class="auth-panel">
+		<form class="auth-form" action="/" method="POST">
+			<Input
+				label="handle"
+				type="text"
+				name="username"
+				placeholder="some_username78"
+				minlength={1}
+				maxlength={16}
+				required
+				autofocus
+				autocomplete="username"
+				pattern="[a-z0-9_]+"
+			/>
 
-					on:input={() => {
-						// to lowercase
-						username = username.toLowerCase();
+			<Input
+				label="key"
+				type="password"
+				name="password"
+				placeholder="password"
+				minlength={4}
+				maxlength={128}
+				required
+				autocomplete="current-password"
+			/>
 
-						// Replace spaces with underscores
-						username = username.replace(/ /g, '_');
+			{#if form?.error}
+				<p class="form-error">{form.error}</p>
+			{/if}
 
-						// Delete special characters
-						username = username.replace(/[^a-z0-9_]/g, '');
-					}}
-				/>
-
-				<input
-					class="hover:border-blue-700"
-					type="password"
-					title="Password can be anything you want from 4 to 128 characters, we recommend at least 8 characters, numbers, and special characters."
-					placeholder="password"
-					minlength="4"
-					maxlength="128"
-					required
-					name="password"
-					autocomplete="current-password"
-					bind:value={password}
-				/>
-
-				<button
-					type="submit"
-					class="mt-2 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded border-blue-700"
-					title="Submit"
-				>
-					Submit
-				</button>
-			</form>
-		</section>
-	</div>
+			<Button variant="primary" type="submit" class="auth-submit">submit</Button>
+		</form>
+	</Panel>
 </main>
 
-<footer class="absolute w-full text-center">
-	<p class="text-sm text-gray-500">
-		Made with <span class="text-red-500">&hearts;</span> by
-		<a href="https://github.com/ezsnova/"><strong>NoVa</strong></a>
-	</p>
+<footer class="auth-footer">
+	<p>made by <a href="https://github.com/ezsnova/">nova</a></p>
 </footer>
+
+<style>
+	.auth-shell {
+		min-height: 100dvh;
+		display: grid;
+		grid-template-columns: minmax(0, 0.88fr) minmax(19rem, 0.62fr);
+		align-items: center;
+		gap: clamp(2rem, 7vw, 5rem);
+		width: min(100%, 68rem);
+		margin: 0 auto;
+		padding: calc(var(--safe-top) + clamp(2rem, 8vw, 6rem))
+			calc(var(--safe-right) + var(--shell-pad)) calc(var(--safe-bottom) + 4rem)
+			calc(var(--safe-left) + var(--shell-pad));
+	}
+
+	.auth-copy {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.auth-copy .ui-copy {
+		max-width: 31rem;
+	}
+
+	:global(.auth-panel) {
+		width: 100%;
+	}
+
+	.auth-form {
+		display: grid;
+		gap: 0.9rem;
+	}
+
+	.form-error {
+		margin: 0;
+		color: var(--status-fail);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		line-height: 1.4;
+	}
+
+	:global(.auth-submit) {
+		width: 100%;
+		margin-top: 0.25rem;
+	}
+
+	.auth-footer {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: calc(var(--safe-bottom) + 0.85rem);
+		display: flex;
+		justify-content: center;
+		pointer-events: none;
+	}
+
+	.auth-footer p {
+		margin: 0;
+		color: var(--muted-strong);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+		letter-spacing: 0.08em;
+	}
+
+	.auth-footer a {
+		color: var(--accent);
+		text-decoration: underline;
+		text-underline-offset: 0.18em;
+		pointer-events: auto;
+	}
+
+	@media (max-width: 48rem) {
+		.auth-shell {
+			grid-template-columns: 1fr;
+			align-content: center;
+			gap: 1.5rem;
+		}
+
+		.auth-copy .ui-title {
+			max-width: 9ch;
+		}
+	}
+</style>

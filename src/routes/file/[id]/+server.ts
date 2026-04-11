@@ -1,34 +1,55 @@
-/**
- *  ROUTE: /api/file
- * METHOD: GET
- * Returns file data
- */
+import type { RequestHandler } from '@sveltejs/kit';
+import { resolve_file } from '$lib/server/db/files';
 
-import { exists, get_file } from "$lib/server/db/files";
-import type { RequestHandler } from "@sveltejs/kit";
+async function resolveResponse(id: string, method: 'GET' | 'HEAD') {
+	const resolution = await resolve_file(id);
+
+	if (resolution.kind === 'redirect') {
+		return Response.redirect(resolution.url, 302);
+	}
+
+	if (resolution.kind === 'deleted') {
+		return new Response(null, { status: 410, statusText: 'File deleted' });
+	}
+
+	if (resolution.kind === 'missing') {
+		return new Response(null, { status: 404, statusText: 'File not found' });
+	}
+
+	if (method === 'HEAD') {
+		return new Response(null, {
+			status: 200,
+			headers: {
+				'Content-Type': resolution.file.type,
+				'Content-Length': String(resolution.file.size),
+				'Content-Disposition': `attachment; filename=${resolution.file.name}`
+			}
+		});
+	}
+
+	return new Response(Uint8Array.from(resolution.file.data), {
+		status: 200,
+		headers: {
+			'Content-Type': resolution.file.type,
+			'Content-Disposition': `attachment; filename=${resolution.file.name}`
+		}
+	});
+}
 
 export const GET: RequestHandler = async ({ params }) => {
+	const id = params.id;
+	if (!id) {
+		return new Response(null, { status: 404 });
+	}
 
-    const id = params.id;
+	return resolveResponse(id, 'GET');
+};
 
-    if (!id || !await exists(id)) {
-        return new Response(null, { status: 404, statusText: "File not found" });
-    }
+export const HEAD: RequestHandler = async ({ params }) => {
+	const id = params.id;
+	if (!id) {
+		return new Response(null, { status: 404 });
+	}
 
-    let file = await get_file(id);
-
-    if (!file) {
-        return new Response(null, { status: 404, statusText: "File not found" });
-    }
-
-    return new Response(
-        file.data,
-        {
-            status: 200,
-            headers: {
-                "Content-Type": file.type,
-                "Content-Disposition": `attachment; filename=${file.name}`
-            }
-        }
-    );
+	return resolveResponse(id, 'HEAD');
 };

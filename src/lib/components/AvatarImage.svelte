@@ -1,39 +1,38 @@
 <script lang="ts">
-	/**
-	 * TODO: Implement an actual cache
-	*/
-
+	import { onDestroy, onMount } from 'svelte';
+	import Avatar from '$lib/components/ui/Avatar.svelte';
 	import { cached } from '$lib/stores/cached';
-	import { onMount } from 'svelte';
 
-	export let username: string;
-	export let use_cache: boolean = true;
+	interface Props {
+		username: string;
+		use_cache?: boolean;
+		size?: number;
+	}
 
-	let url = `/avatar/${username}`;
+	let { username, use_cache = true, size = 40 }: Props = $props();
+	// svelte-ignore state_referenced_locally
+	let url = $state(`/avatar/${username}`);
+	let objectUrl = '';
 
 	onMount(async () => {
-		if (use_cache) {
-			// If cache exists, use it
-			if ($cached[username]) {
-				url = $cached[username];
+		if (!use_cache) return;
 
-				// Otherwise, fetch the image and cache it
-			} else {
-				let res = await fetch(`/avatar/${username}`);
-
-				if (res.ok) {
-					const blob = await res.blob();
-					url = URL.createObjectURL(blob);
-					cached.update((c) => ({ ...c, [username]: url }));
-				}
-			}
+		if ($cached[username]) {
+			url = $cached[username];
+			return;
 		}
+
+		const response = await fetch(`/avatar/${username}`);
+		if (!response.ok) return;
+
+		objectUrl = URL.createObjectURL(await response.blob());
+		url = objectUrl;
+		cached.update((value) => ({ ...value, [username]: objectUrl }));
+	});
+
+	onDestroy(() => {
+		if (objectUrl && !$cached[username]) URL.revokeObjectURL(objectUrl);
 	});
 </script>
 
-<img
-	src={url}
-	alt="{username}'s Slash Avatar"
-	class="max-w-[2.5em] max-h-[2.5em] rounded-full"
-	loading="lazy"
-/>
+<Avatar src={url} name={username} {size} />

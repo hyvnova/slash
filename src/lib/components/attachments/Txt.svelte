@@ -1,92 +1,147 @@
 <script lang="ts">
-	import { MAX_FILE_LOAD_TRIES, bytes_to_size } from '$lib';
+	import { MAX_FILE_LOAD_TRIES, TEXT_PREVIEW_MAX_BYTES, bytes_to_size } from '$lib';
+	import FileLoadStates from '$lib/components/FileLoadStates.svelte';
+	import CodeBlock from '$lib/components/CodeBlock.svelte';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
-	import { FileLoadState, type AttachmentType, Routes } from '$lib/types';
+	import { FileLoadState, Routes, type AttachmentType } from '$lib/types';
 	import { onMount } from 'svelte';
 	import { writable } from 'svelte/store';
-	import CodeBlock from '../CodeBlock.svelte';
-	import Fa from 'svelte-fa';
-	import { faCopy, faDownload } from '@fortawesome/free-solid-svg-icons';
-	import FileLoadStates from '../FileLoadStates.svelte';
 
-	export let attachment: AttachmentType;
+	interface Props {
+		attachment: AttachmentType;
+	}
 
-	const size = bytes_to_size(attachment.size);
-	let content = '';
+	let { attachment }: Props = $props();
 
-
-	const state = writable<FileLoadState>(FileLoadState.LOADING);
+	const size = $derived(bytes_to_size(attachment.size));
+	const previewBlocked = $derived(attachment.size > TEXT_PREVIEW_MAX_BYTES);
+	const fileState = writable<FileLoadState>(FileLoadState.LOADING);
+	let content = $state('');
 	let tries = 0;
 
-
-	const get_file_content = async () => {
-		let res = await fetch(`${Routes.FILE}/${attachment.id}`);
-		if (res.ok) {
-			let text = await res.text();
-			content = text || 'Empty file';
-			state.set(FileLoadState.LOADED);
-		} else {
-			if (tries < MAX_FILE_LOAD_TRIES) {
-				tries++;
-				setTimeout(get_file_content, 1000 * tries);
-			} else {
-				state.set(FileLoadState.FAILED);
-			}
+	async function get_file_content() {
+		if (previewBlocked) {
+			fileState.set(FileLoadState.LOADED);
+			return;
 		}
+
+		const response = await fetch(`${Routes.FILE}/${attachment.id}`);
+		if (response.ok) {
+			content = (await response.text()) || 'empty file';
+			fileState.set(FileLoadState.LOADED);
+		} else if (response.status === 404 || response.status === 410) {
+			fileState.set(FileLoadState.DELETED);
+		} else if (tries < MAX_FILE_LOAD_TRIES) {
+			tries++;
+			setTimeout(get_file_content, 1000 * tries);
+		} else {
+			fileState.set(FileLoadState.FAILED);
+		}
+
 		$scroll_to_bottom();
+	}
 
-	};
-
-	// Get the file from the server
 	onMount(get_file_content);
 </script>
 
-<div
-	class="container overflow-x-hidden
-            border border-gray-500
-        	h-auto max-w-[75vw]
-            rounded-md m-1 p-1
-        "
+<article class="text-attachment">
+	<header>
+		<div class="file-meta">
+			<strong>{attachment.name}</strong>
+			<span>{size} / {attachment.type}</span>
+		</div>
+		<div class="file-actions">
+			<IconButton
+				icon="copy"
+				label="copy file text"
+				onclick={() => navigator.clipboard.writeText(content)}
+			/>
+			<IconButton icon="download" label="download file" href={`${Routes.FILE}/${attachment.id}`} />
+		</div>
+	</header>
 
-	on:load={$scroll_to_bottom}
->
-	<!-- Header - -->
-	<div class="flex flex-wrap items-center justify-center border-b border-gray-500 p-1">
-		<p class="text-sm text-gray-300 text-ellipsis">{attachment.name}</p>
-		<span class="text-sm text-gray-500 mx-1"> | </span>
-		<p class="text-sm text-gray-400">{size}</p>
-		<span class="text-sm text-gray-500 mx-1"> | </span>
-		<p class="text-sm text-gray-400">{attachment.type}</p>
-
-		<span class="text-sm text-gray-500 mx-1"> | </span>
-
-		<!-- Copy to clipboard button -->
-		<button
-			class="border border-gray-500 rounded-md p-1 m-1 w-auto"
-			title="Copy to clipboard"
-			on:click={() => {
-				navigator.clipboard.writeText(content);
-			}}
-		>
-			<Fa icon={faCopy} class="text-gray-100" />
-		</button>
-
-		<!-- Download button -->
-		<a
-			href="${Routes.FILE}/${attachment.id}"
-			target="_blank"
-			class="border border-gray-500 rounded-md p-1 m-1 w-auto"
-			title="Download"
-		>
-			<Fa icon={faDownload} class="text-gray-100" />
-		</a>
-	</div>
-
-
-	<FileLoadStates {state}>
-
-		<!-- On load -->
-		<CodeBlock language={attachment.type.split('/')[1]} code={content} />
-
+	<FileLoadStates loadState={fileState}>
+		{#if previewBlocked}
+			<div class="blocked">
+				<p>too large for inline preview.</p>
+				<a href={`${Routes.FILE}/${attachment.id}`} target="_blank" rel="noreferrer"
+					>download file</a
+				>
+			</div>
+		{:else}
+			<CodeBlock language={attachment.type.split('/')[1]} code={content} />
+		{/if}
 	</FileLoadStates>
-</div>
+</article>
+
+<style>
+	.text-attachment {
+		width: min(100%, 42rem);
+		overflow: hidden;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-md);
+		background: rgba(8, 9, 11, 0.58);
+	}
+
+	header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.65rem;
+		border-bottom: 1px solid var(--line);
+	}
+
+	.file-meta {
+		display: grid;
+		gap: 0.2rem;
+		min-width: 0;
+	}
+
+	strong {
+		overflow: hidden;
+		color: var(--text);
+		font-weight: 400;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	span {
+		color: var(--muted);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+	}
+
+	.file-actions {
+		display: flex;
+		flex: 0 0 auto;
+		gap: 0.4rem;
+	}
+
+	.blocked {
+		display: grid;
+		justify-items: center;
+		gap: 0.45rem;
+		padding: 1rem;
+		color: var(--muted);
+	}
+
+	.blocked p {
+		margin: 0;
+	}
+
+	.blocked a {
+		color: var(--accent);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	@media (max-width: 34rem) {
+		header {
+			align-items: flex-start;
+		}
+	}
+</style>

@@ -1,84 +1,95 @@
-<script>
-	// @ts-nocheck
+<script lang="ts">
+	import Icon from '$lib/components/ui/Icon.svelte';
 
-	/**
-	* TODO: Finish message context menu
-	* * Doesn't open at click location
-	* * Is not linked to a message 
-	*/
+	let pos = $state({ x: 0, y: 0 });
+	let menu = $state({ w: 0, h: 0 });
+	let is_open = $state(false);
 
-	import { faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
-	import Fa from 'svelte-fa';
+	function rightClickContextMenu(event: MouseEvent) {
+		event.preventDefault();
+		is_open = true;
 
-    // pos is cursor position when right click occur
-    let pos = { x: 0, y: 0 }
-    // menu is dimension (height and width) of context menu
-    let menu = { h: 0, y: 0 }
-    // browser/window dimension (height and width)
-    let browser = { h: 0, y: 0 }
-    // showMenu is state of context-menu visibility
-    let is_open = false;
-    // to display some text
-    let content;
+		pos = {
+			x: event.clientX,
+			y: event.clientY
+		};
 
-    function rightClickContextMenu(e){
-        is_open = true
-        browser = {
-            w: window.innerWidth,
-            h: window.innerHeight
-        };
-        pos = {
-            x: e.clientX,
-            y: e.clientY
-        };
-        // If bottom part of context menu will be displayed
-        // after right-click, then change the position of the
-        // context menu. This position is controlled by `top` and `left`
-        // at inline style. 
-        // Instead of context menu is displayed from top left of cursor position
-        // when right-click occur, it will be displayed from bottom left.
-        if (browser.h -  pos.y < menu.h)
-            pos.y = pos.y - menu.h
-        if (browser.w -  pos.x < menu.w)
-            pos.x = pos.x - menu.w
-    }
-    function onPageClick(e){
-        // To make context menu disappear when
-        // mouse is clicked outside context menu
-        is_open = false;
-    }
-	function getContextMenuDimension(node) {
-		// This function will get context menu dimension
-		// when navigation is shown => showMenu = true
-		let height = node.offsetHeight;
-		let width = node.offsetWidth;
+		// Keep the menu inside the viewport even on narrow mobile emulation.
+		if (window.innerHeight - pos.y < menu.h) pos.y = Math.max(8, pos.y - menu.h);
+		if (window.innerWidth - pos.x < menu.w) pos.x = Math.max(8, pos.x - menu.w);
+	}
+
+	function closeContextMenu() {
+		is_open = false;
+	}
+
+	function getContextMenuDimension(node: HTMLElement) {
 		menu = {
-			h: height,
-			w: width
+			w: node.offsetWidth,
+			h: node.offsetHeight
 		};
 	}
 </script>
 
 {#if is_open}
-	<nav use:getContextMenuDimension style="position: absolute; top:{pos.y}px; left:{pos.x}px">
-		<ul class="flex flex-col border w-auto h-auto">
-			<!-- Edit message -->
-			<li class="flex p-1 w-full">
-				<button class="inline-flex items-center px-2 py-1 rounded-md text-gray-100">
-					<Fa icon={faEdit} class="text-gray-100" />
-					Edit
-				</button>
-			</li>
-
-			<!-- Delete message -->
-			<li class="flex p-1 w-full">
-				<button class="inline-flex items-center px-2 py-1 rounded-md text-gray-100">
-					<Fa icon={faTrash} class="text-gray-100" />
-					Delete
-				</button>
-			</li>
-		</ul>
+	<nav
+		class="message-menu"
+		use:getContextMenuDimension
+		style:top={`${pos.y}px`}
+		style:left={`${pos.x}px`}
+		aria-label="message actions"
+	>
+		<button type="button">
+			<Icon name="edit" />
+			<span>edit</span>
+		</button>
+		<button type="button" class="danger">
+			<Icon name="trash" />
+			<span>delete</span>
+		</button>
 	</nav>
 {/if}
 
-<svelte:window on:contextmenu|preventDefault={rightClickContextMenu} on:click={onPageClick} />
+<svelte:window oncontextmenu={rightClickContextMenu} onclick={closeContextMenu} />
+
+<style>
+	.message-menu {
+		position: fixed;
+		z-index: var(--z-overlay);
+		display: grid;
+		gap: 0.2rem;
+		min-width: 9rem;
+		padding: 0.35rem;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-md);
+		background: var(--bg-elev);
+		box-shadow: var(--shadow-card);
+	}
+
+	button {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: 100%;
+		min-height: 2.35rem;
+		border: 0;
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: var(--text-soft);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	button:hover {
+		background: rgba(121, 166, 163, 0.08);
+		color: var(--text);
+	}
+
+	.danger:hover {
+		background: rgba(182, 106, 72, 0.12);
+		color: var(--status-fail);
+	}
+</style>

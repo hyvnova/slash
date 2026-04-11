@@ -1,93 +1,131 @@
 <script lang="ts">
-	import type { MessageType } from '$lib/types';
 	import Markdown from '@magidoc/plugin-svelte-marked';
 	import Attachment from './Attachment.svelte';
 	import MessageTimestamp from './MessageTimestamp.svelte';
-	import message_context_menu from '$lib/stores/message_context_menu';
+	import type { MessageType } from '$lib/types';
 
-	export let username: string;
-	export let message: MessageType;
+	interface Props {
+		username: string;
+		message: MessageType;
+	}
 
-	const owned = username === message.author; // Person who sent the message -> perspective of massage bubble
+	let { username, message }: Props = $props();
+	const owned = $derived(username === message.author);
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-click-events-have-key-events -->
-<div
-	class="flex flex-col {owned ? 'right' : 'left'}
-		w-full
-		max-w-full
-		mb-2
-		"
->
-	<!-- Message content & timestamp -->
-	<div
-		class="flex {owned ? 'flex-row-reverse right' : 'flex-row left'} items-center
-			w-full max-w-full
-			h-auto
-		"
-	>
-		<!-- Message content -->
+<article class={`message ${owned ? 'owned' : 'other'}`}>
+	<div class="message-line">
 		{#if message.content}
-			<div
-				class="{owned ? 'bubble-owned' : 'bubble-other'} 
-					transition-all duration-300
-					break-words rounded-xl p-2
-					max-w-[75%]
-					h-auto
-					"
-			>
+			<div class="bubble">
 				<Markdown source={message.content} />
 			</div>
 		{/if}
 
-		<!-- Timestamp -->
-		<div class="timestamp flex flex-nowrap items-center justify-center w-auto h-full">
-			<MessageTimestamp timestamp={message.timestamp} />
-		</div>
+		<MessageTimestamp timestamp={message.timestamp} />
 	</div>
 
-	<!-- Attachments -->
-	<class class="flex flex-col items-center justify-center w-auto h-full {owned ? 'right' : 'left'}">
-		{#each message.attachments as attachment}
-			<Attachment {attachment} />
-		{/each}
-	</class>
-</div>
+	{#if message.attachments?.length}
+		<div class="attachments">
+			{#each message.attachments as attachment}
+				<Attachment {attachment} />
+			{/each}
+		</div>
+	{/if}
+</article>
 
-<style lang="postcss">
-	.left {
-		align-self: flex-start;
-	}
-	.right {
-		align-self: flex-end;
-	}
-
-	.bubble-owned {
-		background-color: theme(colors.gray.700);
-		border: 2px solid theme(colors.gray.700);
-		border-bottom-left-radius: 0.75em;
-		border-bottom-right-radius: 0;
-	}
-	.bubble-owned:hover {
-		background-color: theme(colors.gray.800);
+<style>
+	.message {
+		display: grid;
+		gap: 0.35rem;
+		width: 100%;
+		margin: 0.35rem 0 0.8rem;
 	}
 
-	.bubble-other {
-		border: 2px solid theme(colors.gray.700);
-		border-bottom-left-radius: 0;
-		border-bottom-right-radius: 0.75em;
-	}
-	.bubble-other:hover {
-		background-color: theme(colors.gray.800);
+	.message-line {
+		display: flex;
+		align-items: flex-end;
+		gap: 0.45rem;
+		min-width: 0;
 	}
 
-	.timestamp {
-		opacity: 0;
-		transition: opacity 0.15s ease-in;
+	.owned .message-line {
+		flex-direction: row-reverse;
 	}
 
-	.timestamp:hover {
-		opacity: 1;
+	.bubble {
+		position: relative;
+		max-width: min(78%, 42rem);
+		min-width: 0;
+		padding: 0.72rem 0.86rem;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-md);
+		background:
+			linear-gradient(180deg, rgba(240, 232, 218, 0.018), transparent 40%), rgba(11, 13, 16, 0.84);
+		color: var(--text-soft);
+		overflow-wrap: anywhere;
+	}
+
+	.bubble::before {
+		content: '';
+		position: absolute;
+		top: 0.6rem;
+		bottom: 0.6rem;
+		width: 1px;
+		background: var(--signal);
+		opacity: 0.55;
+	}
+
+	.other .bubble::before {
+		left: -1px;
+	}
+
+	.owned .bubble {
+		background:
+			linear-gradient(90deg, rgba(199, 156, 87, 0.12), transparent 76%), rgba(18, 21, 26, 0.9);
+		border-color: var(--line-strong);
+	}
+
+	.owned .bubble::before {
+		right: -1px;
+		background: var(--accent);
+	}
+
+	.bubble :global(p) {
+		margin: 0;
+		line-height: 1.5;
+	}
+
+	.bubble :global(p + p) {
+		margin-top: 0.65rem;
+	}
+
+	.bubble :global(a) {
+		color: var(--signal);
+		text-decoration: underline;
+		text-underline-offset: 0.18em;
+	}
+
+	.bubble :global(code) {
+		font-family: var(--font-mono);
+		font-size: 0.88em;
+		color: var(--accent-strong);
+	}
+
+	.attachments {
+		display: grid;
+		justify-items: start;
+		gap: 0.35rem;
+		max-width: min(100%, 42rem);
+	}
+
+	.owned .attachments {
+		justify-items: end;
+		margin-left: auto;
+	}
+
+	@media (max-width: 34rem) {
+		.bubble {
+			max-width: 86%;
+		}
 	}
 </style>

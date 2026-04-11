@@ -1,37 +1,46 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import type { MessageType } from '$lib/types';
-	import type { Writable } from 'svelte/store';
-	import { afterUpdate} from 'svelte';
 	import Message from './Message.svelte';
-	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
 
-	export let messages: Writable<MessageType[]>;
-	export let username: string;
-	let container: HTMLDivElement;
+	interface Props {
+		messages: MessageType[];
+		username: string;
+	}
 
-	let chat_page_scroll_to_bottom = $scroll_to_bottom;
+	let { messages, username }: Props = $props();
+	let container = $state<HTMLDivElement | null>(null);
 
-	scroll_to_bottom.set(() => {
-		container.scrollTo(0, container.scrollHeight + 200);
-		chat_page_scroll_to_bottom();
+	function scroll_to_bottom() {
+		container?.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+	}
+
+	$effect(() => {
+		messages.length;
+		tick().then(scroll_to_bottom);
 	});
-
-	afterUpdate(async () => {
-		$scroll_to_bottom();
-	});
-
 </script>
 
-<div
-	class="flex flex-col overflow-y-auto w-full min-h-full max-h-full
-	max-w-screen
-	px-2 scroll-smooth transition-all duration-300
-    "
-	bind:this={container}
-	on:load={$scroll_to_bottom}
-	on:change={$scroll_to_bottom}
->
-	{#each $messages as message}
+<div class="message-viewport" bind:this={container}>
+	{#each messages as message (message.id)}
 		<Message {username} {message} />
 	{/each}
 </div>
+
+<style>
+	.message-viewport {
+		min-height: 0;
+		width: 100%;
+		max-width: 100vw;
+		overflow-y: auto;
+		overflow-x: hidden;
+		padding: 0.9rem var(--shell-pad);
+		scroll-behavior: smooth;
+	}
+
+	@media (max-width: 34rem) {
+		.message-viewport {
+			padding-inline: 0.65rem;
+		}
+	}
+</style>
