@@ -3,8 +3,9 @@
 	"version": "1.0.0",
 	"description": "Slash Socket Server",
 	"main": "./build/server.js",
+	"packageManager": "bun@1.2.20",
 	"scripts": {
-		"build": "npm install && tsc ./server.ts --outDir ./build --rootDir ./ --esModuleInterop --target esnext --moduleResolution node",
+		"build": "bun install && bunx tsc ./server.ts --outDir ./build --rootDir ./ --esModuleInterop --target esnext --moduleResolution node",
 		"start": "node ./build/server.js"
 	},
 	"dependencies": {

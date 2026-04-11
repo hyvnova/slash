@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"private": true,
 	"type": "module",
+	"packageManager": "bun@1.2.20",
 	"scripts": {
 		"dev": "wrangler dev",
 		"deploy": "wrangler deploy"
@@ -11,4 +12,3 @@
 		"wrangler": "^4.11.1"
 	}
 }
-
