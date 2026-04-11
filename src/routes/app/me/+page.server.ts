@@ -1,24 +1,28 @@
-import type { PageServerLoad } from "./$types"
-import { get_by } from '$lib/server/db'
-import { redirect } from "@sveltejs/kit"
-
+import type { PageServerLoad } from './$types';
+import { get_by } from '$lib/server/db';
+import { redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ cookies }) => {
-    // Get the token from the cookies
-    const token = cookies.get("token")
+	// Get the token from the cookies
+	const token = cookies.get('token');
 
-    // If the token is not present, return to / (home)
-    if (!token) { throw redirect(302, "/") }
+	// If the token is not present, return to / (home)
+	if (!token) {
+		throw redirect(302, '/');
+	}
 
-    // Get the user data from the token
-    const user = await get_by(token);
+	// Get the user data from the token
+	const user = await get_by(token);
 
-    if (!user) { throw redirect(302, "/") }
+	if (!user) {
+		throw redirect(302, '/');
+	}
 
-    // Otherwise, return the user data
-    return {
-        username: user.username,
-        avatar: user.avatar,
-        verified: user.verified
-    }
-}
+	// Otherwise, return the user data
+	return {
+		username: user.username,
+		avatar: user.avatar,
+		verified: user.verified,
+		role: user.role || 'user'
+	};
+};

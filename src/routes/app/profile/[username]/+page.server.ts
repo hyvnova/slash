@@ -1,98 +1,97 @@
-import type { PageServerLoad, Actions } from "./$types"
-import { get_by, update_user } from "$lib/server/db/user"
-import { error, redirect } from "@sveltejs/kit";
-import { REGEX_IMAGE_URL, REGEX_USERNAME } from "$lib";
-import { upload_file } from "$lib/server/db/files";
-
+import type { PageServerLoad, Actions } from './$types';
+import { get_by, update_user } from '$lib/server/db/user';
+import { error, redirect } from '@sveltejs/kit';
+import { REGEX_IMAGE_URL, REGEX_USERNAME } from '$lib';
+import { upload_file } from '$lib/server/db/files';
 
 export const load: PageServerLoad = async ({ cookies, params, url }) => {
-    // Get the prfile username from the params (It's a valid username)
-    const username = decodeURIComponent(params.username);
+	// Get the prfile username from the params (It's a valid username)
+	const username = decodeURIComponent(params.username);
 
-    // Whether to show the edit buttons or not
-    const show_edit = url.searchParams.get("show_edit") === "true";
+	// Whether to show the edit buttons or not
+	const show_edit = url.searchParams.get('show_edit') === 'true';
 
-    // Get the token from the cookies
-    const token = cookies.get("token")
+	// Get the token from the cookies
+	const token = cookies.get('token');
 
-    // Whether the user it's the "owner" of the profile, used for enabling edit buttons
-    let owner = false;
+	// Whether the user it's the "owner" of the profile, used for enabling edit buttons
+	let owner = false;
 
+	// If the token is present, check ownership
+	if (token) {
+		// Get the user data from the token
+		const user = await get_by(token);
 
+		if (user) {
+			// If the user is found, check if the username matches
+			owner = user.username === username;
+		}
+		// If user is not found, then the token is invalid
+		else {
+			throw redirect(302, '/');
+		}
+	}
 
-    // If the token is present, check ownership
-    if (token) {
-        // Get the user data from the token
-        const user = await get_by(token);
+	// Get user profile data
+	const profile = await get_by(username);
 
-        if (user) {
-            // If the user is found, check if the username matches
-            owner = user.username === username;
+	// If the profile is not found,go to error page
+	if (!profile) {
+		throw error(404, 'Profile not found');
+	}
 
-        }
-        // If user is not found, then the token is invalid
-        else {
-            throw redirect(302, "/");
-        }
-    }
-
-    // Get user profile data
-    const profile = await get_by(username);
-
-    // If the profile is not found,go to error page
-    if (!profile) {
-        throw error(404, "Profile not found");
-    }
-
-    return {
-        owner,
-        username,
-        avatar: profile.avatar,
-        show_edit
-    }
-}
+	return {
+		owner,
+		username,
+		avatar: profile.avatar,
+		show_edit
+	};
+};
 
 export const actions = {
-    update_username: async ({ request, cookies, url }) => {
-        let new_username = (await request.formData()).get("username") as string;
+	update_username: async ({ request, cookies, url }) => {
+		let new_username = (await request.formData()).get('username') as string;
 
-        // Validate username
-        if (!new_username || !REGEX_USERNAME.test(new_username)) {
-            return { success: false, error: "Invalid username" };
-        }
+		// Validate username
+		if (!new_username || !REGEX_USERNAME.test(new_username)) {
+			return { success: false, error: 'Invalid username' };
+		}
 
-        // Get the token from the cookies
-        const token = cookies.get("token") as string;
+		// Get the token from the cookies
+		const token = cookies.get('token') as string;
 
-        await update_user(token, {
-            $set: { username: new_username }
-        });
+		await update_user(token, {
+			$set: { username: new_username }
+		});
 
-        throw redirect(302, url.toString())
-    },
+		throw redirect(302, url.toString());
+	},
 
-    update_avatar: async ({ request, cookies, url }) => {
-        let new_avatar = (await request.formData()).get("avatar") as string;
+	update_avatar: async ({ request, cookies, url }) => {
+		let new_avatar = (await request.formData()).get('avatar') as string;
 
-        // Validate avatar
-        if (!new_avatar || !REGEX_IMAGE_URL.test(new_avatar)) {
-            return { success: false, error: "Invalid avatar URL, make sure it ends with an image extension" };
-        }
+		// Validate avatar
+		if (!new_avatar || !REGEX_IMAGE_URL.test(new_avatar)) {
+			return {
+				success: false,
+				error: 'Invalid avatar URL, make sure it ends with an image extension'
+			};
+		}
 
-        // Make sure the avatar is a valid URL
-        try {
-            new URL(new_avatar);
-        } catch (e) {
-            return { success: false, error: "Avatar URL, doesn't seem to be valid" };
-        }
+		// Make sure the avatar is a valid URL
+		try {
+			new URL(new_avatar);
+		} catch (e) {
+			return { success: false, error: "Avatar URL, doesn't seem to be valid" };
+		}
 
-        // Get the token from the cookies
-        const token = cookies.get("token") as string;
+		// Get the token from the cookies
+		const token = cookies.get('token') as string;
 
-        await update_user(token, {
-            $set: { avatar: new_avatar }
-        });
+		await update_user(token, {
+			$set: { avatar: new_avatar }
+		});
 
-        throw redirect(302, url.toString())
-    }
+		throw redirect(302, url.toString());
+	}
 } as Actions;

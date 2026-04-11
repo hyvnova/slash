@@ -1,58 +1,70 @@
 <script lang="ts">
+	import AvatarImage from './AvatarImage.svelte';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import { update_friendship } from '$lib/api_shortcuts';
 	import { Events, FriendshipStatusType } from '$lib/types';
 	import { ws } from '$lib/websocket';
-	import Fa from 'svelte-fa';
-	import AvatarImage from './AvatarImage.svelte';
 
-	export let username: string;
-	export let requester: string;
-	export let remove_request: (username: string) => void;
-	export let add_friend: (username: string) => void;
+	interface Props {
+		username: string;
+		requester: string;
+		remove_request: (username: string) => void;
+		add_friend: (username: string) => void;
+	}
 
-	import { faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
+	let { username, requester, remove_request, add_friend }: Props = $props();
 </script>
 
-<button class="border-none bg-none w-full m-1" title="Friend request from {requester}">
-	<li
-		class="h-full flex items-center rounded-md w-full p-0 py-1 pl-2
-            hover:bg-gray-700
-            "
-	>
-		<AvatarImage username={requester} />
-		<p class="ml-2 text-lg">{requester}</p>
+<li class="request-row">
+	<AvatarImage username={requester} size={38} />
+	<span>{requester}</span>
 
-		<div class="flex items-center justify-end w-full h-full p-0">
-			<!-- Reject -->
-			<button
-				class="w-auto h-full m-0 p-3 rounded-sm
-				hover:bg-red-600 hover:text-white border-none
-				"
-				on:click={async () => {
-					await update_friendship(username, requester, FriendshipStatusType.REJECTED);
-					remove_request(requester);
-					ws.emit(Events.REJECT_FRIEND_REQUEST, requester);
-				}}
-				title="Reject request"
-			>
-				<Fa icon={faTimes} class="mx-1 text-2xl" />
-			</button>
+	<div class="request-actions">
+		<IconButton
+			icon="close"
+			label="reject request"
+			variant="danger"
+			onclick={async () => {
+				await update_friendship(username, requester, FriendshipStatusType.REJECTED);
+				remove_request(requester);
+				ws.emit(Events.REJECT_FRIEND_REQUEST, requester);
+			}}
+		/>
+		<IconButton
+			icon="check"
+			label="accept request"
+			onclick={async () => {
+				await update_friendship(username, requester, FriendshipStatusType.FRIENDS);
+				remove_request(requester);
+				add_friend(requester);
+				ws.emit(Events.ACCEPT_FRIEND_REQUEST, requester);
+			}}
+		/>
+	</div>
+</li>
 
-			<!-- Accept -->
-			<button
-				class="w-auto h-full m-0 p-3 rounded-sm
-				hover:bg-green-600 hover:text-white border-none
-				"
-				on:click={async () => {
-					await update_friendship(username, requester, FriendshipStatusType.FRIENDS);
-					remove_request(requester);
-					add_friend(requester);
-					ws.emit(Events.ACCEPT_FRIEND_REQUEST, requester);
-				}}
-				title="Accept request"
-			>
-				<Fa icon={faCheck} class="text-2xl" />
-			</button>
-		</div>
-	</li>
-</button>
+<style>
+	.request-row {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.65rem;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-md);
+		background: rgba(8, 9, 11, 0.34);
+	}
+
+	span {
+		min-width: 0;
+		overflow: hidden;
+		color: var(--text);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.request-actions {
+		display: flex;
+		gap: 0.4rem;
+	}
+</style>

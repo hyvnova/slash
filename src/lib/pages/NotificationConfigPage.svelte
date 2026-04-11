@@ -1,33 +1,40 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+	import Button from '$lib/components/ui/Button.svelte';
 	import SettingSection from '$lib/components/SettingSection.svelte';
-import toast from '$lib/stores/toast';
+	import toast from '$lib/stores/toast';
 	import user_config from '$lib/stores/user_config';
 
-	function request_notification_permission() {
-		Notification.requestPermission().then((permission) => {
-			if (permission === 'granted') {
-				// Save the permission
-				user_config.update((config) => {
-					config.notifications.general.enabled = true;
-					return config;
-				});
+	async function request_notification_permission() {
+		if (!browser || !('Notification' in window)) {
+			toast.set({
+				type: 'info',
+				title: 'notifications unavailable',
+				message: 'this browser does not expose notification permission.',
+				duration: 5000
+			});
+			return;
+		}
 
-				// Show a notification
-				new Notification('Notifications enabled', {
-					body: 'You will now get notified when someone sends a message. You can disable and configure notifications in the settings.',
-					icon: '/favicon.ico',
-					timestamp: Date.now()
-				});
-			} else {
-				console.log('Unable to get permission to notify.');
-				toast.set({
-					type: "info",
-					title: "Can't enable notifications",
-					message: "Allow notification permission in your browser settings in order to enable notifications.",
-					duration: 5000
-				})
-			}
-		});
+		const permission = await Notification.requestPermission();
+		if (permission === 'granted') {
+			user_config.update((config) => {
+				config.notifications.general.enabled = true;
+				return config;
+			});
+
+			new Notification('Notifications enabled', {
+				body: 'slash can now tap the glass when a message lands.',
+				icon: '/favicon.ico'
+			});
+		} else {
+			toast.set({
+				type: 'info',
+				title: 'permission stayed closed',
+				message: 'allow notifications in the browser settings to use this switch.',
+				duration: 5000
+			});
+		}
 	}
 
 	function disable_notifications() {
@@ -37,81 +44,159 @@ import toast from '$lib/stores/toast';
 		});
 	}
 
-	let sound = $user_config.notifications ? $user_config.notifications.general.sound : false;
-	let vibrate = $user_config.notifications ? $user_config.notifications.general.vibrate : false;
+	function set_notification_option(key: 'sound' | 'vibrate', checked: boolean) {
+		user_config.update((config) => {
+			config.notifications.general[key] = checked;
+			return config;
+		});
+	}
 </script>
 
-<SettingSection 
-	title="Notifications"
-	description="Get notified when someone sends a message"
+<SettingSection
+	title="notifications"
+	description="browser alerts for messages that arrive off-screen."
 >
-
-	<!-- Enabled notifications (if not enabled)-->
-	{#if $user_config.notifications.general.enabled === false}
-		<p class="text-gray-300 m-1">
-			Enable notifications to get notified when someone sends a message.
-		</p>
-
-		<button
-			class="btn btn-green"
-			on:click={request_notification_permission}
-		>
-			Enable
-		</button>
-
-		<!-- Manage notificaions (sound, if sound which sound, volume)-->
+	{#if !$user_config.notifications.general.enabled}
+		<div class="setting-copy">
+			<p>the channel is quiet until the browser gives permission.</p>
+			<Button onclick={request_notification_permission}>enable</Button>
+		</div>
 	{:else}
-		<p class="text-gray-300 m-1">
-			These settings apply to all chats and groups, unless you customize them individually.
-		</p>
-
-		<hr />
-
-		<!-- Manage notifications -->
-		<div class="flex flex-row justify-between items-center w-auto p-1 mt-2">
-			<label for="sound">Sound</label>
-			<input
-				type="checkbox"
-				id="sound"
-				name="sound"
-				bind:checked={sound}
-				class="p-3 border-gray-700 rounded-md text-gray-200 m-1"
-				on:change={(e) => {
-					user_config.update((config) => {
-						// @ts-ignore
-						config.notifications.general.sound = sound;
-						return config;
-					});
-				}}
-			/>
+		<div class="setting-copy">
+			<p>these defaults apply unless a chat overrides them.</p>
 		</div>
 
-		<div class="flex flex-row justify-between items-center w-auto p-1 mt-2">
-			<label for="sound">Vibrate</label>
-			<input
-				type="checkbox"
-				id="vibrate"
-				name="vibrate"
-				bind:checked={vibrate}
-				class="p-3 border-gray-700 rounded-md text-gray-200 m-1"
-				on:change={(e) => {
-					user_config.update((config) => {
-						// @ts-ignore
-						config.notifications.general.vibrate = vibrate;
-						return config;
-					});
-				}}
-			/>
+		<div class="switch-list">
+			<label class="switch-row" for="sound">
+				<span>
+					<strong>sound</strong>
+					<small>play the small ping.</small>
+				</span>
+				<input
+					type="checkbox"
+					id="sound"
+					name="sound"
+					checked={$user_config.notifications.general.sound}
+					onchange={(event) => set_notification_option('sound', event.currentTarget.checked)}
+				/>
+			</label>
+
+			<label class="switch-row" for="vibrate">
+				<span>
+					<strong>vibrate</strong>
+					<small>ask mobile devices to tap back.</small>
+				</span>
+				<input
+					type="checkbox"
+					id="vibrate"
+					name="vibrate"
+					checked={$user_config.notifications.general.vibrate}
+					onchange={(event) => set_notification_option('vibrate', event.currentTarget.checked)}
+				/>
+			</label>
 		</div>
 
-		<hr />
-
-		<!-- Disable notifications -->
-		<button
-			class="btn btn-yellow"
-			on:click={disable_notifications}
-		>
-			Disable
-		</button>
+		<Button variant="secondary" onclick={disable_notifications}>disable</Button>
 	{/if}
 </SettingSection>
+
+<style>
+	.setting-copy {
+		display: grid;
+		gap: 0.9rem;
+		max-width: 34rem;
+	}
+
+	p {
+		margin: 0;
+		color: var(--text-soft);
+		line-height: 1.55;
+	}
+
+	.switch-list {
+		display: grid;
+		gap: 0.65rem;
+		margin-bottom: 1rem;
+	}
+
+	.switch-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		min-height: 3.4rem;
+		padding: 0.8rem;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-md);
+		background: rgba(8, 9, 11, 0.36);
+	}
+
+	.switch-row span {
+		display: grid;
+		gap: 0.2rem;
+		min-width: 0;
+	}
+
+	strong,
+	small {
+		font-family: var(--font-mono);
+		line-height: 1.35;
+	}
+
+	strong {
+		color: var(--text);
+		font-size: 0.78rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	small {
+		color: var(--muted);
+		font-size: 0.7rem;
+	}
+
+	input {
+		width: 2.55rem;
+		height: 1.4rem;
+		flex: 0 0 auto;
+		appearance: none;
+		border: 1px solid var(--line-strong);
+		border-radius: 999px;
+		background: var(--bg-elev-soft);
+		cursor: pointer;
+		position: relative;
+		transition:
+			background var(--transition-fast),
+			border-color var(--transition-fast);
+	}
+
+	input::after {
+		content: '';
+		position: absolute;
+		top: 0.2rem;
+		left: 0.22rem;
+		width: 0.9rem;
+		height: 0.9rem;
+		border-radius: 999px;
+		background: var(--muted);
+		transition:
+			transform var(--transition-fast),
+			background var(--transition-fast);
+	}
+
+	input:checked {
+		border-color: rgba(121, 166, 163, 0.55);
+		background: rgba(121, 166, 163, 0.14);
+	}
+
+	input:checked::after {
+		transform: translateX(1.05rem);
+		background: var(--signal);
+	}
+
+	@media (max-width: 30rem) {
+		.switch-row {
+			align-items: flex-start;
+		}
+	}
+</style>

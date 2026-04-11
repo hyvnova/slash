@@ -3,13 +3,18 @@
 	import { ws } from '$lib/websocket';
 	import { Events } from '$lib/types';
 	import toast from '$lib/stores/toast';
-	onMount(() => {	// handshake
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
+	onMount(() => {
 		ws.emit(Events.HANDSHAKE, (success: boolean) => {
 			if (!success) {
 				toast.set({
 					type: 'error',
-					title: 'Offline - Connection lost',
-					message: 'Try reloading the page. Some features may not work.'
+					title: 'signal slipped',
+					message: 'try reloading. a few controls may stay quiet.'
 				});
 			}
 		});
@@ -22,6 +27,14 @@
 	<meta name="keywords" content="Slash user page, slash me" />
 </svelte:head>
 
-<main class="w-screen bg-inherit">
-	<slot />
+<main class="me-shell">
+	{@render children?.()}
 </main>
+
+<style>
+	.me-shell {
+		min-width: 0;
+		min-height: 100dvh;
+		background: transparent;
+	}
+</style>

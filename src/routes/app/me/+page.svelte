@@ -1,132 +1,133 @@
 <script lang="ts">
-	import { get, writable, type Writable } from 'svelte/store';
-	import AvatarImage from '$lib/components/AvatarImage.svelte';
-	import type { LayoutServerData } from './$types';
-	import SearchModal from '$lib/components/SearchModal.svelte';
-	import { ws } from '$lib/websocket';
-	import { onMount, tick } from 'svelte';
-	import PendingRequests from '$lib/components/PendingRequests.svelte';
-	import { faCog } from '@fortawesome/free-solid-svg-icons';
-	import Fa from 'svelte-fa';
+	import { onMount } from 'svelte';
+	import { writable, type Writable } from 'svelte/store';
 	import BottomBar from '$lib/components/BottomBar.svelte';
-	import { Events, Routes, Status } from '$lib/types';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import FriendListItem from '$lib/components/FriendListItem.svelte';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
+	import Panel from '$lib/components/ui/Panel.svelte';
+	import PendingRequests from '$lib/components/PendingRequests.svelte';
+	import SearchModal from '$lib/components/SearchModal.svelte';
 	import Toast from '$lib/components/Toast.svelte';
+	import Topbar from '$lib/components/ui/Topbar.svelte';
+	import { Events, Routes, Status } from '$lib/types';
+	import { ws } from '$lib/websocket';
+	import type { LayoutServerData } from './$types';
 
-	export let data: LayoutServerData;
+	interface Props {
+		data: LayoutServerData;
+	}
 
-	let user = data.user;
+	let { data }: Props = $props();
+	// Roster stores are seeded once, then websocket events own the updates.
+	// svelte-ignore state_referenced_locally
+	const user = data.user;
 	let requests = writable(user.pending_requests);
 	let searching = writable(false);
 	let friends: Writable<string[]> = writable(user.friends);
-
 	let friend_status: Record<string, Writable<Status>> = {};
-	for (let friend of user.friends) {
+
+	for (const friend of user.friends) {
 		friend_status[friend] = writable(Status.OFFLINE);
 	}
 
-	onMount(async () => {
-		await tick();
+	function ensure_status(friend: string) {
+		if (!friend_status[friend]) friend_status[friend] = writable(Status.OFFLINE);
+		return friend_status[friend];
+	}
 
-		// Open search modal on pressing 'p'
-		window.onkeydown = (e) => {
-			if (e.key === 'p') {
+	onMount(() => {
+		const keyHandler = (event: KeyboardEvent) => {
+			if (event.key === 'p') {
 				searching.set(true);
-				e.preventDefault();
+				event.preventDefault();
 			}
 		};
 
-		// Handling friend requests
-		ws.on(Events.NEW_FRIEND_REQUEST, (requester_username) => {
-			if (!requester_username) return;
-			requests.update((requests) => [requester_username, ...requests]);
-		});
-		ws.on(Events.CANCEL_FRIEND_REQUEST, (requester_username) => {
-			if (!requester_username) return;
-			requests.update((requests) => requests.filter((username) => username !== requester_username));
-		});
+		const onNewRequest = (requester: string) => {
+			if (requester) requests.update((items) => [requester, ...items]);
+		};
+		const onCancelRequest = (requester: string) => {
+			if (requester) requests.update((items) => items.filter((item) => item !== requester));
+		};
+		const onAccept = (other: string) => {
+			ensure_status(other);
+			friends.update((items) => [other, ...items.filter((item) => item !== other)]);
+		};
+		const onUnfriend = (other: string) => {
+			friends.update((items) => items.filter((contact) => contact !== other));
+		};
+		const onStatus = (username: string, status: Status) => {
+			ensure_status(username).set(status);
+		};
 
-		// Handling friendships: accepted friend requests and unfriending
-		ws.on(Events.ACCEPT_FRIEND_REQUEST, (other) => {
-			friends.update((contacts) => [other, ...contacts]);
-		});
-		ws.on(Events.UNFRIEND, (other) => {
-			friends.update((contacts) => contacts.filter((contact) => contact !== other));
-		});
-
-		// Handling friend status
-		ws.on(Events.STATUS, (username: string, status: Status) => {
-			friend_status[username].set(status);
-		});
-
-		// Connect to websocket
+		window.addEventListener('keydown', keyHandler);
+		ws.on(Events.NEW_FRIEND_REQUEST, onNewRequest);
+		ws.on(Events.CANCEL_FRIEND_REQUEST, onCancelRequest);
+		ws.on(Events.ACCEPT_FRIEND_REQUEST, onAccept);
+		ws.on(Events.UNFRIEND, onUnfriend);
+		ws.on(Events.STATUS, onStatus);
 		ws.emit(Events.CONNECT, user.username);
-
-		// Emit online status
 		ws.emit(Events.SET_STATUS, Status.ONLINE, $friends);
-
-		// Request friend status
 		ws.emit(Events.GET_FRIENDS_STATUS, $friends);
+
+		return () => {
+			window.removeEventListener('keydown', keyHandler);
+			ws.off(Events.NEW_FRIEND_REQUEST, onNewRequest);
+			ws.off(Events.CANCEL_FRIEND_REQUEST, onCancelRequest);
+			ws.off(Events.ACCEPT_FRIEND_REQUEST, onAccept);
+			ws.off(Events.UNFRIEND, onUnfriend);
+			ws.off(Events.STATUS, onStatus);
+		};
 	});
 </script>
 
-<div class="container">
-	<!-- Navbar -->
-	<nav class="mt-2 flex justify-between items-center w-full p-2 border-b border-gray-700">
-		{#if $requests.length > 0}
-			<PendingRequests username={user.username} {requests} {friends} />
-		{/if}
+<Toast />
 
-		<SearchModal
-			modal_open={searching}
-			{user}
-			remove_friend={(username) => {
-				friends.update((contacts) => contacts.filter((contact) => contact !== username));
-			}}
-		/>
+<main class="app-page home-page">
+	<Topbar title="contacts" label="slash / home">
+		{#snippet right()}
+			{#if $requests.length > 0}
+				<PendingRequests username={user.username} {requests} {friends} />
+			{/if}
+			<SearchModal
+				modal_open={searching}
+				{user}
+				remove_friend={(username) => {
+					friends.update((items) => items.filter((contact) => contact !== username));
+				}}
+			/>
+			<IconButton icon="settings" label="settings" href={Routes.SETTINGS} />
+		{/snippet}
+	</Topbar>
 
-		<a href={Routes.SETTINGS} class="rotate text-gray-400 hover:text-gray-100" title="Settings">
-			<Fa icon={faCog} class="text-2xl" />
-		</a>
-	</nav>
+	<Panel label="live roster" title="people" description="press p to search from the keyboard.">
+		<div class="friend-list">
+			{#each $friends as friend (friend)}
+				<FriendListItem {friend} status={ensure_status(friend)} />
+			{/each}
 
-	<Toast />
-
-	<!-- Friend list -->
-	<div
-		class="rounded-sm w-full mt-4
-		flex flex-col justify-center
-		items-start p-2 overflow-y-hidden overflow-x-auto
-		"
-	>
-		{#each Object.entries(friend_status) as [friend, status]}
-			<FriendListItem {friend} {status} />
-		{/each}
-
-		{#if $friends.length === 0}
-			<div class="text-gray-400 text-center w-full">
-				<h4 class="text-xl">No friends yet</h4>
-				<p class="text-md">Search for people to add them as friends</p>
-			</div>
-		{/if}
-	</div>
-</div>
+			{#if $friends.length === 0}
+				<EmptyState
+					title="no contacts yet"
+					description="search for a handle to open the first channel."
+				/>
+			{/if}
+		</div>
+	</Panel>
+</main>
 
 <BottomBar username={data.user.username} verified={data.user.verified} />
 
 <style>
-	.rotate {
-		animation: rotate 15s linear infinite;
+	.home-page {
+		display: grid;
+		gap: 1rem;
+		padding-bottom: calc(var(--safe-bottom) + 6.5rem);
 	}
-	@keyframes rotate {
-		0% {
-			transform: rotate(0deg);
-		}
-		30% {
-			transform: rotate(180deg);
-		}
-		60% {
-			transform: rotate(0deg);
-		}
+
+	.friend-list {
+		display: grid;
+		gap: 0.35rem;
 	}
 </style>
