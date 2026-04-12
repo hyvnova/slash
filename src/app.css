@@ -30,6 +30,16 @@
 	--transition-fast: 0.16s cubic-bezier(0.4, 0, 0.2, 1);
 	--font-body: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Writer', serif;
 	--font-mono: 'IBM Plex Mono', 'Menlo', 'Consolas', monospace;
+	--reg-font-primary: var(--font-body);
+	--reg-font-ui: var(--font-mono);
+	--reg-heading-tracking: 0;
+	--reg-heading-lh: 0.96;
+	--reg-body-size: 1rem;
+	--reg-label-size: 0.68rem;
+	--reg-label-tracking: 0.14em;
+	--reg-surface-opacity: 0.8;
+	--reg-ornament-opacity: 0.14;
+	--reg-spacing-scale: 1;
 	--radius-sm: 2px;
 	--radius-md: 4px;
 	--radius-lg: 6px;
@@ -41,6 +51,20 @@
 	--safe-bottom: env(safe-area-inset-bottom);
 	--safe-left: env(safe-area-inset-left);
 	color-scheme: dark;
+}
+
+/* HyvUI registers are small token shifts: no runtime theme code, just cascade. */
+[data-register='mission-control'] {
+	--reg-font-primary: var(--font-mono);
+	--reg-font-ui: var(--font-mono);
+	--reg-heading-tracking: 0;
+	--reg-heading-lh: 1;
+	--reg-body-size: 0.9rem;
+	--reg-label-size: 0.65rem;
+	--reg-label-tracking: 0.18em;
+	--reg-surface-opacity: 0.92;
+	--reg-ornament-opacity: 0.08;
+	--reg-spacing-scale: 0.9;
 }
 
 *,
@@ -65,6 +89,7 @@ body {
 	min-height: 100dvh;
 	background: transparent;
 	color: var(--text);
+	font-family: var(--reg-font-primary);
 	overflow-x: hidden;
 	isolation: isolate;
 }
@@ -139,6 +164,7 @@ audio {
 
 .app-frame {
 	min-height: 100dvh;
+	font-family: var(--reg-font-primary);
 }
 
 .app-page {
@@ -151,13 +177,13 @@ audio {
 .app-stack {
 	display: flex;
 	flex-direction: column;
-	gap: clamp(1rem, 2vw, 1.5rem);
+	gap: calc(clamp(1rem, 2vw, 1.5rem) * var(--reg-spacing-scale));
 }
 
 .ui-label {
-	font-family: var(--font-mono);
-	font-size: 0.68rem;
-	letter-spacing: 0.14em;
+	font-family: var(--reg-font-ui);
+	font-size: var(--reg-label-size);
+	letter-spacing: var(--reg-label-tracking);
 	text-transform: uppercase;
 	color: var(--muted-strong);
 	line-height: 1.2;
@@ -165,6 +191,7 @@ audio {
 
 .ui-copy {
 	color: var(--text-soft);
+	font-size: var(--reg-body-size);
 	line-height: 1.6;
 	margin: 0;
 	text-wrap: pretty;
@@ -173,24 +200,26 @@ audio {
 .ui-title {
 	margin: 0;
 	color: var(--text);
+	font-family: var(--reg-font-primary);
 	font-size: 3.1rem;
 	font-weight: 400;
-	letter-spacing: 0;
-	line-height: 0.96;
+	letter-spacing: var(--reg-heading-tracking);
+	line-height: var(--reg-heading-lh);
 	text-wrap: balance;
 }
 
 .ui-page-title {
 	margin: 0;
 	color: var(--text);
+	font-family: var(--reg-font-primary);
 	font-size: 2.1rem;
 	font-weight: 400;
-	letter-spacing: 0;
-	line-height: 1;
+	letter-spacing: var(--reg-heading-tracking);
+	line-height: var(--reg-heading-lh);
 }
 
 .ui-meta {
-	font-family: var(--font-mono);
+	font-family: var(--reg-font-ui);
 	font-size: 0.72rem;
 	color: var(--muted);
 	letter-spacing: 0.04em;

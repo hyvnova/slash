@@ -31,7 +31,7 @@
 {/if}
 
 {#key data.pathname}
-	<div class="app-frame">
+	<div class="app-frame" data-register="mission-control">
 		{@render children?.()}
 	</div>
 {/key}
