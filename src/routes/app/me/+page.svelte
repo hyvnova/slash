@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { writable, type Writable } from 'svelte/store';
+	import { get, writable, type Writable } from 'svelte/store';
 	import BottomBar from '$lib/components/BottomBar.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import FriendListItem from '$lib/components/FriendListItem.svelte';
@@ -67,13 +67,32 @@
 		friends.set(contacts.map((contact) => contact.friend));
 	}
 
-	async function refreshContacts() {
-		const next = await get_contacts();
-		contacts = next.filter(
-			(contact) => user.friends.includes(contact.friend) || contact.members.length
+	function blinkContact(friend: string) {
+		blinking[friend] = true;
+		setTimeout(() => {
+			blinking[friend] = false;
+		}, 950);
+	}
+
+	async function refreshContacts({ blinkIncreases = false } = {}) {
+		const previousUnread = new Map(
+			contacts.map((contact) => [contact.friend, contact.unreadCount])
 		);
+		const currentFriends = new Set(get(friends));
+		const next = await get_contacts();
+		const visibleContacts = next.filter((contact) => currentFriends.has(contact.friend));
+		contacts = visibleContacts;
 		sortContacts();
 		for (const contact of contacts) ensure_status(contact.friend);
+
+		if (!blinkIncreases) return;
+
+		for (const contact of contacts) {
+			const oldUnread = previousUnread.get(contact.friend) ?? 0;
+			if (contact.unreadCount > oldUnread && !contact.muted) {
+				blinkContact(contact.friend);
+			}
+		}
 	}
 
 	function updateContact(friend: string, updater: (contact: ContactListItem) => ContactListItem) {
@@ -148,8 +167,8 @@
 		};
 		const onAccept = (other: string) => {
 			ensure_status(other);
-			refreshContacts();
 			friends.update((items) => [other, ...items.filter((item) => item !== other)]);
+			refreshContacts().catch(() => undefined);
 		};
 		const onUnfriend = (other: string) => {
 			contacts = contacts.filter((contact) => contact.friend !== other);
@@ -160,6 +179,12 @@
 		};
 		const onContactMessage = (payload: ContactMessagePayload) => {
 			if (!payload?.from) return;
+			const existing = contacts.find((entry) => entry.friend === payload.from);
+			if (!existing) {
+				refreshContacts({ blinkIncreases: true }).catch(() => undefined);
+				return;
+			}
+
 			const now = new Date().toISOString();
 			updateContact(payload.from, (contact) => ({
 				...contact,
@@ -169,15 +194,20 @@
 
 			const contact = contacts.find((entry) => entry.friend === payload.from);
 			if (contact && !contact.muted) {
-				blinking[payload.from] = true;
-				setTimeout(() => {
-					blinking[payload.from] = false;
-				}, 950);
+				blinkContact(payload.from);
 			}
 		};
+		const refreshVisibleContacts = () => {
+			if (document.visibilityState === 'visible') {
+				refreshContacts({ blinkIncreases: true }).catch(() => undefined);
+			}
+		};
+		const refreshTimer = setInterval(refreshVisibleContacts, 5000);
 
 		window.addEventListener('keydown', keyHandler);
 		window.addEventListener('click', closeMenu);
+		window.addEventListener('focus', refreshVisibleContacts);
+		document.addEventListener('visibilitychange', refreshVisibleContacts);
 		ws.on(Events.NEW_FRIEND_REQUEST, onNewRequest);
 		ws.on(Events.CANCEL_FRIEND_REQUEST, onCancelRequest);
 		ws.on(Events.ACCEPT_FRIEND_REQUEST, onAccept);
@@ -192,6 +222,9 @@
 		return () => {
 			window.removeEventListener('keydown', keyHandler);
 			window.removeEventListener('click', closeMenu);
+			window.removeEventListener('focus', refreshVisibleContacts);
+			document.removeEventListener('visibilitychange', refreshVisibleContacts);
+			clearInterval(refreshTimer);
 			ws.off(Events.NEW_FRIEND_REQUEST, onNewRequest);
 			ws.off(Events.CANCEL_FRIEND_REQUEST, onCancelRequest);
 			ws.off(Events.ACCEPT_FRIEND_REQUEST, onAccept);

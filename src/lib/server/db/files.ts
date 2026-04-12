@@ -514,7 +514,6 @@ export async function finalize_file_upload(params: {
 			$setOnInsert: {
 				username: pending.username,
 				fileId: file.id,
-				displayName: pending.displayName,
 				sizeCounted: file.size,
 				createdAt: new Date()
 			},
