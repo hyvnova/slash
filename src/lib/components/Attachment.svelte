@@ -1,11 +1,14 @@
 <script lang="ts">
 	import type { AttachmentType } from '$lib/types';
-	import { bytes_to_size } from '$lib';
 	import Image from '$lib/components/attachments/Image.svelte';
 	import Txt from './attachments/Txt.svelte';
 	import Video from './attachments/Video.svelte';
 	import Audio from './attachments/Audio.svelte';
 	import Document from './attachments/Document.svelte';
+	import Pdf from './attachments/Pdf.svelte';
+	import Csv from './attachments/Csv.svelte';
+	import Font from './attachments/Font.svelte';
+	import { classifyAttachment } from './attachments/attachment-utils';
 
 	interface Props {
 		attachment: AttachmentType;
@@ -13,18 +16,23 @@
 
 	let { attachment }: Props = $props();
 
-	const type = $derived(attachment.type.split('/')[0]);
-	const size = $derived(bytes_to_size(attachment.size));
+	const kind = $derived(classifyAttachment(attachment));
 </script>
 
-{#if type == 'image'}
+{#if kind === 'image'}
 	<Image {attachment} />
-{:else if type == 'video'}
+{:else if kind === 'video'}
 	<Video {attachment} />
-{:else if type == 'audio'}
+{:else if kind === 'audio'}
 	<Audio {attachment} />
-{:else if type == 'text'}
+{:else if kind === 'pdf'}
+	<Pdf {attachment} />
+{:else if kind === 'csv'}
+	<Csv {attachment} />
+{:else if kind === 'font'}
+	<Font {attachment} />
+{:else if kind === 'text' || kind === 'code' || kind === 'json' || kind === 'markdown'}
 	<Txt {attachment} />
 {:else}
-	<Document {attachment} {size} {type} />
+	<Document {attachment} />
 {/if}

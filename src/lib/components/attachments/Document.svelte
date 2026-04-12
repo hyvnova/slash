@@ -1,76 +1,69 @@
 <script lang="ts">
-	import FileLoadStates from '$lib/components/FileLoadStates.svelte';
-	import Icon from '$lib/components/ui/Icon.svelte';
-	import { load_file } from '$lib/load_file';
-	import { FileLoadState, Routes, type AttachmentType } from '$lib/types';
-	import { onMount } from 'svelte';
-	import { writable } from 'svelte/store';
+	import { bytes_to_size } from '$lib';
+	import IconButton from '$lib/components/ui/IconButton.svelte';
+	import type { AttachmentType } from '$lib/types';
+	import AttachmentFrame from './AttachmentFrame.svelte';
+	import { attachmentLabel, classifyAttachment, fileUrl } from './attachment-utils';
 
 	interface Props {
 		attachment: AttachmentType;
-		size: string;
-		type: string;
 	}
 
-	let { attachment, size, type }: Props = $props();
-	// svelte-ignore state_referenced_locally
-	let url = $state(`${Routes.FILE}/${attachment.id}`);
-	const fileState = writable<FileLoadState>(FileLoadState.LOADING);
-
-	onMount(async () => {
-		url = await load_file(fileState, attachment.id, false);
-	});
+	let { attachment }: Props = $props();
+	const kind = $derived(classifyAttachment(attachment));
+	const label = $derived(attachmentLabel(kind));
+	const icon = $derived(kind === 'archive' ? 'archive' : 'file');
 </script>
 
-<div class="document-attachment">
-	<FileLoadStates loadState={fileState}>
-		<a href={url} target="_blank" rel="noreferrer">
-			<Icon name="file" size={28} />
-			<span class="document-text">
-				<strong>{attachment.name}</strong>
-				<small>{size} / {type}</small>
-			</span>
-		</a>
-	</FileLoadStates>
-</div>
+<AttachmentFrame
+	{attachment}
+	{label}
+	{icon}
+	detail={`${bytes_to_size(attachment.size)} / ${attachment.type}`}
+>
+	{#snippet actions()}
+		<IconButton icon="download" label="download file" href={fileUrl(attachment)} />
+	{/snippet}
+
+	<a class={`document-card ${kind}`} href={fileUrl(attachment)} target="_blank" rel="noreferrer">
+		<span>{label}</span>
+		<strong>{kind === 'archive' ? 'sealed archive' : 'download file'}</strong>
+		<small>{attachment.type || 'application/octet-stream'}</small>
+	</a>
+</AttachmentFrame>
 
 <style>
-	.document-attachment {
-		width: min(100%, 30rem);
-		border: 1px solid var(--line);
-		border-radius: var(--radius-md);
-		background: rgba(8, 9, 11, 0.5);
-	}
-
-	a {
-		display: flex;
-		align-items: center;
-		gap: 0.75rem;
-		min-width: 0;
-		padding: 0.75rem;
+	.document-card {
+		display: grid;
+		gap: 0.28rem;
+		padding: 1rem;
+		background:
+			linear-gradient(135deg, rgba(121, 166, 163, 0.11), transparent 52%), rgba(5, 6, 7, 0.42);
 		color: var(--text-soft);
+		text-decoration: none;
 	}
 
-	a:hover {
+	.document-card.archive {
+		background:
+			linear-gradient(135deg, rgba(199, 156, 87, 0.14), transparent 52%), rgba(5, 6, 7, 0.42);
+	}
+
+	.document-card:hover {
 		color: var(--text);
 	}
 
-	.document-text {
-		display: grid;
-		gap: 0.2rem;
-		min-width: 0;
-	}
-
-	strong {
-		overflow: hidden;
-		font-weight: 400;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
+	span,
 	small {
 		color: var(--muted);
 		font-family: var(--font-mono);
 		font-size: 0.68rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	strong {
+		color: var(--text);
+		font-size: 1.12rem;
+		font-weight: 400;
 	}
 </style>
