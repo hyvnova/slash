@@ -10,3 +10,4 @@ export { default as StatusDot } from './StatusDot.svelte';
 export { default as Surface } from './Surface.svelte';
 export { default as TableShell } from './TableShell.svelte';
 export { default as Textarea } from './Textarea.svelte';
+export { default as TypingWord } from './TypingWord.svelte';

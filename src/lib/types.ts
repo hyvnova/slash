@@ -51,6 +51,7 @@ export const enum Events {
 
 	// Messages
 	NEW_MESSAGE = 'new message',
+	CONTACT_MESSAGE = 'contact message',
 	DELETE_MESSAGE = 'delete message',
 	EDIT_MESSAGE = 'edit message'
 }
@@ -73,10 +74,30 @@ export type UserType = {
 	friends: string[]; // Usernames
 	pending_requests: string[]; // Usernames - Pending friend requests
 	rejected_requests: string[]; // Usernames - Rejected friend requests
-	chats: {
-		id: string;
-		members: string[]; // Usernames
-	}[]; // Chat ids
+	chats: UserChatState[]; // Per-user chat/contact state
+};
+
+export type UserChatState = {
+	id: string;
+	members: string[]; // Usernames
+	unreadCount: number;
+	muted: boolean;
+	pinned: boolean;
+	pinnedAt: string | null;
+	lastReadMessageId: string | null;
+	lastActivityAt: string | null;
+};
+
+export type ContactListItem = UserChatState & {
+	friend: string;
+};
+
+export type ContactMessagePayload = {
+	chatId: string;
+	from: string;
+	message: MessageType;
+	unreadCount?: number;
+	lastActivityAt?: string | null;
 };
 
 export type AttachmentType = {

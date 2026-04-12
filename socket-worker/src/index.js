@@ -18,6 +18,7 @@ const EVENTS = Object.freeze({
 	STATUS: 'status',
 	GET_FRIENDS_STATUS: 'get friends status',
 	NEW_MESSAGE: 'new message',
+	CONTACT_MESSAGE: 'contact message',
 	NEW_STR_MESSAGE: 'new str message',
 	DELETE_MESSAGE: 'delete message',
 	EDIT_MESSAGE: 'edit message'
@@ -194,6 +195,7 @@ export class SlashRealtimeServer extends DurableObject {
 
 				this.updateSession(session, {
 					username,
+					chatId: null,
 					status: STATUS.ONLINE
 				});
 
@@ -276,7 +278,6 @@ export class SlashRealtimeServer extends DurableObject {
 				return;
 			}
 
-			case EVENTS.NEW_MESSAGE:
 			case EVENTS.DELETE_MESSAGE:
 			case EVENTS.EDIT_MESSAGE:
 			case EVENTS.NEW_STR_MESSAGE: {
@@ -287,6 +288,34 @@ export class SlashRealtimeServer extends DurableObject {
 				}
 
 				this.emitToChat(chatId, packet.event, payload);
+				this.reply(packet.ackId, session, true);
+				return;
+			}
+
+			case EVENTS.NEW_MESSAGE: {
+				const [chatId, payload, members] = packet.args;
+				if (typeof chatId !== 'string') {
+					this.reply(packet.ackId, session, false);
+					return;
+				}
+
+				this.emitToChat(chatId, packet.event, payload);
+
+				if (payload && typeof payload === 'object' && Array.isArray(members)) {
+					const author = payload.author;
+					for (const member of members) {
+						if (typeof member !== 'string' || member === author) {
+							continue;
+						}
+
+						this.emitToUser(member, EVENTS.CONTACT_MESSAGE, {
+							chatId,
+							from: author,
+							message: payload
+						});
+					}
+				}
+
 				this.reply(packet.ackId, session, true);
 				return;
 			}

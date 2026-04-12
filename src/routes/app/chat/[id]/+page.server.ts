@@ -1,4 +1,4 @@
-import { create_chat, get_chat } from '$lib/server/db/chat';
+import { get_chat, mark_chat_read, normalize_user_chat_states } from '$lib/server/db/chat';
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { get_by } from '$lib/server/db/user';
@@ -29,6 +29,9 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 		throw redirect(302, Routes.HOME);
 	}
 
+	await mark_chat_read(user.username, chat.id, chat.last_message?.id ?? null);
+	const chats = await normalize_user_chat_states(user.username);
+
 	return {
 		chat,
 		user: {
@@ -36,7 +39,7 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 			avatar: user.avatar,
 			friends: user.friends,
 			pending_requests: user.pending_requests,
-			chats: user.chats,
+			chats,
 			verified: user.verified,
 			role: user.role || 'user'
 		},

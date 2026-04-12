@@ -1,5 +1,6 @@
 import type {
 	AttachmentType,
+	ContactListItem,
 	FriendshipStatusType,
 	MessageType,
 	UserSearchResult,
@@ -51,6 +52,30 @@ export async function update_friendship(user: string, other: string, status: Fri
 	return res.status === 200;
 }
 
+export async function get_contacts(): Promise<ContactListItem[]> {
+	const res = await fetch('/api/contact_state');
+	if (!res.ok) return [];
+
+	const payload = (await res.json()) as { contacts?: ContactListItem[] };
+	return payload.contacts ?? [];
+}
+
+export async function update_contact_state(
+	chat_id: string,
+	action: 'mute' | 'unmute' | 'pin' | 'unpin' | 'mark_read',
+	message_id: string | null = null
+) {
+	const res = await fetch('/api/contact_state', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({ chat_id, action, message_id })
+	});
+
+	return res.ok;
+}
+
 /**
  * Handles message events/actions
  */
@@ -68,7 +93,13 @@ export async function handle_message(params: {
 		body: JSON.stringify(params)
 	});
 
-	return res.status === 200;
+	if (!res.ok) {
+		const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+		throw new Error(payload?.error || 'Message action failed');
+	}
+
+	const payload = (await res.json().catch(() => null)) as { message?: MessageType } | null;
+	return payload?.message ?? null;
 }
 
 /**
@@ -77,4 +108,11 @@ export async function handle_message(params: {
 export async function upload_attachments(files: FormData): Promise<AttachmentType[]> {
 	const fileEntries = files.getAll('files').filter((entry): entry is File => entry instanceof File);
 	return uploadAttachmentFiles(fileEntries);
+}
+
+export async function upload_attachment_files(
+	files: Iterable<File>,
+	onUploadProgress?: (file: File, percentage: number) => void
+): Promise<AttachmentType[]> {
+	return uploadAttachmentFiles(files, onUploadProgress);
 }

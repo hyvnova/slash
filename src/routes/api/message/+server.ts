@@ -64,8 +64,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 				return MissingParameters;
 			}
 			// Send message
-			await add_message(chat_id, message);
-			break;
+			return json({ message: await add_message(chat_id, message) }, { status: 200 });
 
 		case ActionType.delete:
 			// Check if chat_id and message_id are present

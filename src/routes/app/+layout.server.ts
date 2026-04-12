@@ -1,5 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
+import { normalize_user_chat_states } from '$lib/server/db/chat';
 import { get_by } from '$lib/server/db/user';
 import type { UserType } from '$lib/types';
 
@@ -28,7 +29,7 @@ export const load: LayoutServerLoad = async ({ cookies }) => {
 			avatar: user.avatar,
 			friends: user.friends,
 			pending_requests: user.pending_requests,
-			chats: user.chats,
+			chats: await normalize_user_chat_states(user.username),
 			verified: user.verified,
 			role: user.role || 'user'
 		} as UserType

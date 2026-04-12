@@ -58,7 +58,7 @@ async function completeUpload(
 
 export async function uploadAttachmentFiles(
 	files: Iterable<File>,
-	onUploadProgress?: (fileName: string, percentage: number) => void
+	onUploadProgress?: (file: File, percentage: number) => void
 ) {
 	const attachments: AttachmentType[] = [];
 
@@ -76,7 +76,7 @@ export async function uploadAttachmentFiles(
 			clientPayload: JSON.stringify({ pendingId: prepared.pendingId }),
 			multipart: file.size > 5 * 1024 * 1024,
 			onUploadProgress(progress) {
-				onUploadProgress?.(file.name, progress.percentage);
+				onUploadProgress?.(file, progress.percentage);
 			}
 		}).catch((error) => {
 			if (error instanceof Error && error.message.includes('client token')) {

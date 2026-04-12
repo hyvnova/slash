@@ -8,6 +8,7 @@
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import StatusDot from '$lib/components/ui/StatusDot.svelte';
 	import Topbar from '$lib/components/ui/Topbar.svelte';
+	import { update_contact_state } from '$lib/api_shortcuts';
 	import { handle_notication } from '$lib/notification';
 	import { scroll_to_bottom } from '$lib/stores/scroll_to_bottom';
 	import toast from '$lib/stores/toast';
@@ -25,6 +26,7 @@
 	// svelte-ignore state_referenced_locally
 	let messages = $state<MessageType[]>(data.chat.messages);
 	let friend_status = $state<Status>(Status.OFFLINE);
+	const muted = $derived(Boolean(data.user.chats.find((chat) => chat.id === data.chat.id)?.muted));
 	let notification_config = $derived(
 		$user_config.notifications.custom[data.chat.id] || $user_config.notifications.general
 	);
@@ -44,8 +46,17 @@
 			}
 		});
 
+		function addMessage(msg: MessageType) {
+			if (messages.some((entry) => entry.id === msg.id)) return;
+			messages = [...messages, msg];
+		}
+
 		const onNewMessage = (msg: MessageType) => {
-			if (notification_config.enabled && msg.author !== data.user.username) {
+			if (msg.author !== data.user.username) {
+				update_contact_state(data.chat.id, 'mark_read', msg.id);
+			}
+
+			if (notification_config.enabled && !muted && msg.author !== data.user.username) {
 				handle_notication(() => {
 					if (notification_config.vibrate && 'vibrate' in navigator) {
 						navigator.vibrate([200, 100, 200]);
@@ -59,7 +70,7 @@
 				});
 			}
 
-			messages = [...messages, msg];
+			addMessage(msg);
 		};
 
 		const onEditMessage = (msg: MessageType) => {
@@ -130,7 +141,15 @@
 	</Topbar>
 
 	<ChatContainer username={data.user.username} {messages} />
-	<ChatInput username={data.user.username} chat_id={data.chat.id} />
+	<ChatInput
+		username={data.user.username}
+		chat_id={data.chat.id}
+		chat_members={data.chat.members}
+		onmessage={(message) => {
+			if (messages.some((entry) => entry.id === message.id)) return;
+			messages = [...messages, message];
+		}}
+	/>
 </main>
 
 <style>

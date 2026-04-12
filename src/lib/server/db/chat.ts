@@ -1,6 +1,57 @@
 import { randomUUID } from 'crypto';
 import { db } from './db';
-import type { ChatType, MessageType, UserType } from '$lib/types';
+import type { ChatType, ContactListItem, MessageType, UserChatState, UserType } from '$lib/types';
+
+type ContactAction = 'mute' | 'unmute' | 'pin' | 'unpin' | 'mark_read';
+
+function nowIso() {
+	return new Date().toISOString();
+}
+
+function normalize_chat_state(chat: Partial<UserChatState>): UserChatState {
+	return {
+		id: chat.id as string,
+		members: Array.isArray(chat.members) ? chat.members : [],
+		unreadCount: Math.max(0, Number(chat.unreadCount ?? 0)),
+		muted: Boolean(chat.muted),
+		pinned: Boolean(chat.pinned),
+		pinnedAt: chat.pinnedAt ?? null,
+		lastReadMessageId: chat.lastReadMessageId ?? null,
+		lastActivityAt: chat.lastActivityAt ?? null
+	};
+}
+
+function summary_for(chat: Pick<ChatType, 'id' | 'members' | 'last_message'>): UserChatState {
+	return {
+		id: chat.id,
+		members: chat.members,
+		unreadCount: 0,
+		muted: false,
+		pinned: false,
+		pinnedAt: null,
+		lastReadMessageId: null,
+		lastActivityAt: chat.last_message?.timestamp ? new Date().toISOString() : null
+	};
+}
+
+function friend_from_chat(summary: Pick<UserChatState, 'members'>, username: string) {
+	return summary.members.find((member) => member !== username) ?? '';
+}
+
+function sort_contacts(username: string, contacts: UserChatState[]): ContactListItem[] {
+	return contacts
+		.map((chat) => ({ ...chat, friend: friend_from_chat(chat, username) }))
+		.filter((contact) => contact.friend)
+		.sort((a, b) => {
+			if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+			if (a.pinned && b.pinned) {
+				return Date.parse(b.pinnedAt ?? '') - Date.parse(a.pinnedAt ?? '');
+			}
+
+			const activity = Date.parse(b.lastActivityAt ?? '') - Date.parse(a.lastActivityAt ?? '');
+			return activity || a.friend.localeCompare(b.friend);
+		});
+}
 
 /**
  *  Create a chat with the given members
@@ -8,8 +59,26 @@ import type { ChatType, MessageType, UserType } from '$lib/types';
  * @returns The chat object
  */
 export async function create_chat(members: string[]) {
-	if (await exists_chat(members)) {
-		return;
+	const existing = await exists_chat(members);
+	if (existing) {
+		const chat = await db.collection<ChatType>('chats').findOne({ id: existing.id });
+		if (chat) {
+			for (const user of members) {
+				const result = await db
+					.collection<UserType>('users')
+					.updateOne({ username: user, 'chats.id': chat.id }, { $set: { 'chats.$.members': members } });
+
+				if (result.matchedCount === 0) {
+					await db.collection<UserType>('users').updateOne(
+						{ username: user },
+						{
+							$push: { chats: summary_for(chat) }
+						}
+					);
+				}
+			}
+		}
+		return chat ?? existing;
 	}
 
 	let chat: ChatType = {
@@ -27,15 +96,12 @@ export async function create_chat(members: string[]) {
 		await db.collection<UserType>('users').updateOne(
 			{ username: user },
 			{
-				$push: {
-					chats: {
-						id: chat.id,
-						members
-					}
-				}
+				$push: { chats: summary_for(chat) }
 			}
 		);
 	}
+
+	return chat;
 }
 
 /**
@@ -60,6 +126,66 @@ export async function get_chat(id: string) {
 	return await chats.findOne({ id: id }, { projection: { _id: 0, messages: { $slice: -30 } } });
 }
 
+export async function normalize_user_chat_states(username: string): Promise<UserChatState[]> {
+	const user = await db.collection<UserType>('users').findOne({ username });
+	if (!user) return [];
+
+	const normalized = (user.chats ?? [])
+		.filter((chat) => chat?.id && Array.isArray(chat.members))
+		.map((chat) => normalize_chat_state(chat));
+
+	if (JSON.stringify(normalized) !== JSON.stringify(user.chats ?? [])) {
+		await db.collection<UserType>('users').updateOne({ username }, { $set: { chats: normalized } });
+	}
+
+	return normalized;
+}
+
+export async function get_contacts(username: string): Promise<ContactListItem[]> {
+	return sort_contacts(username, await normalize_user_chat_states(username));
+}
+
+export async function mark_chat_read(username: string, chatId: string, messageId: string | null = null) {
+	await normalize_user_chat_states(username);
+	await db.collection<UserType>('users').updateOne(
+		{ username, 'chats.id': chatId },
+		{
+			$set: {
+				'chats.$.unreadCount': 0,
+				'chats.$.lastReadMessageId': messageId
+			}
+		}
+	);
+}
+
+export async function update_contact_state(username: string, chatId: string, action: ContactAction) {
+	await normalize_user_chat_states(username);
+
+	const set: Record<string, unknown> = {};
+	if (action === 'mute') set['chats.$.muted'] = true;
+	if (action === 'unmute') set['chats.$.muted'] = false;
+	if (action === 'pin') {
+		set['chats.$.pinned'] = true;
+		set['chats.$.pinnedAt'] = nowIso();
+	}
+	if (action === 'unpin') {
+		set['chats.$.pinned'] = false;
+		set['chats.$.pinnedAt'] = null;
+	}
+	if (action === 'mark_read') {
+		set['chats.$.unreadCount'] = 0;
+		set['chats.$.lastReadMessageId'] = null;
+	}
+
+	if (Object.keys(set).length === 0) return false;
+
+	const result = await db
+		.collection<UserType>('users')
+		.updateOne({ username, 'chats.id': chatId }, { $set: set });
+
+	return result.matchedCount > 0;
+}
+
 /**
  * Delete a chat
  * @param chat_id
@@ -78,20 +204,67 @@ export async function delete_chat(chat_id: string) {
  * @param message
  */
 export async function add_message(chat_id: string, message: Partial<MessageType>) {
-	message.id = randomUUID();
-	message.attachments ||= [];
-
-	// If there's 100 or more messages, remove the extra ones
-	const chat = await db
-		.collection<ChatType>('chats')
-		.findOne({ id: chat_id }, { projection: { messages: { $slice: -100 } } });
-	if (chat && chat.messages.length >= 100) {
-		await db.collection<ChatType>('chats').updateOne({ id: chat_id }, { $pop: { messages: -1 } });
+	const chat = await db.collection<ChatType>('chats').findOne({ id: chat_id });
+	if (!chat) {
+		throw new Error('Chat room not found');
 	}
+
+	const saved: MessageType = {
+		id: randomUUID(),
+		author: message.author ?? '',
+		content: message.content ?? '',
+		timestamp: message.timestamp ?? new Date().toLocaleString(undefined, { second: undefined }),
+		attachments: message.attachments ?? []
+	};
 
 	await db
 		.collection<ChatType>('chats')
-		.updateOne({ id: chat_id }, { $push: { messages: message as MessageType } });
+		.updateOne(
+			{ id: chat_id },
+			{
+				$set: { last_message: saved },
+				$push: { messages: { $each: [saved], $slice: -100 } }
+			}
+		);
+
+	for (const member of chat.members) {
+		const isAuthor = member === saved.author;
+		const lastActivityAt = nowIso();
+		const update = await db.collection<UserType>('users').updateOne(
+			{ username: member, 'chats.id': chat_id },
+			{
+				$set: {
+					'chats.$.members': chat.members,
+					'chats.$.lastActivityAt': lastActivityAt,
+					...(isAuthor
+						? {
+								'chats.$.unreadCount': 0,
+								'chats.$.lastReadMessageId': saved.id
+							}
+						: {})
+				},
+				...(isAuthor ? {} : { $inc: { 'chats.$.unreadCount': 1 } })
+			}
+		);
+
+		if (update.matchedCount === 0) {
+			await db.collection<UserType>('users').updateOne(
+				{ username: member },
+				{
+					$push: {
+						chats: {
+							...summary_for(chat),
+							unreadCount: isAuthor ? 0 : 1,
+							lastReadMessageId: isAuthor ? saved.id : null,
+							lastActivityAt
+						}
+					}
+				}
+			);
+		}
+	}
+
+	return saved;
 }
 
 /**

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import IconButton from './IconButton.svelte';
+	import TypingWord from './TypingWord.svelte';
 
 	interface Props {
 		title?: string;
@@ -37,7 +38,11 @@
 	<div class="topbar-center">
 		{#if label}<p class="ui-label">{label}</p>{/if}
 		{#if title}<h1>{title}</h1>{/if}
-		{#if subtitle}<p class="subtitle">{subtitle}</p>{/if}
+		{#if subtitle}
+			<p class="subtitle">
+				{#if subtitle === 'typing'}<TypingWord />{:else}{subtitle}{/if}
+			</p>
+		{/if}
 	</div>
 
 	<div class="topbar-right">

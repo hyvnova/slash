@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { Writable } from 'svelte/store';
 	import Button from '$lib/components/ui/Button.svelte';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -17,9 +18,34 @@
 	let hoveringFriends = $state(false);
 
 	async function set_friendship(status: FriendshipStatusType) {
+		const previous = $friendship;
 		friendship.set(status);
-		await update_friendship(username, other_user, status);
+		const success = await update_friendship(username, other_user, status);
+		if (!success) friendship.set(previous);
+		return success;
 	}
+
+	onMount(() => {
+		const onAccept = (other: string) => {
+			if (other === other_user) friendship.set(FriendshipStatusType.FRIENDS);
+		};
+		const onReject = (other: string) => {
+			if (other === other_user) friendship.set(FriendshipStatusType.WAS_REJECTED);
+		};
+		const onUnfriend = (other: string) => {
+			if (other === other_user) friendship.set(FriendshipStatusType.NONE);
+		};
+
+		ws.on(Events.ACCEPT_FRIEND_REQUEST, onAccept);
+		ws.on(Events.REJECT_FRIEND_REQUEST, onReject);
+		ws.on(Events.UNFRIEND, onUnfriend);
+
+		return () => {
+			ws.off(Events.ACCEPT_FRIEND_REQUEST, onAccept);
+			ws.off(Events.REJECT_FRIEND_REQUEST, onReject);
+			ws.off(Events.UNFRIEND, onUnfriend);
+		};
+	});
 </script>
 
 {#if $friendship === FriendshipStatusType.NONE || $friendship === FriendshipStatusType.REJECTED}
@@ -27,8 +53,9 @@
 		size="sm"
 		variant="secondary"
 		onclick={async () => {
-			await set_friendship(FriendshipStatusType.REQUESTED);
-			ws.emit(Events.NEW_FRIEND_REQUEST, other_user);
+			if (await set_friendship(FriendshipStatusType.REQUESTED)) {
+				ws.emit(Events.NEW_FRIEND_REQUEST, other_user);
+			}
 		}}
 	>
 		add
@@ -39,8 +66,9 @@
 		size="sm"
 		variant="danger"
 		onclick={async () => {
-			await set_friendship(FriendshipStatusType.NONE);
-			ws.emit(Events.CANCEL_FRIEND_REQUEST, other_user);
+			if (await set_friendship(FriendshipStatusType.NONE)) {
+				ws.emit(Events.CANCEL_FRIEND_REQUEST, other_user);
+			}
 		}}
 	>
 		cancel
@@ -52,9 +80,10 @@
 		onmouseenter={() => (hoveringFriends = true)}
 		onmouseleave={() => (hoveringFriends = false)}
 		onclick={async () => {
-			await set_friendship(FriendshipStatusType.NONE);
-			ws.emit(Events.UNFRIEND, other_user);
-			remove_friend(other_user);
+			if (await set_friendship(FriendshipStatusType.NONE)) {
+				ws.emit(Events.UNFRIEND, other_user);
+				remove_friend(other_user);
+			}
 		}}
 	>
 		{hoveringFriends ? 'remove' : 'friends'}
