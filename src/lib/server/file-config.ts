@@ -1,3 +1,5 @@
+import { env } from '$env/dynamic/private';
+
 const DEFAULT_MAX_SINGLE_UPLOAD_BYTES = 50 * 1024 * 1024;
 const DEFAULT_USER_UPLOAD_QUOTA_BYTES = 100 * 1024 * 1024;
 const DEFAULT_PENDING_UPLOAD_TTL_MS = 30 * 60 * 1000;
@@ -16,26 +18,26 @@ function parsePositiveInteger(value: string | undefined, fallback: number | null
 }
 
 export const MAX_SINGLE_UPLOAD_BYTES =
-	parsePositiveInteger(process.env.MAX_SINGLE_UPLOAD_BYTES, DEFAULT_MAX_SINGLE_UPLOAD_BYTES) ??
+	parsePositiveInteger(env.MAX_SINGLE_UPLOAD_BYTES, DEFAULT_MAX_SINGLE_UPLOAD_BYTES) ??
 	DEFAULT_MAX_SINGLE_UPLOAD_BYTES;
 
 export const USER_UPLOAD_QUOTA_BYTES =
-	parsePositiveInteger(process.env.USER_UPLOAD_QUOTA_BYTES, DEFAULT_USER_UPLOAD_QUOTA_BYTES) ??
+	parsePositiveInteger(env.USER_UPLOAD_QUOTA_BYTES, DEFAULT_USER_UPLOAD_QUOTA_BYTES) ??
 	DEFAULT_USER_UPLOAD_QUOTA_BYTES;
 
 export const APP_FILE_STORAGE_SOFT_LIMIT_BYTES = parsePositiveInteger(
-	process.env.APP_FILE_STORAGE_SOFT_LIMIT_BYTES,
+	env.APP_FILE_STORAGE_SOFT_LIMIT_BYTES,
 	null
 );
 
 export const MONGODB_STORAGE_SOFT_LIMIT_BYTES = parsePositiveInteger(
-	process.env.MONGODB_STORAGE_SOFT_LIMIT_BYTES,
+	env.MONGODB_STORAGE_SOFT_LIMIT_BYTES,
 	null
 );
 
 export const PENDING_UPLOAD_TTL_MS =
-	parsePositiveInteger(process.env.PENDING_UPLOAD_TTL_MS, DEFAULT_PENDING_UPLOAD_TTL_MS) ??
+	parsePositiveInteger(env.PENDING_UPLOAD_TTL_MS, DEFAULT_PENDING_UPLOAD_TTL_MS) ??
 	DEFAULT_PENDING_UPLOAD_TTL_MS;
 
 export const TEXT_PREVIEW_MAX_BYTES =
-	parsePositiveInteger(process.env.TEXT_PREVIEW_MAX_BYTES, 256 * 1024) ?? 256 * 1024;
+	parsePositiveInteger(env.TEXT_PREVIEW_MAX_BYTES, 256 * 1024) ?? 256 * 1024;

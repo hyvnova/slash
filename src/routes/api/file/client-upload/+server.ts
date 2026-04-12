@@ -1,5 +1,6 @@
 import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import { json, type RequestHandler } from '@sveltejs/kit';
+import { getBlobToken } from '$lib/server/blob-token';
 import { MAX_SINGLE_UPLOAD_BYTES } from '$lib/server/file-config';
 import { get_pending_upload } from '$lib/server/db/files';
 import { requireUser } from '$lib/server/auth';
@@ -21,11 +22,13 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const body = (await request.json()) as HandleUploadBody;
 
 	try {
-		if (!process.env.BLOB_READ_WRITE_TOKEN) {
+		const token = getBlobToken();
+		if (!token) {
 			return json({ error: 'BLOB_READ_WRITE_TOKEN is not configured' }, { status: 500 });
 		}
 
 		const result = await handleUpload({
+			token,
 			request,
 			body,
 			onBeforeGenerateToken: async (pathname, clientPayload) => {

@@ -20,6 +20,7 @@ import {
 	PENDING_UPLOAD_TTL_MS,
 	USER_UPLOAD_QUOTA_BYTES
 } from '$lib/server/file-config';
+import { getBlobToken } from '$lib/server/blob-token';
 import { db } from './db';
 
 const bucket = new GridFSBucket(db, {
@@ -213,7 +214,7 @@ async function deleteBlobUrl(blobUrl: string | null) {
 	}
 
 	try {
-		await del(blobUrl);
+		await del(blobUrl, { token: getBlobToken() });
 	} catch (error) {
 		console.error('[files] Failed to delete blob', error);
 	}
