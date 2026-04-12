@@ -168,7 +168,9 @@
 							{/if}
 						</label>
 						<div class="form-actions">
-							<Button type="submit" loading={uploading_avatar} disabled={uploading_avatar}>save</Button>
+							<Button type="submit" loading={uploading_avatar} disabled={uploading_avatar}
+								>save</Button
+							>
 							<Button
 								type="button"
 								variant="ghost"

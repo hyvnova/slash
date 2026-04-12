@@ -35,7 +35,10 @@
 	let friends: Writable<string[]> = writable(user.friends);
 	let contacts = $state<ContactListItem[]>(
 		user.chats
-			.map((chat) => ({ ...chat, friend: chat.members.find((member) => member !== user.username) ?? '' }))
+			.map((chat) => ({
+				...chat,
+				friend: chat.members.find((member) => member !== user.username) ?? ''
+			}))
 			.filter((contact) => contact.friend && user.friends.includes(contact.friend))
 	);
 	let blinking: Record<string, boolean> = $state({});
@@ -66,7 +69,9 @@
 
 	async function refreshContacts() {
 		const next = await get_contacts();
-		contacts = next.filter((contact) => user.friends.includes(contact.friend) || contact.members.length);
+		contacts = next.filter(
+			(contact) => user.friends.includes(contact.friend) || contact.members.length
+		);
 		sortContacts();
 		for (const contact of contacts) ensure_status(contact.friend);
 	}
@@ -83,8 +88,8 @@
 	function openMenu(friend: string, x: number, y: number) {
 		menu = {
 			friend,
-			x: Math.min(x, window.innerWidth - 170),
-			y: Math.min(y, window.innerHeight - 190)
+			x: Math.max(8, Math.min(x, window.innerWidth - 178)),
+			y: Math.max(8, Math.min(y, window.innerHeight - 198))
 		};
 	}
 
@@ -247,10 +252,16 @@
 			style:top={`${menu.y}px`}
 			aria-label="contact actions"
 		>
-			<button type="button" onclick={() => contactAction(selectedContact()?.muted ? 'unmute' : 'mute')}>
+			<button
+				type="button"
+				onclick={() => contactAction(selectedContact()?.muted ? 'unmute' : 'mute')}
+			>
 				{selectedContact()?.muted ? 'unmute' : 'mute'}
 			</button>
-			<button type="button" onclick={() => contactAction(selectedContact()?.pinned ? 'unpin' : 'pin')}>
+			<button
+				type="button"
+				onclick={() => contactAction(selectedContact()?.pinned ? 'unpin' : 'pin')}
+			>
 				{selectedContact()?.pinned ? 'unpin' : 'pin to top'}
 			</button>
 			{#if (selectedContact()?.unreadCount ?? 0) > 0}

@@ -1,18 +1,17 @@
-import { get_from, set_user, update_user } from '$lib/server/db/user';
+import { get_from, update_user } from '$lib/server/db/user';
 import { create_chat } from '$lib/server/db/chat';
 import { requireUser } from '$lib/server/auth';
 import { FriendshipStatusType } from '$lib/types';
 import type { RequestHandler } from '@sveltejs/kit';
 
 type ExpectedParams = {
-	user: string; // user making the change of friendship status
 	other: string; // Other user
 	status: FriendshipStatusType;
 };
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	const currentUser = await requireUser(cookies);
-	let data: ExpectedParams = await request.json();
+	const data: ExpectedParams = await request.json();
 
 	let { other, status } = data;
 	const user = currentUser.username;

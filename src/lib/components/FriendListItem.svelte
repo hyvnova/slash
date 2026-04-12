@@ -58,7 +58,9 @@
 		{#if $status === Status.TYPING}<TypingWord />{:else}{$status}{/if}
 	</span>
 	{#if muted || pinned}
-		<span class="friend-flags">{pinned ? 'pinned' : ''}{pinned && muted ? ' / ' : ''}{muted ? 'muted' : ''}</span>
+		<span class="friend-flags"
+			>{pinned ? 'pinned' : ''}{pinned && muted ? ' / ' : ''}{muted ? 'muted' : ''}</span
+		>
 	{/if}
 	{#if unreadCount > 0}
 		<span class="unread-badge" aria-label={`${unreadCount} unread messages`}>

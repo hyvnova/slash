@@ -59,7 +59,10 @@ export const actions = {
 		}
 
 		// Get the token from the cookies
-		const token = cookies.get('token') as string;
+		const token = cookies.get('token');
+		if (!token) {
+			throw redirect(302, '/');
+		}
 
 		await update_user(token, {
 			$set: { username: new_username }
@@ -72,7 +75,11 @@ export const actions = {
 		const data = await request.formData();
 		const new_avatar = (data.get('avatar') as string | null)?.trim() ?? '';
 		const avatar_file_id = (data.get('avatar_file_id') as string | null)?.trim() ?? '';
-		const token = cookies.get('token') as string;
+		const token = cookies.get('token');
+		if (!token) {
+			throw redirect(302, '/');
+		}
+
 		const user = await get_by(token);
 
 		if (!user) {

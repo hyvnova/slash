@@ -66,7 +66,10 @@ export async function create_chat(members: string[]) {
 			for (const user of members) {
 				const result = await db
 					.collection<UserType>('users')
-					.updateOne({ username: user, 'chats.id': chat.id }, { $set: { 'chats.$.members': members } });
+					.updateOne(
+						{ username: user, 'chats.id': chat.id },
+						{ $set: { 'chats.$.members': members } }
+					);
 
 				if (result.matchedCount === 0) {
 					await db.collection<UserType>('users').updateOne(
@@ -145,7 +148,11 @@ export async function get_contacts(username: string): Promise<ContactListItem[]>
 	return sort_contacts(username, await normalize_user_chat_states(username));
 }
 
-export async function mark_chat_read(username: string, chatId: string, messageId: string | null = null) {
+export async function mark_chat_read(
+	username: string,
+	chatId: string,
+	messageId: string | null = null
+) {
 	await normalize_user_chat_states(username);
 	await db.collection<UserType>('users').updateOne(
 		{ username, 'chats.id': chatId },
@@ -158,7 +165,11 @@ export async function mark_chat_read(username: string, chatId: string, messageId
 	);
 }
 
-export async function update_contact_state(username: string, chatId: string, action: ContactAction) {
+export async function update_contact_state(
+	username: string,
+	chatId: string,
+	action: ContactAction
+) {
 	await normalize_user_chat_states(username);
 
 	const set: Record<string, unknown> = {};
@@ -217,15 +228,13 @@ export async function add_message(chat_id: string, message: Partial<MessageType>
 		attachments: message.attachments ?? []
 	};
 
-	await db
-		.collection<ChatType>('chats')
-		.updateOne(
-			{ id: chat_id },
-			{
-				$set: { last_message: saved },
-				$push: { messages: { $each: [saved], $slice: -100 } }
-			}
-		);
+	await db.collection<ChatType>('chats').updateOne(
+		{ id: chat_id },
+		{
+			$set: { last_message: saved },
+			$push: { messages: { $each: [saved], $slice: -100 } }
+		}
+	);
 
 	for (const member of chat.members) {
 		const isAuthor = member === saved.author;

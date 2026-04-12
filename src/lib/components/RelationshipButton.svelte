@@ -15,8 +15,6 @@
 	}
 
 	let { username, friendship, other_user, remove_friend }: Props = $props();
-	let hoveringFriends = $state(false);
-
 	async function set_friendship(status: FriendshipStatusType) {
 		const previous = $friendship;
 		friendship.set(status);
@@ -76,9 +74,7 @@
 {:else if $friendship === FriendshipStatusType.FRIENDS}
 	<Button
 		size="sm"
-		variant={hoveringFriends ? 'danger' : 'secondary'}
-		onmouseenter={() => (hoveringFriends = true)}
-		onmouseleave={() => (hoveringFriends = false)}
+		variant="danger"
 		onclick={async () => {
 			if (await set_friendship(FriendshipStatusType.NONE)) {
 				ws.emit(Events.UNFRIEND, other_user);
@@ -86,7 +82,7 @@
 			}
 		}}
 	>
-		{hoveringFriends ? 'remove' : 'friends'}
+		unfriend
 	</Button>
 {:else if $friendship === FriendshipStatusType.WAS_REJECTED}
 	<p class="relationship-note">request declined</p>
