@@ -842,6 +842,16 @@ export async function get_file_metadata(id: string) {
 	return filesCollection().findOne({ id });
 }
 
+export async function get_user_file_metadata(username: string, fileId: string) {
+	await ensureIndexes();
+	const ref = await refsCollection().findOne({ username, fileId });
+	if (!ref) {
+		return null;
+	}
+
+	return filesCollection().findOne({ id: fileId, status: 'active' });
+}
+
 export async function mark_legacy_file(id: string, file: GridFSFile) {
 	await ensureIndexes();
 	const existing = await filesCollection().findOne({ id });

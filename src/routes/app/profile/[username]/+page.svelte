@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { bytes_to_size } from '$lib';
 	import type { ActionData, PageServerData } from './$types';
 	import { Routes } from '$lib/types';
+	import { upload_attachment_files } from '$lib/api_shortcuts';
 	import toast from '$lib/stores/toast';
 	import Toast from '$lib/components/Toast.svelte';
 	import Avatar from '$lib/components/ui/Avatar.svelte';
@@ -20,11 +22,18 @@
 
 	let editing_username = $state(false);
 	let editing_avatar = $state(false);
+	let uploading_avatar = $state(false);
+	let avatar_file = $state<File | null>(null);
+	let avatar_progress = $state(0);
 	// Edit fields start from server data, then become ordinary form drafts.
 	// svelte-ignore state_referenced_locally
 	let username = $state(data.username);
 	// svelte-ignore state_referenced_locally
-	let avatar = $state(data.avatar);
+	let avatar = $state(editableAvatar(data.avatar));
+
+	function editableAvatar(value: string) {
+		return value.startsWith('/default_avatars/') || value.startsWith('/file/') ? '' : value;
+	}
 
 	$effect(() => {
 		if (form?.error) {
@@ -48,6 +57,50 @@
 		window.addEventListener('keydown', stop_editing);
 		return () => window.removeEventListener('keydown', stop_editing);
 	});
+
+	async function submitAvatar(event: SubmitEvent) {
+		if (!avatar_file) return;
+		event.preventDefault();
+
+		if (!avatar_file.type.startsWith('image/')) {
+			toast.set({
+				type: 'error',
+				title: 'avatar stayed put',
+				message: 'choose an image file'
+			});
+			return;
+		}
+
+		uploading_avatar = true;
+		avatar_progress = 0;
+
+		try {
+			const [attachment] = await upload_attachment_files([avatar_file], (_file, percentage) => {
+				avatar_progress = percentage;
+			});
+
+			const body = new FormData();
+			body.set('avatar_file_id', attachment.id);
+			const response = await fetch(`${Routes.PROFILE}/${data.username}?/update_avatar`, {
+				method: 'POST',
+				body
+			});
+
+			if (!response.ok) {
+				throw new Error('avatar upload was not accepted');
+			}
+
+			location.href = `${Routes.PROFILE}/${data.username}`;
+		} catch (error) {
+			toast.set({
+				type: 'error',
+				title: 'avatar stayed put',
+				message: error instanceof Error ? error.message : 'the avatar did not upload'
+			});
+		} finally {
+			uploading_avatar = false;
+		}
+	}
 </script>
 
 <svelte:head>
@@ -85,6 +138,7 @@
 						class="edit-form"
 						method="post"
 						action={`${Routes.PROFILE}/${data.username}?/update_avatar`}
+						onsubmit={submitAvatar}
 					>
 						<Input
 							type="url"
@@ -92,15 +146,35 @@
 							label="avatar url"
 							placeholder="https://..."
 							bind:value={avatar}
-							required
+							required={!avatar_file}
 						/>
+						<label class="avatar-upload">
+							<span class="ui-label">image upload</span>
+							<input
+								type="file"
+								accept="image/*"
+								onchange={(event) => {
+									avatar_file = event.currentTarget.files?.[0] ?? null;
+								}}
+							/>
+							{#if avatar_file}
+								<strong>{avatar_file.name}</strong>
+								<small>{bytes_to_size(avatar_file.size)}</small>
+								{#if uploading_avatar}
+									<progress value={avatar_progress} max="100"></progress>
+								{/if}
+							{:else}
+								<small>pick a local image; it counts toward uploads.</small>
+							{/if}
+						</label>
 						<div class="form-actions">
-							<Button type="submit">save</Button>
+							<Button type="submit" loading={uploading_avatar} disabled={uploading_avatar}>save</Button>
 							<Button
 								type="button"
 								variant="ghost"
 								onclick={() => {
-									avatar = data.avatar;
+									avatar = editableAvatar(data.avatar);
+									avatar_file = null;
 									editing_avatar = false;
 								}}>cancel</Button
 							>
@@ -203,6 +277,45 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.55rem;
+	}
+
+	.avatar-upload {
+		display: grid;
+		gap: 0.4rem;
+		min-width: 0;
+		padding: 0.75rem;
+		border: 1px solid var(--line);
+		border-radius: var(--radius-md);
+		background: rgba(8, 9, 11, 0.42);
+	}
+
+	.avatar-upload input {
+		width: 100%;
+		color: var(--muted);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+	}
+
+	.avatar-upload strong {
+		overflow: hidden;
+		color: var(--text-soft);
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		font-weight: 400;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.avatar-upload small {
+		color: var(--muted);
+		font-family: var(--font-mono);
+		font-size: 0.68rem;
+	}
+
+	.avatar-upload progress {
+		width: 100%;
+		height: 2px;
+		accent-color: var(--accent);
 	}
 
 	.name-row {

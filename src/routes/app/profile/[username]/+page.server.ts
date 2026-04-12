@@ -2,7 +2,8 @@ import type { PageServerLoad, Actions } from './$types';
 import { get_by, update_user } from '$lib/server/db/user';
 import { error, redirect } from '@sveltejs/kit';
 import { REGEX_IMAGE_URL, REGEX_USERNAME } from '$lib';
-import { upload_file } from '$lib/server/db/files';
+import { get_user_file_metadata } from '$lib/server/db/files';
+import { Routes } from '$lib/types';
 
 export const load: PageServerLoad = async ({ cookies, params, url }) => {
 	// Get the prfile username from the params (It's a valid username)
@@ -68,7 +69,28 @@ export const actions = {
 	},
 
 	update_avatar: async ({ request, cookies, url }) => {
-		let new_avatar = (await request.formData()).get('avatar') as string;
+		const data = await request.formData();
+		const new_avatar = (data.get('avatar') as string | null)?.trim() ?? '';
+		const avatar_file_id = (data.get('avatar_file_id') as string | null)?.trim() ?? '';
+		const token = cookies.get('token') as string;
+		const user = await get_by(token);
+
+		if (!user) {
+			throw redirect(302, '/');
+		}
+
+		if (avatar_file_id) {
+			const file = await get_user_file_metadata(user.username, avatar_file_id);
+			if (!file || !file.contentType.startsWith('image/')) {
+				return { success: false, error: 'Avatar upload must be an active image file' };
+			}
+
+			await update_user(token, {
+				$set: { avatar: `${Routes.FILE}/${avatar_file_id}` }
+			});
+
+			throw redirect(302, url.toString());
+		}
 
 		// Validate avatar
 		if (!new_avatar || !REGEX_IMAGE_URL.test(new_avatar)) {
@@ -84,9 +106,6 @@ export const actions = {
 		} catch (e) {
 			return { success: false, error: "Avatar URL, doesn't seem to be valid" };
 		}
-
-		// Get the token from the cookies
-		const token = cookies.get('token') as string;
 
 		await update_user(token, {
 			$set: { avatar: new_avatar }
