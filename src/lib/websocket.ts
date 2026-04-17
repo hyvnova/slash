@@ -50,14 +50,16 @@ function getDefaultSocketUrl(): string {
 
 export const ws = new SlashWebSocketClient(getDefaultSocketUrl());
 
-ws.on('connect_error', (error) => {
-	if (dev) {
-		console.error(error);
-	}
+if (browser) {
+	ws.on('connect_error', (error) => {
+		if (dev) {
+			console.error(error);
+		}
 
-	toast.set({
-		type: 'error',
-		title: 'Connection Error',
-		message: 'Failed to connect to the realtime server.'
+		toast.set({
+			type: 'error',
+			title: 'Connection Error',
+			message: 'Failed to connect to the realtime server.'
+		});
 	});
-});
+}

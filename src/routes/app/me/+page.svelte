@@ -104,11 +104,16 @@
 		return menu ? contacts.find((contact) => contact.friend === menu?.friend) : null;
 	}
 
+	function selectedProfileHref() {
+		const contact = selectedContact();
+		return contact ? `${Routes.PROFILE}/${contact.friend}` : Routes.HOME;
+	}
+
 	function openMenu(friend: string, x: number, y: number) {
 		menu = {
 			friend,
 			x: Math.max(8, Math.min(x, window.innerWidth - 178)),
-			y: Math.max(8, Math.min(y, window.innerHeight - 198))
+			y: Math.max(8, Math.min(y, window.innerHeight - 238))
 		};
 	}
 
@@ -285,6 +290,7 @@
 			style:top={`${menu.y}px`}
 			aria-label="contact actions"
 		>
+			<a href={selectedProfileHref()}>profile</a>
 			<button
 				type="button"
 				onclick={() => contactAction(selectedContact()?.muted ? 'unmute' : 'mute')}
@@ -332,12 +338,15 @@
 		box-shadow: var(--shadow-card);
 	}
 
+	.contact-menu a,
 	.contact-menu button {
 		min-height: 2.35rem;
 		border: 0;
 		border-radius: var(--radius-sm);
 		background: transparent;
 		color: var(--text-soft);
+		display: flex;
+		align-items: center;
 		font-family: var(--font-mono);
 		font-size: 0.7rem;
 		letter-spacing: 0.08em;
@@ -346,6 +355,7 @@
 		cursor: pointer;
 	}
 
+	.contact-menu a:hover,
 	.contact-menu button:hover {
 		background: rgba(121, 166, 163, 0.08);
 		color: var(--text);

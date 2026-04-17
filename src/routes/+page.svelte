@@ -52,6 +52,11 @@
 				autocomplete="current-password"
 			/>
 
+			<label class="remember-row">
+				<input type="checkbox" name="remember" />
+				<span>keep me signed in</span>
+			</label>
+
 			{#if form?.error}
 				<p class="form-error">{form.error}</p>
 			{/if}
@@ -103,6 +108,26 @@
 		font-family: var(--font-mono);
 		font-size: 0.72rem;
 		line-height: 1.4;
+	}
+
+	.remember-row {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+		width: fit-content;
+		color: var(--muted-strong);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.remember-row input {
+		width: 1rem;
+		height: 1rem;
+		margin: 0;
+		accent-color: var(--accent);
 	}
 
 	:global(.auth-submit) {

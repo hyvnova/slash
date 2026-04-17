@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { onDestroy } from 'svelte';
 	import { bytes_to_size } from '$lib';
 	import Icon from '$lib/components/ui/Icon.svelte';
@@ -158,7 +159,7 @@
 	onDestroy(() => {
 		clearTimeout(typingTimer);
 		for (const file of files) revokePreview(file);
-		setOnline();
+		if (browser) setOnline();
 	});
 </script>
 

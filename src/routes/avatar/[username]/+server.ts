@@ -9,6 +9,8 @@
 import { exists, get_from } from '$lib/server/db/user';
 import type { RequestHandler } from '@sveltejs/kit';
 
+const LOCAL_AVATAR_PREFIXES = ['/default_avatars/', '/file/'];
+
 export const GET: RequestHandler = async ({ url, params }) => {
 	const username = params.username;
 
@@ -24,12 +26,19 @@ export const GET: RequestHandler = async ({ url, params }) => {
 
 	const avatar_type = avatar_url?.split('.').pop();
 
-	// if avatar is relative, prepend the base url
 	if (avatar_url.startsWith('/')) {
-		avatar_url = `${url.origin}${avatar_url}`;
+		if (LOCAL_AVATAR_PREFIXES.some((prefix) => avatar_url.startsWith(prefix))) {
+			return Response.redirect(`${url.origin}${avatar_url}`, 302);
+		}
+
+		return new Response(null, { status: 404 });
 	}
 
 	const response = await fetch(avatar_url);
+	if (!response.ok) {
+		return new Response(null, { status: response.status });
+	}
+
 	const arrayBuffer = await response.arrayBuffer();
 	const buffer = Buffer.from(arrayBuffer);
 

@@ -81,6 +81,10 @@ export class SlashWebSocketClient {
 	}
 
 	emit(event: string, ...args: unknown[]) {
+		if (!browser) {
+			return this;
+		}
+
 		let ackCallback: EventCallback | undefined;
 		const lastArg = args.at(-1);
 		if (typeof lastArg === 'function') {
@@ -197,6 +201,10 @@ export class SlashWebSocketClient {
 	}
 
 	private sendOrQueue(packet: RealtimeClientPacket) {
+		if (!browser) {
+			return;
+		}
+
 		if (this.socket?.readyState === WebSocket.OPEN) {
 			this.socket.send(serializeRealtimePacket(packet));
 			return;

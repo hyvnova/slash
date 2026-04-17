@@ -5,6 +5,8 @@ import bcrypt from 'bcrypt';
 import { Routes, type UserType } from '$lib/types';
 import 'dotenv/config';
 
+const REMEMBER_ME_MAX_AGE = 60 * 60 * 24 * 30;
+
 try {
 	process.env.DEV = import.meta.env.DEV ? 'true' : 'false';
 } catch (e) {
@@ -31,6 +33,7 @@ export const actions = {
 			.replace(/ /g, '_')
 			.replace(/[^a-z0-9_]/g, '');
 		const password = data.get('password') as string;
+		const remember = data.get('remember') === 'on';
 
 		// If username doesn't exist, then it's a sign up form
 		if (!(await get_by(username))) {
@@ -59,7 +62,10 @@ export const actions = {
 		// Save token to session cookie
 		cookies.set('token', token, {
 			path: '/',
-			secure: process.env.NODE_ENV === 'production'
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: process.env.NODE_ENV === 'production',
+			...(remember ? { maxAge: REMEMBER_ME_MAX_AGE } : {})
 		});
 
 		// If everything is correct, then redirect to /me
