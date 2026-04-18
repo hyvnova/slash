@@ -12,7 +12,7 @@
 		"dev-set-admin": "node ./scripts/set-admin.mjs --db dev",
 		"set-admin": "node ./scripts/set-admin.mjs --db prod",
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "node ./node_modules/vite/bin/vite.js build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -21,7 +21,7 @@
 	},
 	"devDependencies": {
 		"@flydotio/dockerfile": "^0.5.8",
-		"@sveltejs/adapter-auto": "^7.0.1",
+		"@sveltejs/adapter-vercel": "6",
 		"@sveltejs/kit": "^2.57.1",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
 		"@types/bcrypt": "^5.0.2",
